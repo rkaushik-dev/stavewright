@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DOCUMENT Type="Advanced Installer" CreateVersion="12.2.1" version="12.6.1" Modules="professional" RootPath="." Language="en" Id="{CFADCC08-A325-4099-AD9A-08C87E146704}">
+  <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
+    <ROW Name="HiddenItems" Value="MsiThemeComponent;BackgroundImagesComponent;UpdaterComponent;SerValComponent;DigCertStoreComponent;MsiInstExSeqComponent;DictionaryComponent;MsiAppSearchComponent;MsiAssemblyComponent;MsiClassComponent;MsiOdbcDataSrcComponent;MsiServInstComponent;MsiOrgComponent;MsiExtComponent;CPLAppletComponent;ActSyncAppComponent;PreReqComponent;WebApplicationsComponent;MsiJavaComponent;MsiDriverPackagesComponent;UserAccountsComponent;ScheduledTasksComponent;SqlConnectionComponent;AutorunComponent;FirewallExceptionComponent;GameUxComponent;MsiDirectEditorComponent;SharePointSlnComponent;SilverlightSlnComponent;MultipleInstancesComponent;SccmComponent;ActSyncAppComponent"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
+    <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
+    <ROW Property="AI_FINDEXE_TITLE" Value="Select the installation package for [|ProductName]" ValueLocId="AI.Property.FindExeTitle"/>
+    <ROW Property="ALLUSERS" Value="1"/>
+    <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="AiSkipExitDlg" Value="1"/>
+    <ROW Property="CTRLS" Value="2"/>
+    <ROW Property="Manufacturer" Value="Sellenis"/>
+    <ROW Property="ProductCode" Value="1033:{BA4D6ED3-C916-4F0E-BB5B-A197DA437380} " Type="16"/>
+    <ROW Property="ProductLanguage" Value="1033"/>
+    <ROW Property="ProductName" Value="S-Jet 600"/>
+    <ROW Property="ProductVersion" Value="1.0.0" Type="32"/>
+    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
+    <ROW Property="UpgradeCode" Value="{73E3F36D-4DCA-4737-AF3A-6784EAFB3E68}"/>
+    <ROW Property="WindowsType9X" MultiBuildValue="Win32_Release:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsType9XDisplay" MultiBuildValue="Win32_Release:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40" MultiBuildValue="Win32_Release:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40Display" MultiBuildValue="Win32_Release:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50" MultiBuildValue="Win32_Release:Windows 2000" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50Display" MultiBuildValue="Win32_Release:Windows 2000" ValueLocId="-"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
+    <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
+    <ROW Directory="DataFiles_Dir" Directory_Parent="APPDIR" DefaultDir="DATAFI~1|Data Files"/>
+    <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
+    <ROW Directory="FpgaImage_Dir" Directory_Parent="Quattro_Dir" DefaultDir="FPGAIM~1|FpgaImage"/>
+    <ROW Directory="Images_Dir" Directory_Parent="APPDIR" DefaultDir="Images"/>
+    <ROW Directory="JobFiles_Dir" Directory_Parent="APPDIR" DefaultDir="JOBFIL~1|Job Files"/>
+    <ROW Directory="Matricode_1_Dir" Directory_Parent="Templates_Dir" DefaultDir="Sellenis"/>
+    <ROW Directory="Matricode_Dir" Directory_Parent="WindowsVolume" DefaultDir="Sellenis"/>
+    <ROW Directory="Quattro_Dir" Directory_Parent="Matricode_Dir" DefaultDir="S-jet600"/>
+    <ROW Directory="Report_1_Dir" Directory_Parent="Quattro_Dir" DefaultDir="Report"/>
+    <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
+    <ROW Directory="System64Folder" Directory_Parent="TARGETDIR" DefaultDir="SYSTEM~1|System64Folder" IsPseudoRoot="1"/>
+    <ROW Directory="SystemFolder" Directory_Parent="TARGETDIR" DefaultDir="SYSTEM~2|SystemFolder" IsPseudoRoot="1"/>
+    <ROW Directory="SystemTest_Dir" Directory_Parent="Templates_Dir" DefaultDir="SYSTEM~1|System Test"/>
+    <ROW Directory="System_Dir" Directory_Parent="Quattro_Dir" DefaultDir="System"/>
+    <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
+    <ROW Directory="Templates_Dir" Directory_Parent="Quattro_Dir" DefaultDir="TEMPLA~1|Templates"/>
+    <ROW Directory="WindowsVolume" Directory_Parent="TARGETDIR" DefaultDir="WINDOW~1|WindowsVolume" IsPseudoRoot="1"/>
+    <ROW Directory="ftbusui.dll_Dir" Directory_Parent="i386_Dir" DefaultDir="ftbusui.dll"/>
+    <ROW Directory="ftcserco.dll_Dir" Directory_Parent="i386_Dir" DefaultDir="ftcserco.dll"/>
+    <ROW Directory="ftd2xx.dll_Dir" Directory_Parent="i386_Dir" DefaultDir="ftd2xx.dll"/>
+    <ROW Directory="ftd2xx.h_Dir" Directory_Parent="ftdimfr_Dir" DefaultDir="ftd2xx.h"/>
+    <ROW Directory="ftd2xx.lib_Dir" Directory_Parent="i386_Dir" DefaultDir="ftd2xx.lib"/>
+    <ROW Directory="ftdibus.cat_Dir" Directory_Parent="ftdimfr_Dir" DefaultDir="ftdibus.cat"/>
+    <ROW Directory="ftdibus.inf_Dir" Directory_Parent="ftdimfr_Dir" DefaultDir="ftdibus.inf"/>
+    <ROW Directory="ftdibus.sys_Dir" Directory_Parent="i386_Dir" DefaultDir="ftdibus.sys"/>
+    <ROW Directory="ftdimfr_1_Dir" Directory_Parent="Quattro_Dir" DefaultDir="ftdimfr"/>
+    <ROW Directory="ftdimfr_Dir" Directory_Parent="APPDIR" DefaultDir="ftdimfr"/>
+    <ROW Directory="ftdiport.cat_Dir" Directory_Parent="ftdimfr_Dir" DefaultDir="ftdiport.cat"/>
+    <ROW Directory="ftdiport.inf_Dir" Directory_Parent="ftdimfr_Dir" DefaultDir="ftdiport.inf"/>
+    <ROW Directory="ftlang.dll_Dir" Directory_Parent="i386_Dir" DefaultDir="ftlang.dll"/>
+    <ROW Directory="ftser2k.sys_Dir" Directory_Parent="i386_Dir" DefaultDir="ftser2k.sys"/>
+    <ROW Directory="ftserui2.dll_Dir" Directory_Parent="i386_Dir" DefaultDir="ftserui2.dll"/>
+    <ROW Directory="i386_Dir" Directory_Parent="ftdimfr_Dir" DefaultDir="i386"/>
+    <ROW Directory="log_1_Dir" Directory_Parent="Quattro_Dir" DefaultDir="log"/>
+    <ROW Directory="log_Dir" Directory_Parent="APPDIR" DefaultDir="log"/>
+    <ROW Directory="temp_1_Dir" Directory_Parent="Matricode_Dir" DefaultDir="temp"/>
+    <ROW Directory="temp_Dir" Directory_Parent="APPDIR" DefaultDir="temp"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
+    <ROW Component="AI_ExePath" ComponentId="{305B5E55-1859-440F-9790-85EF615823FF}" Directory_="APPDIR" Attributes="4" KeyPath="AI_ExePath"/>
+    <ROW Component="C1Sizer.ocx" ComponentId="{8A83879F-9481-41D8-B182-E39D3411F11A}" Directory_="SystemFolder" Attributes="0" KeyPath="C1Sizer.ocx_1"/>
+    <ROW Component="C1Sizer.ocx_1" ComponentId="{D6F80E5B-630B-475A-80E1-E479CA4E5C99}" Directory_="System64Folder" Attributes="0" KeyPath="C1Sizer.ocx"/>
+    <ROW Component="DataFiles" ComponentId="{BB6447DD-DE3E-40B6-A0C7-98C16CA714D8}" Directory_="DataFiles_Dir" Attributes="0"/>
+    <ROW Component="Dlsbarunu.dll" ComponentId="{1A1D2610-8FBD-44BD-9D44-8051765BEBBE}" Directory_="APPDIR" Attributes="0" KeyPath="Dlsbarunu.dll"/>
+    <ROW Component="EnableLUA" ComponentId="{3B156FCD-6C7F-422D-8FD4-056D6E4CD327}" Directory_="APPDIR" Attributes="4" KeyPath="EnableLUA"/>
+    <ROW Component="GS11.txt" ComponentId="{2FE5B2FF-0AA9-4195-B227-50BB8E41A728}" Directory_="Templates_Dir" Attributes="0" KeyPath="GS11.txt" Type="0"/>
+    <ROW Component="Images" ComponentId="{A109356D-00E4-4B2D-89D3-CDAE1EE717E5}" Directory_="Images_Dir" Attributes="0"/>
+    <ROW Component="JobFiles" ComponentId="{36479A0D-BB60-437C-8AA1-C83CD34079FF}" Directory_="JobFiles_Dir" Attributes="0"/>
+    <ROW Component="LangChinese.dll" ComponentId="{A1F023D9-4F1E-4B8C-85C3-06B1115DCE7E}" Directory_="APPDIR" Attributes="0" KeyPath="LangChinese.dll"/>
+    <ROW Component="LangFrench.dll" ComponentId="{BE6BFAC1-ABA6-4AC8-8AC0-2DBF2C15B369}" Directory_="APPDIR" Attributes="0" KeyPath="LangFrench.dll"/>
+    <ROW Component="LangGerman.dll" ComponentId="{A5C6F0CE-0A18-43C2-ACC0-22A330005DED}" Directory_="APPDIR" Attributes="0" KeyPath="LangGerman.dll"/>
+    <ROW Component="LangPolish.dll" ComponentId="{3A673828-5310-4733-87CE-EDC1D695038E}" Directory_="APPDIR" Attributes="0" KeyPath="LangPolish.dll"/>
+    <ROW Component="LangPortuguese.dll" ComponentId="{72E62E21-3624-4C2A-AE58-A716E3BEC419}" Directory_="APPDIR" Attributes="0" KeyPath="LangPortuguese.dll"/>
+    <ROW Component="LangRussian.dll" ComponentId="{C78CE4C3-B240-4E48-8E18-531C558D6094}" Directory_="APPDIR" Attributes="0" KeyPath="LangRussian.dll"/>
+    <ROW Component="LangSpanish.dll" ComponentId="{13E04500-F2EC-4C46-BD80-5B2C76E6CE00}" Directory_="APPDIR" Attributes="0" KeyPath="LangSpanish.dll"/>
+    <ROW Component="LangTurkish.dll" ComponentId="{10CB3E8D-9B13-4B8C-A8C9-865D88EBA021}" Directory_="APPDIR" Attributes="0" KeyPath="LangTurkish.dll"/>
+    <ROW Component="Matricode" ComponentId="{C546F8F3-839F-43E8-9FC6-62CDD4DC5E96}" Directory_="Matricode_1_Dir" Attributes="0"/>
+    <ROW Component="Path" ComponentId="{51C6F49E-A703-4D34-A6E6-0A56379F7E61}" Directory_="APPDIR" Attributes="4" KeyPath="Path_2"/>
+    <ROW Component="ProductInformation" ComponentId="{1F32B609-B83D-4795-BAF9-8F1FBEBF34A6}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
+    <ROW Component="Report_1" ComponentId="{C042BC14-55A8-4B96-BC55-FE048F0A6448}" Directory_="Report_1_Dir" Attributes="0"/>
+    <ROW Component="SHORTCUTDIR" ComponentId="{F7947466-3A4F-4951-AC21-B7F7F7B81033}" Directory_="SHORTCUTDIR" Attributes="0"/>
+    <ROW Component="SocketUDP.dll" ComponentId="{45B2C128-7F0B-42A4-9F00-728FED564D12}" Directory_="APPDIR" Attributes="0" KeyPath="SocketUDP.dll"/>
+    <ROW Component="Software" ComponentId="{DCC47135-D061-4C31-9D23-28FC1D260EC0}" Directory_="APPDIR" Attributes="4" KeyPath="Software_1"/>
+    <ROW Component="System" ComponentId="{932D4697-95F8-4B1C-90AD-64A4C883F8B0}" Directory_="System_Dir" Attributes="0"/>
+    <ROW Component="SystemTest" ComponentId="{4780F11A-4839-47A0-A8EB-54CBB801C5A0}" Directory_="SystemTest_Dir" Attributes="0"/>
+    <ROW Component="V4T.exe" ComponentId="{A6B2E442-5247-4D76-BEFE-7100B893FAA8}" Directory_="APPDIR" Attributes="0" KeyPath="V4T.exe"/>
+    <ROW Component="Version" ComponentId="{690BD647-2E82-4EB1-B909-DF3AE13860B9}" Directory_="APPDIR" Attributes="4" KeyPath="Version_2"/>
+    <ROW Component="cximage.dll" ComponentId="{F61841B5-F498-4989-A4C8-53A213393D2C}" Directory_="APPDIR" Attributes="0" KeyPath="cximage.dll"/>
+    <ROW Component="dls2dunu.dll" ComponentId="{A40D3D8D-0487-4A5E-BF3B-203E6AE4E0F3}" Directory_="APPDIR" Attributes="0" KeyPath="dls2dunu.dll"/>
+    <ROW Component="ftbusui.dll" ComponentId="{A5B5F458-79F6-47F5-8531-5470D1F85B2A}" Directory_="ftbusui.dll_Dir" Attributes="0" KeyPath="ftbusui.dll"/>
+    <ROW Component="ftcserco.dll" ComponentId="{7B013C73-E87B-43E9-A8FD-EC24A5AA5800}" Directory_="ftcserco.dll_Dir" Attributes="0" KeyPath="ftcserco.dll"/>
+    <ROW Component="ftd2xx.dll" ComponentId="{6096F0B8-19DE-4935-B957-59052013F630}" Directory_="ftd2xx.dll_Dir" Attributes="0" KeyPath="ftd2xx.dll"/>
+    <ROW Component="ftd2xx.dll_1" ComponentId="{52B4558C-D311-4738-A105-7CF9DCBD5A6C}" Directory_="APPDIR" Attributes="0" KeyPath="ftd2xx.dll_1"/>
+    <ROW Component="ftd2xx.h" ComponentId="{B34B34A4-8862-4356-B3A0-33312C58D4AD}" Directory_="ftd2xx.h_Dir" Attributes="0" KeyPath="ftd2xx.h" Type="0"/>
+    <ROW Component="ftd2xx.lib" ComponentId="{063211BB-9191-43A2-B4ED-B06294756945}" Directory_="ftd2xx.lib_Dir" Attributes="0" KeyPath="ftd2xx.lib" Type="0"/>
+    <ROW Component="ftdibus.cat" ComponentId="{75618D50-AE2F-4A3A-8431-798485FDC015}" Directory_="ftdibus.cat_Dir" Attributes="0" KeyPath="ftdibus.cat" Type="0"/>
+    <ROW Component="ftdibus.inf" ComponentId="{101ECBB3-A0C0-4A9D-AFD3-4A09CB36E96F}" Directory_="ftdibus.inf_Dir" Attributes="0"/>
+    <ROW Component="ftdibus.sys" ComponentId="{CA2550CF-CEC9-4A39-91CB-6D9A3E64AA03}" Directory_="ftdibus.sys_Dir" Attributes="0" KeyPath="ftdibus.sys" Type="0"/>
+    <ROW Component="ftdimfr" ComponentId="{CD06C7E6-D1ED-4F59-B1B6-635A8CF28A67}" Directory_="ftdimfr_1_Dir" Attributes="0"/>
+    <ROW Component="ftdiport.cat" ComponentId="{2FD117C0-0BED-412A-B442-A66C2DD71ED0}" Directory_="ftdiport.cat_Dir" Attributes="0" KeyPath="ftdiport.cat" Type="0"/>
+    <ROW Component="ftdiport.inf" ComponentId="{C08477CB-0CF3-4DC4-9820-78395EFB1868}" Directory_="ftdiport.inf_Dir" Attributes="0"/>
+    <ROW Component="ftlang.dll" ComponentId="{019FE02E-24BB-48EC-9AA7-9F59D8A66AD5}" Directory_="ftlang.dll_Dir" Attributes="0" KeyPath="ftlang.dll"/>
+    <ROW Component="ftser2k.sys" ComponentId="{CEF006B3-D003-42DD-8620-D9DAA475559D}" Directory_="ftser2k.sys_Dir" Attributes="0" KeyPath="ftser2k.sys" Type="0"/>
+    <ROW Component="ftserui2.dll" ComponentId="{15C9E876-68F3-4272-95A6-CCFE68FF4BDD}" Directory_="ftserui2.dll_Dir" Attributes="0" KeyPath="ftserui2.dll"/>
+    <ROW Component="hpsc.dll" ComponentId="{71B7F95F-9120-49CB-8659-69F2E0FFA248}" Directory_="APPDIR" Attributes="0" KeyPath="hpsc.dll"/>
+    <ROW Component="log" ComponentId="{6194B28A-6DFA-42B4-81C8-1C21A5D1C909}" Directory_="log_Dir" Attributes="0"/>
+    <ROW Component="log_1" ComponentId="{3CC4D6C4-79BA-4AF3-8B35-9A0EB37E0BE2}" Directory_="log_1_Dir" Attributes="0"/>
+    <ROW Component="ocrb.ttf" ComponentId="{DE3356EB-B3C2-49AF-9F2A-818744C8BAA9}" Directory_="APPDIR" Attributes="0" Type="0"/>
+    <ROW Component="pcdc_top.rbf" ComponentId="{686D7AF8-B1C6-421D-B5CE-1071B3CF627C}" Directory_="FpgaImage_Dir" Attributes="0" KeyPath="pcdc_top.rbf" Type="0"/>
+    <ROW Component="pthreadVC2.dll" ComponentId="{AE884F43-4053-45A0-8A0D-02B2FECE8ED2}" Directory_="APPDIR" Attributes="0" KeyPath="pthreadVC2.dll"/>
+    <ROW Component="qu_imager.dll" ComponentId="{4016FA19-F6B0-4FE4-839C-32250C6749AB}" Directory_="APPDIR" Attributes="0" KeyPath="qu_imager.dll"/>
+    <ROW Component="temp" ComponentId="{A967294A-AB3D-4455-8FB1-054C736C4C8F}" Directory_="temp_Dir" Attributes="0"/>
+    <ROW Component="temp_1" ComponentId="{8A3FE5E4-873B-4FF4-86A0-11331A473146}" Directory_="temp_1_Dir" Attributes="0"/>
+    <ROW Component="value" ComponentId="{0DCD8C27-D338-4796-A004-4947D05A50A5}" Directory_="APPDIR" Attributes="4" KeyPath="value"/>
+    <ROW Component="value_1" ComponentId="{32BCFBA2-4F4F-43EE-9F90-CF21D571341C}" Directory_="APPDIR" Attributes="4" KeyPath="value_1"/>
+    <ROW Component="vsFlex8n.ocx" ComponentId="{9DD3DB37-E993-47C0-956D-5E2E5ED0A64D}" Directory_="SystemFolder" Attributes="0" KeyPath="vsFlex8n.ocx"/>
+    <ROW Component="vsFlex8n.ocx_1" ComponentId="{F420969C-D01C-48FD-8DDD-3938B700BA11}" Directory_="System64Folder" Attributes="0" KeyPath="vsFlex8n.ocx_1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="AI_ExePath C1Sizer.ocx C1Sizer.ocx_1 DataFiles Dlsbarunu.dll EnableLUA GS11.txt Images JobFiles LangChinese.dll LangFrench.dll LangGerman.dll LangPolish.dll LangPortuguese.dll LangRussian.dll LangSpanish.dll LangTurkish.dll Matricode Path ProductInformation Report_1 SHORTCUTDIR SocketUDP.dll Software System SystemTest V4T.exe Version cximage.dll dls2dunu.dll ftbusui.dll ftcserco.dll ftd2xx.dll ftd2xx.dll_1 ftd2xx.h ftd2xx.lib ftdibus.cat ftdibus.inf ftdibus.sys ftdimfr ftdiport.cat ftdiport.inf ftlang.dll ftser2k.sys ftserui2.dll hpsc.dll log log_1 ocrb.ttf pcdc_top.rbf pthreadVC2.dll qu_imager.dll temp temp_1 value value_1 vsFlex8n.ocx vsFlex8n.ocx_1"/>
+    <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
+    <ROW File="C1Sizer.ocx" Component_="C1Sizer.ocx_1" FileName="C1Sizer.ocx" Attributes="0" SourcePath="ocx\SysWOW64\C1Sizer.ocx" SelfReg="false" NextFile="vsFlex8n.ocx_1"/>
+    <ROW File="C1Sizer.ocx_1" Component_="C1Sizer.ocx" FileName="C1Sizer.ocx" Attributes="0" SourcePath="ocx\system32\C1Sizer.ocx" SelfReg="false" NextFile="vsFlex8n.ocx"/>
+    <ROW File="Dlsbarunu.dll" Component_="Dlsbarunu.dll" FileName="DLSBAR~1.DLL|Dlsbarunu.dll" Attributes="0" SourcePath="..\Release\Dlsbarunu.dll" SelfReg="false" NextFile="ftd2xx.dll_1"/>
+    <ROW File="GS11.txt" Component_="GS11.txt" FileName="GS1-1.txt" Attributes="0" SourcePath="Matricode\Quattro\Templates\GS1-1.txt" SelfReg="false" NextFile="cximage.dll"/>
+    <ROW File="LangChinese.dll" Component_="LangChinese.dll" FileName="LANGCH~1.DLL|LangChinese.dll" Attributes="0" SourcePath="..\Release\LangChinese.dll" SelfReg="false" NextFile="LangFrench.dll"/>
+    <ROW File="LangFrench.dll" Component_="LangFrench.dll" FileName="LANGFR~1.DLL|LangFrench.dll" Attributes="0" SourcePath="..\Release\LangFrench.dll" SelfReg="false" NextFile="LangGerman.dll"/>
+    <ROW File="LangGerman.dll" Component_="LangGerman.dll" FileName="LANGGE~1.DLL|LangGerman.dll" Attributes="0" SourcePath="..\Release\LangGerman.dll" SelfReg="false" NextFile="LangPortuguese.dll"/>
+    <ROW File="LangPolish.dll" Component_="LangPolish.dll" FileName="LANGPO~2.DLL|LangPolish.dll" Attributes="0" SourcePath="..\Release\LangPolish.dll" SelfReg="false" NextFile="LangRussian.dll"/>
+    <ROW File="LangPortuguese.dll" Component_="LangPortuguese.dll" FileName="LANGPO~1.DLL|LangPortuguese.dll" Attributes="0" SourcePath="..\Release\LangPortuguese.dll" SelfReg="false" NextFile="LangSpanish.dll"/>
+    <ROW File="LangRussian.dll" Component_="LangRussian.dll" FileName="LANGRU~1.DLL|LangRussian.dll" Attributes="0" SourcePath="..\Release\LangRussian.dll" SelfReg="false" NextFile="LangTurkish.dll"/>
+    <ROW File="LangSpanish.dll" Component_="LangSpanish.dll" FileName="LANGSP~1.DLL|LangSpanish.dll" Attributes="0" SourcePath="..\Release\LangSpanish.dll" SelfReg="false" NextFile="LangPolish.dll"/>
+    <ROW File="LangTurkish.dll" Component_="LangTurkish.dll" FileName="LANGTU~1.DLL|LangTurkish.dll" Attributes="0" SourcePath="..\Release\LangTurkish.dll" SelfReg="false" NextFile="hpsc.dll"/>
+    <ROW File="SocketUDP.dll" Component_="SocketUDP.dll" FileName="SOCKET~1.DLL|SocketUDP.dll" Attributes="0" SourcePath="..\Release\SocketUDP.dll" SelfReg="false" NextFile="C1Sizer.ocx_1"/>
+    <ROW File="V4T.exe" Component_="V4T.exe" FileName="V4T.exe" Attributes="0" SourcePath="..\Release\V4T.exe" SelfReg="false" NextFile="GS11.txt" DigSign="true"/>
+    <ROW File="cximage.dll" Component_="cximage.dll" FileName="cximage.dll" Attributes="0" SourcePath="..\Release\cximage.dll" SelfReg="false" NextFile="dls2dunu.dll"/>
+    <ROW File="dls2dunu.dll" Component_="dls2dunu.dll" FileName="dls2dunu.dll" Attributes="0" SourcePath="..\Release\dls2dunu.dll" SelfReg="false" NextFile="Dlsbarunu.dll"/>
+    <ROW File="ftbusui.dll" Component_="ftbusui.dll" FileName="ftbusui.dll" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftbusui.dll\ftbusui.dll" SelfReg="false" NextFile="ftcserco.dll"/>
+    <ROW File="ftcserco.dll" Component_="ftcserco.dll" FileName="ftcserco.dll" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftcserco.dll\ftcserco.dll" SelfReg="false" NextFile="ftd2xx.dll"/>
+    <ROW File="ftd2xx.dll" Component_="ftd2xx.dll" FileName="ftd2xx.dll" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftd2xx.dll\ftd2xx.dll" SelfReg="false" NextFile="ftd2xx.lib"/>
+    <ROW File="ftd2xx.dll_1" Component_="ftd2xx.dll_1" FileName="ftd2xx.dll" Attributes="0" SourcePath="..\Release\ftd2xx.dll" SelfReg="false" NextFile="qu_imager.dll"/>
+    <ROW File="ftd2xx.h" Component_="ftd2xx.h" FileName="ftd2xx.h" Attributes="0" SourcePath="..\Release\ftdimfr\ftd2xx.h\ftd2xx.h" SelfReg="false" NextFile="ftdibus.cat"/>
+    <ROW File="ftd2xx.lib" Component_="ftd2xx.lib" FileName="ftd2xx.lib" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftd2xx.lib\ftd2xx.lib" SelfReg="false" NextFile="ftdibus.sys"/>
+    <ROW File="ftdibus.cat" Component_="ftdibus.cat" FileName="ftdibus.cat" Attributes="0" SourcePath="..\Release\ftdimfr\ftdibus.cat\ftdibus.cat" SelfReg="false" NextFile="ftdiport.cat"/>
+    <ROW File="ftdibus.sys" Component_="ftdibus.sys" FileName="ftdibus.sys" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftdibus.sys\ftdibus.sys" SelfReg="false" NextFile="ftlang.dll"/>
+    <ROW File="ftdiport.cat" Component_="ftdiport.cat" FileName="ftdiport.cat" Attributes="0" SourcePath="..\Release\ftdimfr\ftdiport.cat\ftdiport.cat" SelfReg="false" NextFile="ftbusui.dll"/>
+    <ROW File="ftlang.dll" Component_="ftlang.dll" FileName="ftlang.dll" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftlang.dll\ftlang.dll" SelfReg="false" NextFile="ftser2k.sys"/>
+    <ROW File="ftser2k.sys" Component_="ftser2k.sys" FileName="ftser2k.sys" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftser2k.sys\ftser2k.sys" SelfReg="false" NextFile="ftserui2.dll"/>
+    <ROW File="ftserui2.dll" Component_="ftserui2.dll" FileName="ftserui2.dll" Attributes="0" SourcePath="..\Release\ftdimfr\i386\ftserui2.dll\ftserui2.dll" SelfReg="false" NextFile="pcdc_top.rbf"/>
+    <ROW File="hpsc.dll" Component_="hpsc.dll" FileName="hpsc.dll" Attributes="0" SourcePath="..\Release\hpsc.dll" SelfReg="false" NextFile="pthreadVC2.dll"/>
+    <ROW File="ocrb.ttf" Component_="ocrb.ttf" FileName="ocrb.ttf" Attributes="0" SourcePath="..\Release\ocrb.ttf" SelfReg="false"/>
+    <ROW File="pcdc_top.rbf" Component_="pcdc_top.rbf" FileName="pcdc_top.rbf" Attributes="0" SourcePath="Matricode\Quattro\FpgaImage\pcdc_top.rbf" SelfReg="false" NextFile="ocrb.ttf"/>
+    <ROW File="pthreadVC2.dll" Component_="pthreadVC2.dll" FileName="PTHREA~1.DLL|pthreadVC2.dll" Attributes="0" SourcePath="..\Release\pthreadVC2.dll" SelfReg="false" NextFile="ftd2xx.h"/>
+    <ROW File="qu_imager.dll" Component_="qu_imager.dll" FileName="QU_IMA~1.DLL|qu_imager.dll" Attributes="0" SourcePath="..\Release\qu_imager.dll" SelfReg="false" NextFile="SocketUDP.dll"/>
+    <ROW File="vsFlex8n.ocx" Component_="vsFlex8n.ocx" FileName="vsFlex8n.ocx" Attributes="0" SourcePath="ocx\system32\vsFlex8n.ocx" SelfReg="false" NextFile="C1Sizer.ocx"/>
+    <ROW File="vsFlex8n.ocx_1" Component_="vsFlex8n.ocx_1" FileName="vsFlex8n.ocx" Attributes="0" SourcePath="ocx\SysWOW64\vsFlex8n.ocx" SelfReg="false" NextFile="LangChinese.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
+    <ROW BootstrOptKey="GlobalOptions" GeneralOptions="hb" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" EulaPathLocId="*" IntroTextPathLocId="*"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
+    <ROW BuildKey="Win32_Release" BuildName="Win32_Release" BuildOrder="1" BuildType="0" PackageFolder="Sellenis_Installer" PackageFileName="S-Jet600" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="..\V4T\res\V4T.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" Options="8" UseLargeSchema="true" UACExecutionLevel="2"/>
+    <ATTRIBUTE name="CurrentBuild" value="Win32_Release"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
+    <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
+    <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
+    <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
+    <ROW Fragment="MaintenanceTypeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\MaintenanceTypeDlg.aip"/>
+    <ROW Fragment="MaintenanceWelcomeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\MaintenanceWelcomeDlg.aip"/>
+    <ROW Fragment="SequenceDialogs.aip" Path="&lt;AI_THEMES&gt;classic\fragments\SequenceDialogs.aip"/>
+    <ROW Fragment="Sequences.aip" Path="&lt;AI_FRAGS&gt;Sequences.aip"/>
+    <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
+    <ROW Fragment="UI.aip" Path="&lt;AI_THEMES&gt;classic\fragments\UI.aip"/>
+    <ROW Fragment="Validation.aip" Path="&lt;AI_FRAGS&gt;Validation.aip"/>
+    <ROW Fragment="VerifyRemoveDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\VerifyRemoveDlg.aip"/>
+    <ROW Fragment="VerifyRepairDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\VerifyRepairDlg.aip"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiActionTextComponent">
+    <ROW Action="AI_DeleteLzma" Description="Deleting files extracted from archive" DescriptionLocId="ActionText.Description.AI_DeleteLzma" TemplateLocId="-"/>
+    <ROW Action="AI_DeleteRLzma" Description="Deleting files extracted from archive" DescriptionLocId="ActionText.Description.AI_DeleteLzma" TemplateLocId="-"/>
+    <ROW Action="AI_ExtractFiles" Description="Extracting files from archive" DescriptionLocId="ActionText.Description.AI_ExtractLzma" TemplateLocId="-"/>
+    <ROW Action="AI_ExtractLzma" Description="Extracting files from archive" DescriptionLocId="ActionText.Description.AI_ExtractLzma" TemplateLocId="-"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiAppSearchComponent">
+    <ROW Property="AI_SETUPEXEPATH" Signature_="AI_EXE_PATH_CU" Builds="Win32_Release"/>
+    <ROW Property="AI_SETUPEXEPATH" Signature_="AI_EXE_PATH_LM" Builds="Win32_Release"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
+    <ROW Name="Prereq.dll" SourcePath="&lt;AI_CUSTACTS&gt;Prereq.dll"/>
+    <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
+    <ROW Name="lzmaextractor.dll" SourcePath="&lt;AI_CUSTACTS&gt;lzmaextractor.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlEventComponent">
+    <ROW Dialog_="MaintenanceWelcomeDlg" Control_="Next" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="99"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_MAINT" Ordering="198"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_MAINT" Ordering="202"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_INSTALL" Ordering="197"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_MAINT" Ordering="101"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="ChangeButton" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_MAINT" Ordering="501"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceWelcomeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RemoveButton" Event="NewDialog" Argument="VerifyRemoveDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="601"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RepairButton" Event="NewDialog" Argument="VerifyRepairDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="601"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="1"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Repair" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="399" Options="1"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Remove" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="299" Options="1"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_PATCH" Ordering="201"/>
+    <ROW Dialog_="ResumeDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_RESUME" Ordering="299"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_PATCH" Ordering="199"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="PatchWelcomeDlg" Condition="AI_PATCH" Ordering="203"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
+    <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR" ManualDelete="false"/>
+    <ROW Directory_="DataFiles_Dir" Component_="DataFiles" ManualDelete="false"/>
+    <ROW Directory_="Images_Dir" Component_="Images" ManualDelete="false"/>
+    <ROW Directory_="JobFiles_Dir" Component_="JobFiles" ManualDelete="false"/>
+    <ROW Directory_="log_Dir" Component_="log" ManualDelete="false"/>
+    <ROW Directory_="temp_Dir" Component_="temp" ManualDelete="false"/>
+    <ROW Directory_="Report_1_Dir" Component_="Report_1" ManualDelete="false"/>
+    <ROW Directory_="ftdimfr_1_Dir" Component_="ftdimfr" ManualDelete="false"/>
+    <ROW Directory_="log_1_Dir" Component_="log_1" ManualDelete="false"/>
+    <ROW Directory_="System_Dir" Component_="System" ManualDelete="false"/>
+    <ROW Directory_="Matricode_1_Dir" Component_="Matricode" ManualDelete="false"/>
+    <ROW Directory_="SystemTest_Dir" Component_="SystemTest" ManualDelete="false"/>
+    <ROW Directory_="temp_1_Dir" Component_="temp_1" ManualDelete="false"/>
+    <ROW Directory_="ftdiport.inf_Dir" Component_="ftdiport.inf" ManualDelete="false"/>
+    <ROW Directory_="ftdibus.inf_Dir" Component_="ftdibus.inf" ManualDelete="false"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
+    <ROW Action="AI_AppSearchEx" Type="1" Source="Prereq.dll" Target="DoAppSearchEx"/>
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH_ORIGINAL" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_DATA_SETTER" Type="51" Source="AI_ExtractFiles" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
+    <ROW Action="AI_DeleteCadLzma" Type="51" Source="AI_DeleteLzma" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_DeleteLzma" Type="1025" Source="lzmaextractor.dll" Target="DeleteLZMAFiles"/>
+    <ROW Action="AI_DeleteRCadLzma" Type="51" Source="AI_DeleteRLzma" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_DeleteRLzma" Type="1281" Source="lzmaextractor.dll" Target="DeleteLZMAFiles"/>
+    <ROW Action="AI_DpiContentScale" Type="1" Source="aicustact.dll" Target="DpiContentScale"/>
+    <ROW Action="AI_EstimateExtractFiles" Type="1" Source="Prereq.dll" Target="EstimateExtractFiles"/>
+    <ROW Action="AI_ExtractCadLzma" Type="51" Source="AI_ExtractLzma" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_ExtractFiles" Type="1025" Source="Prereq.dll" Target="ExtractSourceFiles" AdditionalSeq="AI_DATA_SETTER"/>
+    <ROW Action="AI_ExtractLzma" Type="1025" Source="lzmaextractor.dll" Target="ExtractLZMAFiles"/>
+    <ROW Action="AI_FindExeLzma" Type="1" Source="lzmaextractor.dll" Target="FindEXE"/>
+    <ROW Action="AI_FinishActions" Type="1" Source="aicustact.dll" Target="RunAllExitActions"/>
+    <ROW Action="AI_InstallModeCheck" Type="1" Source="aicustact.dll" Target="UpdateInstallMode" WithoutSeq="true"/>
+    <ROW Action="AI_LaunchApp" Type="1" Source="aicustact.dll" Target="[#V4T.exe]"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH" Target="[AI_SETUPEXEPATH_ORIGINAL]"/>
+    <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
+    <ROW Action="AI_ResolveKnownFolders" Type="1" Source="aicustact.dll" Target="AI_ResolveKnownFolders"/>
+    <ROW Action="AI_SHOW_LOG" Type="65" Source="aicustact.dll" Target="LaunchLogFile" WithoutSeq="true"/>
+    <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
+    <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
+    <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
+    <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiDuplicateFileComponent">
+    <ROW FileKey="LangChinese.dll" Component_="LangChinese.dll" File_="LangChinese.dll" DestName="LANGCH~1.DLL|LangChinese.dll" DestFolder="APPDIR"/>
+    <ROW FileKey="LangFrench.dll" Component_="LangFrench.dll" File_="LangFrench.dll" DestName="LANGFR~1.DLL|LangFrench.dll" DestFolder="APPDIR"/>
+    <ROW FileKey="LangGerman.dll" Component_="LangGerman.dll" File_="LangGerman.dll" DestName="LANGGE~1.DLL|LangGerman.dll" DestFolder="APPDIR"/>
+    <ROW FileKey="ftd2xx.dll" Component_="ftd2xx.dll_1" File_="ftd2xx.dll_1" DestName="ftd2xx.dll" DestFolder="APPDIR"/>
+    <ROW FileKey="hpsc.dll" Component_="hpsc.dll" File_="hpsc.dll" DestName="hpsc.dll" DestFolder="APPDIR"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
+    <ROW Name="V4T.exe" SourcePath="..\Release\V4T.exe" Index="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIniFileComponent">
+    <ROW IniFile="AddReg" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT" Key="AddReg" Value="FtdiBus.NT.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64" Key="AddReg" Value="FtdiBus.NT.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_10" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64.HW" Key="AddReg" Value="FtdiBus.NT.HW.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.EventLog_Inst" Key="AddReg" Value="FtdiBus.NT.EventLog_Inst.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_3" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT" Key="AddReg" Value="FtdiPort.NT.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_4" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64" Key="AddReg" Value="FtdiPort.NT.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_5" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.HW" Key="AddReg" Value="FtdiPort.NT.HW.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_6" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64.HW" Key="AddReg" Value="FtdiPort.NT.HW.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_7" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.CoInstallers" Key="AddReg" Value="FtdiPort.NT.CoInstallers.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_8" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64.CoInstallers" Key="AddReg" Value="FtdiPort.NT.CoInstallers.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddReg_9" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.HW" Key="AddReg" Value="FtdiBus.NT.HW.AddReg" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddService" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.Services" Key="AddService" Value="FTDIBUS, 0x00000002, FtdiBus.NT.AddService, FtdiBus.NT.EventLog_Inst" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddService_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64.Services" Key="AddService" Value="FTDIBUS, 0x00000002, FtdiBus.NT.AddService, FtdiBus.NT.EventLog_Inst" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddService_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.Services" Key="AddService" Value="FTSER2K, 0x00000002, FtdiPort.NT.AddService" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddService_3" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.Services" Key="AddService" Value="Serenum,,SerEnum_AddService" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddService_4" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64.Services" Key="AddService" Value="FTSER2K, 0x00000002, FtdiPort.NT.AddService" Action="0" Component_="value_1"/>
+    <ROW IniFile="AddService_5" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64.Services" Key="AddService" Value="Serenum,,SerEnum_AddService" Action="0" Component_="value_1"/>
+    <ROW IniFile="CatalogFile" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="CatalogFile" Value="ftdibus.cat" Action="0" Component_="value_1"/>
+    <ROW IniFile="CatalogFile_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="CatalogFile" Value="ftdiport.cat" Action="0" Component_="value_1"/>
+    <ROW IniFile="Class" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="Class" Value="USB" Action="0" Component_="value_1"/>
+    <ROW IniFile="ClassGUID" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="ClassGUID" Value="[\{]36fc9e60-c465-11cf-8056-444553540000[\}]" Action="0" Component_="value_1"/>
+    <ROW IniFile="ClassGUID_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="ClassGUID" Value="[\{]4d36e978-e325-11ce-bfc1-08002be10318[\}]" Action="0" Component_="value_1"/>
+    <ROW IniFile="ClassName" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="ClassName" Value="&quot;USB&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="Class_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="Class" Value="Ports" Action="0" Component_="value_1"/>
+    <ROW IniFile="CopyFiles" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT" Key="CopyFiles" Value="FtdiBus.NT.Copy,FtdiBus.NT.Copy2" Action="0" Component_="value_1"/>
+    <ROW IniFile="CopyFiles_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64" Key="CopyFiles" Value="FtdiBus.NTamd64.Copy,FtdiBus.NTamd64.Copy2,FtdiBus.NTamd64.Copy3" Action="0" Component_="value_1"/>
+    <ROW IniFile="CopyFiles_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT" Key="CopyFiles" Value="FtdiPort.NT.Copy,FtdiPort.NT.CopyUI" Action="0" Component_="value_1"/>
+    <ROW IniFile="CopyFiles_3" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64" Key="CopyFiles" Value="FtdiPort.NT.Copy,FtdiPort.NT.CopyUI" Action="0" Component_="value_1"/>
+    <ROW IniFile="CopyFiles_4" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.CoInstallers" Key="CopyFiles" Value="FtdiPort.NT.CopyCoInst" Action="0" Component_="value_1"/>
+    <ROW IniFile="CopyFiles_5" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64.CoInstallers" Key="CopyFiles" Value="FtdiPort.NT.CopyCoInst" Action="0" Component_="value_1"/>
+    <ROW IniFile="DESC" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="DESC" Value="&quot;CDM Driver Package - Bus/D2XX Driver&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="DESC_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="DESC" Value="&quot;CDM Driver Package - VCP Driver&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="DelService" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.Services" Key="DelService" Value="FTSERIAL" Action="0" Component_="value_1"/>
+    <ROW IniFile="DelService_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NTamd64.Services" Key="DelService" Value="FTSERIAL" Action="0" Component_="value_1"/>
+    <ROW IniFile="DisplayName" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddService" Key="DisplayName" Value="%SvcDesc%" Action="0" Component_="value_1"/>
+    <ROW IniFile="DisplayName_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.AddService" Key="DisplayName" Value="%SvcDesc%" Action="0" Component_="value_1"/>
+    <ROW IniFile="DisplayName_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SerEnum_AddService" Key="DisplayName" Value="%SerEnum.SvcDesc%" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriverPackageDisplayName" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="DriverPackageDisplayName" Value="%DESC%" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriverPackageDisplayName_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="DriverPackageDisplayName" Value="%DESC%" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriverPackageType" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="DriverPackageType" Value="PlugAndPlay" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriverPackageType_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="DriverPackageType" Value="PlugAndPlay" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriverVer" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="DriverVer" Value="06/16/2016,2.12.18" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriverVer_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="DriverVer" Value="06/16/2016,2.12.18" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriversDisk" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="DriversDisk" Value="&quot;FTDI USB Drivers Disk&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="DriversDisk_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="DriversDisk" Value="&quot;FTDI USB Drivers Disk&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="ErrorControl" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddService" Key="ErrorControl" Value="1 ; SERVICE_ERROR_NORMAL" Action="0" Component_="value_1"/>
+    <ROW IniFile="ErrorControl_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.AddService" Key="ErrorControl" Value="1 ; SERVICE_ERROR_NORMAL" Action="0" Component_="value_1"/>
+    <ROW IniFile="ErrorControl_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SerEnum_AddService" Key="ErrorControl" Value="1 ; SERVICE_ERROR_NORMAL" Action="0" Component_="value_1"/>
+    <ROW IniFile="ExcludeFromSelect" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="ControlFlags" Key="ExcludeFromSelect" Value="*" Action="0" Component_="value_1"/>
+    <ROW IniFile="ExcludeFromSelect_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="ControlFlags" Key="ExcludeFromSelect" Value="*" Action="0" Component_="value_1"/>
+    <ROW IniFile="FTDI" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Manufacturer" Key="%FTDI%" Value="FtdiHw,NTamd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="FTDI_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="FTDI" Value="&quot;FTDI&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="FTLang.Dll" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles" Key="FTLang.Dll" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="FTLang.Dll_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles.amd64" Key="FTLang.Dll" Value="1,amd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="FTLang.dll" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.Copy2" Key="FTLang.dll" Value="FTLang.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="FTLang.dll_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64.Copy2" Key="FTLang.dll" Value="FTLang.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="Ftdi" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Manufacturer" Key="%Ftdi%" Value="FtdiHw,NTamd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiBus.NT.Copy" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="DestinationDirs" Key="FtdiBus.NT.Copy" Value="10,system32\drivers" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiBus.NT.Copy2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="DestinationDirs" Key="FtdiBus.NT.Copy2" Value="10,system32" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiBus.NTamd64.Copy" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="DestinationDirs" Key="FtdiBus.NTamd64.Copy" Value="10,system32\drivers" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiBus.NTamd64.Copy2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="DestinationDirs" Key="FtdiBus.NTamd64.Copy2" Value="10,system32" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiBus.NTamd64.Copy3" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="DestinationDirs" Key="FtdiBus.NTamd64.Copy3" Value="10,syswow64" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiPort.NT.Copy" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="DestinationDirs" Key="FtdiPort.NT.Copy" Value="10,system32\drivers" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiPort.NT.CopyCoInst" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="DestinationDirs" Key="FtdiPort.NT.CopyCoInst" Value="10,system32" Action="0" Component_="value_1"/>
+    <ROW IniFile="FtdiPort.NT.CopyUI" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="DestinationDirs" Key="FtdiPort.NT.CopyUI" Value="10,system32" Action="0" Component_="value_1"/>
+    <ROW IniFile="Ftdi_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="Ftdi" Value="&quot;FTDI&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRCoInstallers320x00010000ftcserco.DllFTCSERCoInstaller" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.CoInstallers.AddReg" Key="HKR,,CoInstallers32,0x00010000,&quot;ftcserco.Dll,FTCSERCoInstaller&quot;" Value="HKR,,CoInstallers32,0x00010000,&quot;ftcserco.Dll,FTCSERCoInstaller&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRConfigData111003F3F1027000088130000C4090000E204000071020000384100009C" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.HW.AddReg" Key="HKR,,&quot;ConfigData&quot;,1,11,00,3F,3F,10,27,00,00,88,13,00,00,C4,09,00,00,E2,04,00,00,71,02,00,00,38,41,00,00,9C,80,00,00,4E,C0,00,00,34,00,00,00,1A,00,00,00,0D,00,00,00,06,40,00,00,03,80,00,00,00,00,00,00,D0,80,00,00" Value="HKR,,&quot;ConfigData&quot;,1,11,00,3F,3F,10,27,00,00,88,13,00,00,C4,09,00,00,E2,04,00,00,71,02,00,00,38,41,00,00,9C,80,00,00,4E,C0,00,00,34,00,00,00,1A,00,00,00,0D,00,00,00,06,40,00,00,03,80,00,00,00,00,00,00,D0,80,00,00" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRDevLoaderntkern" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddReg" Key="HKR,,DevLoader,,*ntkern" Value="HKR,,DevLoader,,*ntkern" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKREnumPropPages32ftbusui.dllFTBUSUIPropPageProvider" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddReg" Key="HKR,,EnumPropPages32,,&quot;ftbusui.dll,FTBUSUIPropPageProvider&quot;" Value="HKR,,EnumPropPages32,,&quot;ftbusui.dll,FTBUSUIPropPageProvider&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKREnumPropPages32ftserui2.dllSerialPortPropPageProvider" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.AddReg" Key="HKR,,EnumPropPages32,,&quot;ftserui2.dll,SerialPortPropPageProvider&quot;" Value="HKR,,EnumPropPages32,,&quot;ftserui2.dll,SerialPortPropPageProvider&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKREventMessageFile0x00020000SystemRootSystem32IoLogMsg.dllSystemRootSys" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.EventLog_Inst.AddReg" Key="HKR,,EventMessageFile,0x00020000,&quot;%%SystemRoot%%\System32\IoLogMsg.dll;%%SystemRoot%%\System32\drivers\ftdibus.sys&quot;" Value="HKR,,EventMessageFile,0x00020000,&quot;%%SystemRoot%%\System32\IoLogMsg.dll;%%SystemRoot%%\System32\drivers\ftdibus.sys&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRLatencyTimer0x0001000116" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.HW.AddReg" Key="HKR,,&quot;LatencyTimer&quot;,0x00010001,16" Value="HKR,,&quot;LatencyTimer&quot;,0x00010001,16" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRMinReadTimeout0x000100010" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.HW.AddReg" Key="HKR,,&quot;MinReadTimeout&quot;,0x00010001,0" Value="HKR,,&quot;MinReadTimeout&quot;,0x00010001,0" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRMinWriteTimeout0x000100010" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.HW.AddReg" Key="HKR,,&quot;MinWriteTimeout&quot;,0x00010001,0" Value="HKR,,&quot;MinWriteTimeout&quot;,0x00010001,0" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRNTMPDriverftdibus.sys" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddReg" Key="HKR,,NTMPDriver,,ftdibus.sys" Value="HKR,,NTMPDriver,,ftdibus.sys" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRTypesSupported0x000100017" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.EventLog_Inst.AddReg" Key="HKR,,TypesSupported,0x00010001,7" Value="HKR,,TypesSupported,0x00010001,7" Action="0" Component_="value_1"/>
+    <ROW IniFile="HKRUpperFilters0x00010000serenum" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.HW.AddReg" Key="HKR,,&quot;UpperFilters&quot;,0x00010000,&quot;serenum&quot;" Value="HKR,,&quot;UpperFilters&quot;,0x00010000,&quot;serenum&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="LoadOrderGroup" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddService" Key="LoadOrderGroup" Value="Base" Action="0" Component_="value_1"/>
+    <ROW IniFile="LoadOrderGroup_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.AddService" Key="LoadOrderGroup" Value="Base" Action="0" Component_="value_1"/>
+    <ROW IniFile="LoadOrderGroup_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SerEnum_AddService" Key="LoadOrderGroup" Value="PNP Filter" Action="0" Component_="value_1"/>
+    <ROW IniFile="PortsClassName" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="PortsClassName" Value="&quot;Ports (COM &amp; LPT)&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="Provider" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="Provider" Value="%FTDI%" Action="0" Component_="value_1"/>
+    <ROW IniFile="Provider_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="Provider" Value="%FTDI%" Action="0" Component_="value_1"/>
+    <ROW IniFile="SerEnum.SvcDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="SerEnum.SvcDesc" Value="&quot;Serenum Filter Driver&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="ServiceBinary" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddService" Key="ServiceBinary" Value="%10%\system32\drivers\ftdibus.sys" Action="0" Component_="value_1"/>
+    <ROW IniFile="ServiceBinary_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.AddService" Key="ServiceBinary" Value="%10%\system32\drivers\ftser2k.sys" Action="0" Component_="value_1"/>
+    <ROW IniFile="ServiceBinary_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SerEnum_AddService" Key="ServiceBinary" Value="%12%\serenum.sys" Action="0" Component_="value_1"/>
+    <ROW IniFile="ServiceType" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddService" Key="ServiceType" Value="1 ; SERVICE_KERNEL_DRIVER" Action="0" Component_="value_1"/>
+    <ROW IniFile="ServiceType_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.AddService" Key="ServiceType" Value="1 ; SERVICE_KERNEL_DRIVER" Action="0" Component_="value_1"/>
+    <ROW IniFile="ServiceType_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SerEnum_AddService" Key="ServiceType" Value="1 ; SERVICE_KERNEL_DRIVER" Action="0" Component_="value_1"/>
+    <ROW IniFile="Signature" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Version" Key="Signature" Value="&quot;$Windows NT$&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="Signature_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Version" Key="Signature" Value="&quot;$Windows NT$&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="StartType" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.AddService" Key="StartType" Value="3 ; SERVICE_DEMAND_START" Action="0" Component_="value_1"/>
+    <ROW IniFile="StartType_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.AddService" Key="StartType" Value="3 ; SERVICE_DEMAND_START" Action="0" Component_="value_1"/>
+    <ROW IniFile="StartType_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SerEnum_AddService" Key="StartType" Value="3 ; SERVICE_DEMAND_START" Action="0" Component_="value_1"/>
+    <ROW IniFile="SvcDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="SvcDesc" Value="&quot;USB Serial Converter Driver&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="SvcDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="SvcDesc" Value="&quot;USB Serial Port Driver&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_0000.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_0000.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_0000" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_0000.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_0000.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_0000" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_0000.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_0000.DeviceDesc" Value="&quot;USB Serial Converter&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_0FEC.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_0FEC.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_0FEC" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_0FEC.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_0FEC.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_0FEC" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_0FEC.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_0FEC.DeviceDesc" Value="&quot;UMFT4222PROG&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6001.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6001.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6001" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6001.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6001.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6001" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6001.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6001.DeviceDesc" Value="&quot;USB Serial Converter&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6010MI_00.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6010&amp;MI_00.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6010&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6010MI_00.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6010&amp;MI_00.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6010&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6010MI_00.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6010&amp;MI_00.DeviceDesc" Value="&quot;USB Serial Converter A&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6010MI_01.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6010&amp;MI_01.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6010&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6010MI_01.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6010&amp;MI_01.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6010&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6010MI_01.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6010&amp;MI_01.DeviceDesc" Value="&quot;USB Serial Converter B&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_00.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6011&amp;MI_00.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6011&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_00.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6011&amp;MI_00.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6011&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_00.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6011&amp;MI_00.DeviceDesc" Value="&quot;USB Serial Converter A&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_01.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6011&amp;MI_01.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6011&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_01.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6011&amp;MI_01.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6011&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_01.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6011&amp;MI_01.DeviceDesc" Value="&quot;USB Serial Converter B&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_02.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6011&amp;MI_02.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6011&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_02.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6011&amp;MI_02.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6011&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_02.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6011&amp;MI_02.DeviceDesc" Value="&quot;USB Serial Converter C&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_03.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6011&amp;MI_03.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6011&amp;MI_03" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_03.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6011&amp;MI_03.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6011&amp;MI_03" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6011MI_03.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6011&amp;MI_03.DeviceDesc" Value="&quot;USB Serial Converter D&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6014.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6014.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6014" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6014.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6014.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6014" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6014.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6014.DeviceDesc" Value="&quot;USB Serial Converter&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6015.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6015.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6015" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6015.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6015.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6015" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6015.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6015.DeviceDesc" Value="&quot;USB Serial Converter&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_00.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601B&amp;MI_00.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601B&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_00.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601B&amp;MI_00.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601B&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_00.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601B&amp;MI_00.DeviceDesc" Value="&quot;FT4222 Interface A&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_01.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601B&amp;MI_01.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601B&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_01.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601B&amp;MI_01.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601B&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_01.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601B&amp;MI_01.DeviceDesc" Value="&quot;FT4222 Interface B&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_02.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601B&amp;MI_02.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601B&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_02.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601B&amp;MI_02.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601B&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_02.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601B&amp;MI_02.DeviceDesc" Value="&quot;FT4222 Interface C&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_03.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601B&amp;MI_03.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601B&amp;MI_03" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_03.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601B&amp;MI_03.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601B&amp;MI_03" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BMI_03.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601B&amp;MI_03.DeviceDesc" Value="&quot;FT4222 Interface D&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BREV_1400.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601B&amp;REV_1400.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601B&amp;REV_1400" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BREV_1400.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601B&amp;REV_1400.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601B&amp;REV_1400" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601BREV_1400.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601B&amp;REV_1400.DeviceDesc" Value="&quot;FT4222 Mode 3 Device&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_00.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601C&amp;MI_00.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601C&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_00.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601C&amp;MI_00.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601C&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_00.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601C&amp;MI_00.DeviceDesc" Value="&quot;FT4222H Interface A&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_01.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601C&amp;MI_01.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601C&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_01.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601C&amp;MI_01.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601C&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_01.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601C&amp;MI_01.DeviceDesc" Value="&quot;FT4222H Interface B&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_02.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601C&amp;MI_02.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601C&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_02.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601C&amp;MI_02.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601C&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_02.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601C&amp;MI_02.DeviceDesc" Value="&quot;FT4222H Interface C&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_03.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601C&amp;MI_03.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601C&amp;MI_03" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_03.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601C&amp;MI_03.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601C&amp;MI_03" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CMI_03.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601C&amp;MI_03.DeviceDesc" Value="&quot;FT4222H Interface D&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CREV_1700.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_601C&amp;REV_1700.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_601C&amp;REV_1700" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CREV_1700.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_601C&amp;REV_1700.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_601C&amp;REV_1700" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_601CREV_1700.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_601C&amp;REV_1700.DeviceDesc" Value="&quot;FT4222H Mode 3 Device&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_00.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6031&amp;MI_00.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6031&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_00.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6031&amp;MI_00.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6031&amp;MI_00" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_00.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6031&amp;MI_00.DeviceDesc" Value="&quot;USB Serial Converter A&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_01.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6031&amp;MI_01.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6031&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_01.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6031&amp;MI_01.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6031&amp;MI_01" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_01.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6031&amp;MI_01.DeviceDesc" Value="&quot;USB Serial Converter B&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_02.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6031&amp;MI_02.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6031&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_02.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6031&amp;MI_02.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6031&amp;MI_02" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031MI_02.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6031&amp;MI_02.DeviceDesc" Value="&quot;USB Serial Converter C&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031REV_2400.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_6031&amp;REV_2400.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_6031&amp;REV_2400" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031REV_2400.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_6031&amp;REV_2400.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_6031&amp;REV_2400" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_6031REV_2400.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_6031&amp;REV_2400.DeviceDesc" Value="&quot;USB Serial Converter&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_603E.DeviceDesc" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw" Key="%USB\VID_0403&amp;PID_603E.DeviceDesc%" Value="FtdiBus.NT,USB\VID_0403&amp;PID_603E" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_603E.DeviceDesc_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiHw.NTamd64" Key="%USB\VID_0403&amp;PID_603E.DeviceDesc%" Value="FtdiBus.NTamd64,USB\VID_0403&amp;PID_603E" Action="0" Component_="value_1"/>
+    <ROW IniFile="USBVID_0403PID_603E.DeviceDesc_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="Strings" Key="USB\VID_0403&amp;PID_603E.DeviceDesc" Value="&quot;UMFTPD3A Programming Board&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_0000.DeviceDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw" Key="%VID_0403&amp;PID_0000.DeviceDesc%" Value="FtdiPort.NT,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_0000" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_0000.DeviceDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw.NTamd64" Key="%VID_0403&amp;PID_0000.DeviceDesc%" Value="FtdiPort.NTamd64,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_0000" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_0000.DeviceDesc_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="VID_0403&amp;PID_0000.DeviceDesc" Value="&quot;USB Serial Port&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6001.DeviceDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw" Key="%VID_0403&amp;PID_6001.DeviceDesc%" Value="FtdiPort.NT,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6001" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6001.DeviceDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw.NTamd64" Key="%VID_0403&amp;PID_6001.DeviceDesc%" Value="FtdiPort.NTamd64,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6001" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6001.DeviceDesc_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="VID_0403&amp;PID_6001.DeviceDesc" Value="&quot;USB Serial Port&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6010.DeviceDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw" Key="%VID_0403&amp;PID_6010.DeviceDesc%" Value="FtdiPort.NT,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6010" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6010.DeviceDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw.NTamd64" Key="%VID_0403&amp;PID_6010.DeviceDesc%" Value="FtdiPort.NTamd64,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6010" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6010.DeviceDesc_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="VID_0403&amp;PID_6010.DeviceDesc" Value="&quot;USB Serial Port&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6011.DeviceDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw" Key="%VID_0403&amp;PID_6011.DeviceDesc%" Value="FtdiPort.NT,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6011" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6011.DeviceDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw.NTamd64" Key="%VID_0403&amp;PID_6011.DeviceDesc%" Value="FtdiPort.NTamd64,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6011" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6011.DeviceDesc_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="VID_0403&amp;PID_6011.DeviceDesc" Value="&quot;USB Serial Port&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6014.DeviceDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw" Key="%VID_0403&amp;PID_6014.DeviceDesc%" Value="FtdiPort.NT,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6014" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6014.DeviceDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw.NTamd64" Key="%VID_0403&amp;PID_6014.DeviceDesc%" Value="FtdiPort.NTamd64,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6014" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6014.DeviceDesc_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="VID_0403&amp;PID_6014.DeviceDesc" Value="&quot;USB Serial Port&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6015.DeviceDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw" Key="%VID_0403&amp;PID_6015.DeviceDesc%" Value="FtdiPort.NT,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6015" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6015.DeviceDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw.NTamd64" Key="%VID_0403&amp;PID_6015.DeviceDesc%" Value="FtdiPort.NTamd64,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6015" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6015.DeviceDesc_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="VID_0403&amp;PID_6015.DeviceDesc" Value="&quot;USB Serial Port&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6031.DeviceDesc" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw" Key="%VID_0403&amp;PID_6031.DeviceDesc%" Value="FtdiPort.NT,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6031" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6031.DeviceDesc_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiHw.NTamd64" Key="%VID_0403&amp;PID_6031.DeviceDesc%" Value="FtdiPort.NTamd64,FTDIBUS\COMPORT&amp;VID_0403&amp;PID_6031" Action="0" Component_="value_1"/>
+    <ROW IniFile="VID_0403PID_6031.DeviceDesc_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="Strings" Key="VID_0403&amp;PID_6031.DeviceDesc" Value="&quot;USB Serial Port&quot;" Action="0" Component_="value_1"/>
+    <ROW IniFile="_" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksNames" Key="1" Value="%DriversDisk%,,," Action="0" Component_="value_1"/>
+    <ROW IniFile="__1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SourceDisksNames" Key="1" Value="%DriversDisk%,,," Action="0" Component_="value_1"/>
+    <ROW IniFile="ftbusui.dll" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles" Key="ftbusui.dll" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftbusui.dll_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles.amd64" Key="ftbusui.dll" Value="1,amd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftbusui.dll_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.Copy2" Key="ftbusui.dll" Value="ftbusui.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftbusui.dll_3" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64.Copy2" Key="ftbusui.dll" Value="ftbusui.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftcserco.dll" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SourceDisksFiles" Key="ftcserco.dll" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftcserco.dll_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SourceDisksFiles.amd64" Key="ftcserco.dll" Value="1,amd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftcserco.dll_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.CopyCoInst" Key="ftcserco.dll" Value="ftcserco.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftd2xx.dll" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles" Key="ftd2xx.dll" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftd2xx.dll_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles.amd64" Key="ftd2xx.dll" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftd2xx.dll_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.Copy2" Key="ftd2xx.dll" Value="ftd2xx.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftd2xx.dll_3" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64.Copy3" Key="ftd2xx.dll" Value="ftd2xx.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftd2xx.dllftd2xx64.dll" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64.Copy2" Key="ftd2xx.dll,ftd2xx64.dll" Value="ftd2xx.dll,ftd2xx64.dll" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftd2xx64.dll" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles.amd64" Key="ftd2xx64.dll" Value="1,amd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftdibus.sys" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles" Key="ftdibus.sys" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftdibus.sys_1" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="SourceDisksFiles.amd64" Key="ftdibus.sys" Value="1,amd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftdibus.sys_2" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NT.Copy" Key="ftdibus.sys" Value="ftdibus.sys" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftdibus.sys_3" FileName="ftdibus.inf" DirProperty="ftdibus.inf_Dir" Section="FtdiBus.NTamd64.Copy" Key="ftdibus.sys" Value="ftdibus.sys" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftser2k.sys" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SourceDisksFiles" Key="ftser2k.sys" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftser2k.sys_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SourceDisksFiles.amd64" Key="ftser2k.sys" Value="1,amd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftser2k.sys_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.Copy" Key="ftser2k.sys" Value="ftser2k.sys" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftserui2.dll" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SourceDisksFiles" Key="ftserui2.dll" Value="1,i386" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftserui2.dll_1" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="SourceDisksFiles.amd64" Key="ftserui2.dll" Value="1,amd64" Action="0" Component_="value_1"/>
+    <ROW IniFile="ftserui2.dll_2" FileName="ftdiport.inf" DirProperty="ftdiport.inf_Dir" Section="FtdiPort.NT.CopyUI" Key="ftserui2.dll" Value="ftserui2.dll" Action="0" Component_="value_1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
+    <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_STORE_LOCATION" Condition="(Not Installed) OR REINSTALL" Sequence="1501"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1399"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="51"/>
+    <ROW Action="AI_AppSearchEx" Sequence="102"/>
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Sequence="99" Builds="Win32_Release"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Condition="AI_SETUPEXEPATH_ORIGINAL" Sequence="101" Builds="Win32_Release"/>
+    <ROW Action="AI_DeleteCadLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="199" Builds="Win32_Release"/>
+    <ROW Action="AI_DeleteRCadLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="198" Builds="Win32_Release"/>
+    <ROW Action="AI_ExtractCadLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="197" Builds="Win32_Release"/>
+    <ROW Action="AI_FindExeLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="196" Builds="Win32_Release"/>
+    <ROW Action="AI_ExtractLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="1549" Builds="Win32_Release"/>
+    <ROW Action="AI_DeleteRLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="1548" Builds="Win32_Release"/>
+    <ROW Action="AI_DeleteLzma" Condition="SETUPEXEDIR=&quot;&quot; AND Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;) AND (NOT PATCH)" Sequence="6599" Builds="Win32_Release"/>
+    <ROW Action="AI_ExtractFiles" Sequence="3998" Builds="Win32_Release"/>
+    <ROW Action="AI_DATA_SETTER" Sequence="3997"/>
+    <ROW Action="AI_EstimateExtractFiles" Sequence="3999" Builds="Win32_Release"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="52"/>
+    <ROW Action="AI_DpiContentScale" Sequence="51"/>
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Sequence="99"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Condition="AI_SETUPEXEPATH_ORIGINAL" Sequence="102"/>
+    <ROW Action="VerifyReadyDlg" Condition="AI_INSTALL" Sequence="1230" SeqType="3" MsiKey="WelcomeDlg"/>
+    <ROW Action="AI_FinishActions" Condition="AI_INSTALL AND AiSkipExitDlg" Sequence="1301"/>
+    <ROW Action="AI_AppSearchEx" Sequence="101"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiLaunchConditionsComponent">
+    <ROW Condition="(VersionNT &lt;&gt; 400)" Description="[ProductName] cannot be installed on the following Windows versions: [WindowsTypeNT40Display]" DescriptionLocId="AI.LaunchCondition.NoNT40" IsPredefined="true" Builds="Win32_Release"/>
+    <ROW Condition="(VersionNT &lt;&gt; 500)" Description="[ProductName] cannot be installed on [WindowsTypeNT50Display]." DescriptionLocId="AI.LaunchCondition.NoNT50" IsPredefined="true" Builds="Win32_Release"/>
+    <ROW Condition="SETUPEXEDIR OR (REMOVE=&quot;ALL&quot;)" Description="This package can only be run from a bootstrapper." DescriptionLocId="AI.LaunchCondition.RequireBootstrapper" IsPredefined="true" Builds="Win32_Release"/>
+    <ROW Condition="VersionNT" Description="[ProductName] cannot be installed on [WindowsType9XDisplay]." DescriptionLocId="AI.LaunchCondition.No9X" IsPredefined="true" Builds="Win32_Release"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiRegLocatorComponent">
+    <ROW Signature_="AI_EXE_PATH_CU" Root="1" Key="Software\Caphyon\Advanced Installer\LZMA\[ProductCode]\[ProductVersion]" Name="AI_ExePath" Type="2"/>
+    <ROW Signature_="AI_EXE_PATH_LM" Root="2" Key="Software\Caphyon\Advanced Installer\LZMA\[ProductCode]\[ProductVersion]" Name="AI_ExePath" Type="2"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiRegsComponent">
+    <ROW Registry="AI_ExePath" Root="-1" Key="Software\Caphyon\Advanced Installer\LZMA\[ProductCode]\[ProductVersion]" Name="AI_ExePath" Value="[AI_SETUPEXEPATH]" Component_="AI_ExePath"/>
+    <ROW Registry="EnableLUA" Root="2" Key="Software\Microsoft\Windows\CurrentVersion\Policies\System" Name="EnableLUA" Value="#0" Component_="EnableLUA"/>
+    <ROW Registry="Path" Root="-1" Key="Software\Matricode\V4T" Name="Path" Value="[APPDIR]" Component_="ProductInformation"/>
+    <ROW Registry="Path_2" Root="1" Key="Software\Matricode\V4T" Name="Path" Value="[APPDIR]" Component_="Path"/>
+    <ROW Registry="Software_1" Root="1" Key="Software" Name="+" Component_="Software"/>
+    <ROW Registry="Version" Root="-1" Key="Software\Matricode\V4T" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
+    <ROW Registry="Version_2" Root="1" Key="Software\Matricode\V4T" Name="Version" Value="[ProductVersion]" Component_="Version"/>
+    <ROW Registry="value" Root="-1" Key="Software\Matricode\V4T\account" Name="value" Value="1234" Component_="value"/>
+    <ROW Registry="value_1" Root="1" Key="Software\Matricode\V4T\account" Name="value" Value="1234" Component_="value_1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
+    <ROW Shortcut="Sjet600" Directory_="DesktopFolder" Name="S-JET6~1|S-jet 600" Component_="V4T.exe" Target="[#V4T.exe]" Hotkey="0" Icon_="V4T.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="V4T.exe" Directory_="SHORTCUTDIR" Name="M-JETQ~1|M-JetQuattro2015" Component_="V4T.exe" Target="[#V4T.exe]" Description="M-Jet Printer Software" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
+    <ATTRIBUTE name="UsedTheme" value="classic"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="0.0.1" VersionMax="[|ProductVersion]" Attributes="257" ActionProperty="OLDPRODUCTS"/>
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.PreReqComponent">
+    <ROW PrereqKey="msiJet600" DisplayName="msi-Jet600" VersionMin="1.0.0" SetupFileUrl="msi-quattro\msi-Jet600.msi" Location="0" ExactSize="0" Operator="1" Options="z" TargetName="msi-Jet600.msi" AdditionalFiles="Windows\winsxs\7z1v718o.6n8\mfc80.dll|Windows\winsxs\7z1v718o.6n8\mfc80u.dll|Windows\winsxs\7z1v718o.6n8\mfcm80.dll|Windows\winsxs\7z1v718o.6n8\mfcm80u.dll|Windows\winsxs\7z1v718o.6n8\x86_Microsoft.VC80.MFC_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_150c9e8b.cat|Windows\winsxs\7z1v718o.6n8\x86_Microsoft.VC80.MFC_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_150c9e8b.manifest|Windows\winsxs\b2rg91xw.1p4\msvcm80.dll|Windows\winsxs\b2rg91xw.1p4\msvcp80.dll|Windows\winsxs\b2rg91xw.1p4\msvcr80.dll|Windows\winsxs\b2rg91xw.1p4\x86_Microsoft.VC80.CRT_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_44262b86.cat|Windows\winsxs\b2rg91xw.1p4\x86_Microsoft.VC80.CRT_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_44262b86.manifest|Windows\winsxs\b2vk50pf.gg5\msvcm80d.dll|Windows\winsxs\b2vk50pf.gg5\msvcp80d.dll|Windows\winsxs\b2vk50pf.gg5\msvcr80d.dll|Windows\winsxs\b2vk50pf.gg5\x86_Microsoft.VC80.DebugCRT_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_2da47225.cat|Windows\winsxs\b2vk50pf.gg5\x86_Microsoft.VC80.DebugCRT_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_2da47225.manifest|Windows\winsxs\nnb29ene.r8c\mfc80d.dll|Windows\winsxs\nnb29ene.r8c\mfc80ud.dll|Windows\winsxs\nnb29ene.r8c\mfcm80d.dll|Windows\winsxs\nnb29ene.r8c\mfcm80ud.dll|Windows\winsxs\nnb29ene.r8c\x86_Microsoft.VC80.DebugMFC_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_fe8ae52a.cat|Windows\winsxs\nnb29ene.r8c\x86_Microsoft.VC80.DebugMFC_1fc8b3b9a1e18e3b_8.0.50727.6195_x-ww_fe8ae52a.manifest|Windows\winsxs\rm1kuann.59f\8.0.50727.6195.cat|Windows\winsxs\rm1kuann.59f\8.0.50727.6195.policy|Windows\winsxs\v1sw1o0k.9hi\8.0.50727.6195.cat|Windows\winsxs\v1sw1o0k.9hi\8.0.50727.6195.policy|Windows\winsxs\vpq5wacw.0bb\8.0.50727.6195.cat|Windows\winsxs\vpq5wacw.0bb\8.0.50727.6195.policy|Windows\winsxs\vxgs54we.kj4\8.0.50727.6195.cat|Windows\winsxs\vxgs54we.kj4\8.0.50727.6195.policy"/>
+    <ATTRIBUTE name="PrereqsOrder" value="msiJet600"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.PreReqSearchComponent">
+    <ROW SearchKey="UpgradeCode" Prereq="msiJet600" SearchType="4" SearchString="{7418C8BB-3B78-4FF6-AC4A-665158841F31}" VerMin="1.0.0" Order="1" Property="PreReqSearch"/>
+  </COMPONENT>
+</DOCUMENT>
