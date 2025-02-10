@@ -1,0 +1,112 @@
+[build-system]
+requires = ["setuptools>=75.6.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "v4t-setup"
+description = "Commissioning toolkit for Sellenis S-Jet 600 coding and marking terminals"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "Sellenis Marking Systems" }]
+keywords = ["sjet", "matricode", "quattro", "gs1", "commissioning", "marking"]
+dynamic = ["version"]
+
+dependencies = [
+    "typer==0.15.1",
+    "click==8.1.8",
+    "rich==13.9.4",
+    "pydantic==2.10.6",
+    "structlog==25.1.0",
+    "cryptography==44.0.1",
+    "packaging==24.2",
+    "tomli-w==1.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "pytest-cov==6.0.0",
+    "mypy==1.14.1",
+    "ruff==0.9.4",
+]
+
+[project.scripts]
+v4t-setup = "v4t_setup.cli.main:run"
+
+[tool.setuptools.dynamic]
+version = { attr = "v4t_setup.__about__.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["v4t_setup*"]
+
+[tool.setuptools.package-data]
+v4t_setup = ["py.typed", "data/*.toml", "data/*.json"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "slow: commissioning runs that touch the staging tree",
+    "windows: requires a real Windows registry and COM surface",
+]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+source = ["v4t_setup"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@overload",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "N",
+    "UP",
+    "B",
+    "C4",
+    "SIM",
+    "RET",
+    "PTH",
+    "TID",
+    "RUF",
+]
+ignore = [
+    "RUF012",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["v4t_setup"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/v4t_setup"]
+strict = true
+warn_unreachable = true
+show_error_codes = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false

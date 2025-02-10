@@ -1,0 +1,27 @@
+# The 2016 installer payload is binary and predates this tree. Leave it alone.
+* -text
+
+# Everything the toolkit owns is normalised to LF.
+*.py text eol=lf
+*.pyi text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.csv text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Reference payload blobs.
+*.rbf binary
+*.spf binary
+*.ocx binary
+*.dll binary
+*.sys binary
+*.msi binary
+*.exe binary
+*.cat binary
+*.ico binary
