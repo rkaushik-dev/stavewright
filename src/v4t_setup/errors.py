@@ -80,7 +80,7 @@ class AipParseError(V4TError):
     code = "AIP0001"
 
 
-class AipTableMissing(AipParseError):
+class AipTableMissingError(AipParseError):
     """A table the normaliser depends on is absent from the project."""
 
     code = "AIP0002"
@@ -184,7 +184,7 @@ class LicenseError(V4TError):
 
 __all__ = [
     "AipParseError",
-    "AipTableMissing",
+    "AipTableMissingError",
     "ApplyError",
     "ConfigError",
     "DirectoryCycleError",

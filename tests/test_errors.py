@@ -7,7 +7,7 @@ import pytest
 from v4t_setup import errors
 from v4t_setup.errors import (
     AipParseError,
-    AipTableMissing,
+    AipTableMissingError,
     DirectoryCycleError,
     DirectoryResolutionError,
     JournalError,
@@ -79,7 +79,7 @@ def test_context_defaults_to_empty_dict():
 @pytest.mark.parametrize(
     ("child", "parent"),
     [
-        (AipTableMissing, AipParseError),
+        (AipTableMissingError, AipParseError),
         (DirectoryCycleError, DirectoryResolutionError),
         (SignatureError, ManifestError),
         (PlanCycleError, PlanError),
