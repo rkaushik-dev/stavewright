@@ -68,8 +68,14 @@ BY_COMPONENT: dict[str, Language] = {
 }
 
 
-class UnknownLanguageError(KeyError):
-    """A language was requested that the product does not ship."""
+class UnknownLanguageError(ValueError):
+    """A language was requested that the product does not ship.
+
+    Derived from ``ValueError`` rather than ``KeyError`` on purpose. The input
+    is usually a string out of a profile file, so pydantic has to be able to
+    fold it into a validation error, and ``KeyError`` also re-quotes the message
+    when it is rendered which makes the report read badly.
+    """
 
 
 def all_languages() -> tuple[Language, ...]:
