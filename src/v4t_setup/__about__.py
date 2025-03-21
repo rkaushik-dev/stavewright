@@ -43,19 +43,45 @@ MANIFEST_SCHEMA_VERSION: Final[int] = 1
 JOURNAL_SCHEMA_VERSION: Final[int] = 1
 """Bumped only when a journal written by an older toolkit stops replaying."""
 
-REGISTRY_PRODUCT_KEY: Final[str] = r"SOFTWARE\Sellenis\S-jet600"
-"""Where ``ProductInformation`` and ``Version`` components land."""
+PRODUCT_CODE: Final[str] = "{BA4D6ED3-C916-4F0E-BB5B-A197DA437380}"
+"""Changes with every release. Only the upgrade code is stable across them."""
+
+REGISTRY_PRODUCT_KEY: Final[str] = r"Software\Matricode\V4T"
+"""Where ``ProductInformation``, ``Path`` and ``Version`` land.
+
+Not under Sellenis, and not under the product name either. The key predates the
+rebrand and the front end still reads it by this name, so it stays put. An
+earlier version of this file guessed at ``SOFTWARE\\Sellenis\\S-jet600``, which
+made every reconcile report a commissioned terminal as untouched.
+"""
+
+REGISTRY_ACCOUNT_KEY: Final[str] = r"Software\Matricode\V4T\account"
+"""Holds the operator account value the front end checks at start up."""
+
+DESKTOP_SHORTCUT_NAME: Final[str] = "S-jet 600"
+"""Name of the desktop shortcut, from the ``Sjet600`` row."""
+
+START_MENU_SHORTCUT_NAME: Final[str] = "M-JetQuattro2015"
+"""Name of the Start menu shortcut. Also predates the rebrand."""
+
+BASE_INSTALL_LEVEL: Final[int] = 100
+"""``INSTALLLEVEL`` for a normal commissioning run."""
 
 __all__ = [
+    "BASE_INSTALL_LEVEL",
+    "DESKTOP_SHORTCUT_NAME",
     "INSTALL_PRODUCT_DIR",
     "INSTALL_VENDOR_DIR",
     "JOURNAL_SCHEMA_VERSION",
     "MANIFEST_SCHEMA_VERSION",
     "MANUFACTURER",
+    "PRODUCT_CODE",
     "PRODUCT_LANGUAGE",
     "PRODUCT_NAME",
     "PRODUCT_VERSION",
+    "REGISTRY_ACCOUNT_KEY",
     "REGISTRY_PRODUCT_KEY",
+    "START_MENU_SHORTCUT_NAME",
     "TERMINAL_EXECUTABLE",
     "UPGRADE_CODE",
     "__version__",
