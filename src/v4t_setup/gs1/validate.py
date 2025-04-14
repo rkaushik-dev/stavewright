@@ -38,17 +38,24 @@ class Severity(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class Finding:
-    """One rule result."""
+    """One rule result.
+
+    ``line`` is set when the finding came from a data file rather than from a
+    single element string. An operator fixing a 130 row CSV needs the line
+    number more than anything else in here.
+    """
 
     rule: str
     severity: Severity
     message: str
     ai: str | None = None
+    line: int | None = None
     context: dict[str, object] = field(default_factory=dict)
 
     def __str__(self) -> str:
         where = f" ({self.ai})" if self.ai else ""
-        return f"[{self.severity.value}] {self.rule}{where}: {self.message}"
+        at = f" line {self.line}" if self.line is not None else ""
+        return f"[{self.severity.value}] {self.rule}{where}{at}: {self.message}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,10 +81,16 @@ class Rule:
         severity: Severity,
         message: str,
         ai: str | None = None,
+        line: int | None = None,
         **extra: object,
     ) -> Finding:
         return Finding(
-            rule=self.name, severity=severity, message=message, ai=ai, context=dict(extra)
+            rule=self.name,
+            severity=severity,
+            message=message,
+            ai=ai,
+            line=line,
+            context=dict(extra),
         )
 
 
