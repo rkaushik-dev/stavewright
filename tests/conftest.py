@@ -8,11 +8,13 @@ package we actually ship.
 
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import pytest
 
 from v4t_setup.model.directory import DirectoryRow, DirectoryTable
+from v4t_setup.model.manifest import Manifest
+from v4t_setup.model.payload import PayloadItem, PayloadKind
 from v4t_setup.model.profile import Architecture, TerminalModel, TerminalProfile
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -103,3 +105,129 @@ def profile_mini() -> TerminalProfile:
         architecture=Architecture.X64,
         head_count=1,
     )
+
+
+# A bundle shaped like the one the AIP builds, cut down to the items that
+# actually exercise the ordering rules.
+BUNDLE_ITEMS: list[PayloadItem] = [
+    PayloadItem(
+        item_id="reg.productinfo",
+        kind=PayloadKind.REGISTRY,
+        name="ProductInformation",
+        component="ProductInformation",
+    ),
+    PayloadItem(
+        item_id="shortcut.desktop",
+        kind=PayloadKind.SHORTCUT,
+        name="S-jet 600",
+        detail={"target": "V4T.exe"},
+    ),
+    PayloadItem(
+        item_id="fpga.pcdc",
+        kind=PayloadKind.FPGA_IMAGE,
+        name="pcdc_top.rbf",
+        directory="FpgaImage_Dir",
+        component="pcdc_top.rbf",
+        source=PurePosixPath("payload/FpgaImage/pcdc_top.rbf"),
+        machines=frozenset({TerminalModel.SJET_600, TerminalModel.SJET_600_TIJ}),
+    ),
+    PayloadItem(
+        item_id="ocx.c1sizer",
+        kind=PayloadKind.COM_SERVER,
+        name="C1Sizer.ocx",
+        directory="SystemFolder",
+        component="C1Sizer.ocx",
+        source=PurePosixPath("payload/ocx/SysWOW64/C1Sizer.ocx"),
+        requires=("vc80.mfc",),
+    ),
+    PayloadItem(
+        item_id="ocx.vsflex",
+        kind=PayloadKind.COM_SERVER,
+        name="vsFlex8n.ocx",
+        directory="SystemFolder",
+        component="vsFlex8n.ocx",
+        source=PurePosixPath("payload/ocx/SysWOW64/vsFlex8n.ocx"),
+        requires=("vc80.mfc",),
+    ),
+    PayloadItem(
+        item_id="file.v4t",
+        kind=PayloadKind.FILE,
+        name="V4T.exe",
+        directory="APPDIR",
+        component="V4T.exe",
+        source=PurePosixPath("payload/V4T.exe"),
+        provides=("frontend",),
+    ),
+    PayloadItem(
+        item_id="lang.polish",
+        kind=PayloadKind.LANGUAGE_PACK,
+        name="LangPolish.dll",
+        directory="APPDIR",
+        component="LangPolish.dll",
+        source=PurePosixPath("payload/LangPolish.dll"),
+        language_ids=frozenset({1045}),
+    ),
+    PayloadItem(
+        item_id="lang.russian",
+        kind=PayloadKind.LANGUAGE_PACK,
+        name="LangRussian.dll",
+        directory="APPDIR",
+        component="LangRussian.dll",
+        source=PurePosixPath("payload/LangRussian.dll"),
+        language_ids=frozenset({1049}),
+    ),
+    PayloadItem(
+        item_id="font.ocrb",
+        kind=PayloadKind.FONT,
+        name="ocrb.ttf",
+        source=PurePosixPath("payload/ocrb.ttf"),
+    ),
+    PayloadItem(
+        item_id="templates.gs1",
+        kind=PayloadKind.TEMPLATE_SET,
+        name="Templates",
+        directory="Templates_Dir",
+        source=PurePosixPath("payload/Templates"),
+    ),
+    PayloadItem(
+        item_id="dir.templates",
+        kind=PayloadKind.DIRECTORY,
+        name="Templates",
+        directory="Templates_Dir",
+    ),
+    PayloadItem(
+        item_id="driver.ftdi",
+        kind=PayloadKind.DRIVER_PACKAGE,
+        name="ftdimfr",
+        source=PurePosixPath("payload/ftdimfr"),
+    ),
+    PayloadItem(
+        item_id="sxs.mfc",
+        kind=PayloadKind.SXS_ASSEMBLY,
+        name="Microsoft.VC80.MFC",
+        source=PurePosixPath("payload/winsxs/Microsoft.VC80.MFC"),
+        provides=("vc80.mfc",),
+    ),
+    PayloadItem(
+        item_id="sxs.mfc.policy",
+        kind=PayloadKind.SXS_POLICY,
+        name="policy.8.0.Microsoft.VC80.MFC",
+        source=PurePosixPath("payload/winsxs/policy.8.0.Microsoft.VC80.MFC"),
+    ),
+    PayloadItem(
+        item_id="vcredist",
+        kind=PayloadKind.REDISTRIBUTABLE,
+        name="vcredist_x86.exe",
+        source=PurePosixPath("payload/vcredist_x86/vcredist_x86.exe"),
+    ),
+]
+
+
+@pytest.fixture
+def bundle_manifest() -> Manifest:
+    """A manifest shaped like a real S-Jet 600 bundle.
+
+    Deliberately declared out of order so a test that checks the plan order is
+    checking the planner rather than the fixture.
+    """
+    return Manifest(items=list(BUNDLE_ITEMS))
