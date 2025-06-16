@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from v4t_setup.gs1.validate import Finding, Severity
+from v4t_setup.finding import Finding, Severity
 from v4t_setup.model.profile import TerminalProfile
 from v4t_setup.templates.fieldspec import FieldSpec, find_field_specs
 from v4t_setup.templates.spf import SpfTemplate

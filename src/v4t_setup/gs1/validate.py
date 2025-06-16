@@ -13,11 +13,11 @@ commissioning group applies to every bundle.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
-from enum import StrEnum
 
 from v4t_setup.errors import Gs1Error
+from v4t_setup.finding import Finding, Severity, has_errors, worst_severity
 from v4t_setup.gs1.checkdigit import mod10_check_digit, verify_mod10
 from v4t_setup.gs1.dates import parse_date
 from v4t_setup.gs1.parse import ElementString
@@ -26,36 +26,6 @@ PRIMARY_IDENTIFIERS = ("00", "01", "02", "8004", "8018")
 """AIs that identify the thing being marked. Exactly one should be present."""
 
 DATE_AIS = ("11", "12", "13", "15", "16", "17")
-
-
-class Severity(StrEnum):
-    """How badly a rule was broken."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
-@dataclass(frozen=True, slots=True)
-class Finding:
-    """One rule result.
-
-    ``line`` is set when the finding came from a data file rather than from a
-    single element string. An operator fixing a 130 row CSV needs the line
-    number more than anything else in here.
-    """
-
-    rule: str
-    severity: Severity
-    message: str
-    ai: str | None = None
-    line: int | None = None
-    context: dict[str, object] = field(default_factory=dict)
-
-    def __str__(self) -> str:
-        where = f" ({self.ai})" if self.ai else ""
-        at = f" line {self.line}" if self.line is not None else ""
-        return f"[{self.severity.value}] {self.rule}{where}{at}: {self.message}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -306,19 +276,9 @@ def validate(
     return findings
 
 
-def worst_severity(findings: list[Finding]) -> Severity | None:
-    """The most serious severity present, or None when there are no findings."""
-    order = [Severity.ERROR, Severity.WARNING, Severity.INFO]
-    for severity in order:
-        if any(finding.severity is severity for finding in findings):
-            return severity
-    return None
-
-
-def has_errors(findings: list[Finding]) -> bool:
-    """True when anything would stop this string being marked."""
-    return any(finding.severity is Severity.ERROR for finding in findings)
-
+# Finding, Severity, has_errors and worst_severity live in v4t_setup.finding
+# now. They are re-exported here because the GS1 side of the toolkit is where
+# most callers meet them first.
 
 __all__ = [
     "DATE_AIS",

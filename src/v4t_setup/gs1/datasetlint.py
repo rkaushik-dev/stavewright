@@ -16,15 +16,11 @@ from __future__ import annotations
 import re
 
 from v4t_setup.errors import Gs1Error
+from v4t_setup.finding import Finding, Severity, count_by_rule
 from v4t_setup.gs1.checkdigit import mod10_check_digit, verify_gtin
 from v4t_setup.gs1.dataset import Dataset, DatasetRow
 from v4t_setup.gs1.parse import parse
-from v4t_setup.gs1.validate import (
-    Finding,
-    MarkingContext,
-    Severity,
-    validate,
-)
+from v4t_setup.gs1.validate import MarkingContext, validate
 
 LOT_CODE = re.compile(r"^[A-Z]{2}:\d{2}$")
 ALIGNMENT_MARK = re.compile(r"^[A-Z]$")
@@ -342,10 +338,7 @@ def lint_dataset(
 
 def summarise(findings: list[Finding]) -> dict[str, int]:
     """How many findings each rule produced, highest first."""
-    counts: dict[str, int] = {}
-    for finding in findings:
-        counts[finding.rule] = counts.get(finding.rule, 0) + 1
-    return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+    return count_by_rule(findings)
 
 
 __all__ = [
