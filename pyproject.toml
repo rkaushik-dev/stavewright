@@ -95,6 +95,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["E501"]
+# Typer declares options as function argument defaults. That is the whole
+# design of the library, so B008 has nothing useful to say about the CLI.
+"src/v4t_setup/cli/*" = ["B008"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["v4t_setup"]
