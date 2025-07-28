@@ -229,3 +229,13 @@ def test_clearing_something_that_was_not_inherited_is_harmless():
         {"terminals": {"LINE-PC-09": {"machine": "s-jet-mini", "clear": ["hasp_serial"]}}}
     )
     assert profiles["LINE-PC-09"].hasp_serial is None
+
+
+def test_loading_a_directory_skips_the_settings_file(tmp_path):
+    # A bench keeps v4t-setup.toml beside its profiles. Reading it as a profile
+    # fails with a message about missing terminals that helps nobody.
+    from v4t_setup.config.settings import CONFIG_FILE_NAME
+
+    write(tmp_path, MINI_ONLY, "line.toml")
+    write(tmp_path, 'staging_root = "_staging"\n', CONFIG_FILE_NAME)
+    assert sorted(load_directory(tmp_path)) == ["LINE-PC-09"]

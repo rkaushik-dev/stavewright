@@ -178,14 +178,22 @@ def read_profile(path: Path, terminal_id: str | None = None) -> TerminalProfile:
 def load_directory(root: Path) -> dict[str, TerminalProfile]:
     """Read every ``.toml`` in *root*, merging the terminals they declare.
 
+    The settings file is skipped. A bench keeps ``v4t-setup.toml`` in the same
+    directory as its profiles, and trying to read it as one fails with a
+    message about missing terminals that tells the operator nothing.
+
     :raises ConfigError: when two files declare the same terminal, which means
         somebody has copied a file and forgotten to rename the table.
     """
+    from v4t_setup.config.settings import CONFIG_FILE_NAME
+
     if not root.is_dir():
         raise ConfigError("profile directory does not exist", context={"path": str(root)})
     found: dict[str, TerminalProfile] = {}
     origin: dict[str, str] = {}
     for path in sorted(root.glob(f"*{PROFILE_SUFFIX}")):
+        if path.name == CONFIG_FILE_NAME:
+            continue
         for terminal_id, profile in read_profiles(path).items():
             if terminal_id in found:
                 raise ConfigError(
