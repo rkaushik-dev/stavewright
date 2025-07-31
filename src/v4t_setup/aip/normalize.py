@@ -222,11 +222,17 @@ def _check_references(normalised: NormalisedProject) -> None:
                 "registry row names a component that has no row",
                 context={"registry": row.registry, "component": row.component},
             )
-    for component in normalised.components:
-        if component.directory not in normalised.directories:
+    # Not `component`, which the feature loop above binds to a str, and not
+    # `row`, which the registry loop binds to a RegistryEntry. Three loops in
+    # one function is already one too many.
+    for component_row in normalised.components:
+        if component_row.directory not in normalised.directories:
             raise ManifestError(
                 "component names a directory that has no row",
-                context={"component": component.component, "directory": component.directory},
+                context={
+                    "component": component_row.component,
+                    "directory": component_row.directory,
+                },
             )
 
 

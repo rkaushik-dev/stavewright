@@ -120,7 +120,7 @@ class TerminalProfile(BaseModel):
         if isinstance(value, list | tuple) and not all(
             isinstance(item, Language) for item in value
         ):
-            return resolve_all(list(value))  # type: ignore[arg-type]
+            return resolve_all(list(value))
         return value
 
     @model_validator(mode="after")

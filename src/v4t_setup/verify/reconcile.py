@@ -51,7 +51,11 @@ def _expected_digest(step: Step, payload: PayloadSource | None) -> Digest | None
     return None
 
 
-def probe_directory(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_directory(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     if not step.target:
         return [_uncheckable(step, step.step_id, "step names no directory")]
     if target.is_directory(step.target):
@@ -59,7 +63,11 @@ def probe_directory(step, target, payload):  # type: ignore[no-untyped-def]
     return [_missing(step, step.target)]
 
 
-def probe_file(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_file(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     if not step.target:
         return [_uncheckable(step, step.step_id, "step names no target")]
     actual = target.file_digest(step.target)
@@ -81,7 +89,11 @@ def probe_file(step, target, payload):  # type: ignore[no-untyped-def]
     return []
 
 
-def probe_registry(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_registry(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     detail = step.detail
     if "root" not in detail or "key" not in detail:
         return [_uncheckable(step, step.step_id, "step names no registry key")]
@@ -109,7 +121,11 @@ def probe_registry(step, target, payload):  # type: ignore[no-untyped-def]
     return []
 
 
-def probe_com(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_com(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     if not step.target:
         return [_uncheckable(step, step.step_id, "step names no server")]
     if not target.path_exists(step.target):
@@ -136,7 +152,11 @@ def _identity(step: Step) -> AssemblyIdentity | None:
     )
 
 
-def probe_assembly(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_assembly(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     identity = _identity(step)
     if identity is None:
         return [_uncheckable(step, step.step_id, "step names no assembly identity")]
@@ -145,7 +165,11 @@ def probe_assembly(step, target, payload):  # type: ignore[no-untyped-def]
     return [_missing(step, identity.name, version=identity.version)]
 
 
-def probe_policy(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_policy(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     identity = _identity(step)
     if identity is None:
         return [_uncheckable(step, step.step_id, "step names no assembly identity")]
@@ -154,7 +178,11 @@ def probe_policy(step, target, payload):  # type: ignore[no-untyped-def]
     return [_missing(step, f"policy for {identity.name}", version=identity.version)]
 
 
-def probe_driver(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_driver(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     inf = step.detail.get("inf")
     if not inf:
         return [_uncheckable(step, step.step_id, "step names no INF")]
@@ -165,7 +193,11 @@ def probe_driver(step, target, payload):  # type: ignore[no-untyped-def]
     return [] if present else [_missing(step, str(inf))]
 
 
-def probe_controller(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_controller(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     wanted = step.detail.get("revision")
     if not wanted:
         return [_uncheckable(step, step.step_id, "step names no revision")]
@@ -185,14 +217,22 @@ def probe_controller(step, target, payload):  # type: ignore[no-untyped-def]
     return []
 
 
-def probe_font(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_font(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     name = step.detail.get("font")
     if not name:
         return [_uncheckable(step, step.step_id, "step names no font")]
     return [] if target.has_font(str(name)) else [_missing(step, str(name))]
 
 
-def probe_shortcut(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_shortcut(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     detail = step.detail
     if not detail.get("directory") or not detail.get("target"):
         return [_uncheckable(step, step.step_id, "step names no shortcut")]
@@ -206,7 +246,11 @@ def probe_shortcut(step, target, payload):  # type: ignore[no-untyped-def]
     return [_missing(step, f"{spec.directory}\\{spec.name}")]
 
 
-def probe_template_set(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_template_set(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     files = step.detail.get("files")
     if not isinstance(files, list) or not files or not step.target:
         return [_uncheckable(step, step.step_id, "step lists no template files")]
@@ -241,7 +285,11 @@ def probe_template_set(step, target, payload):  # type: ignore[no-untyped-def]
     return records
 
 
-def probe_redistributable(step, target, payload):  # type: ignore[no-untyped-def]
+def probe_redistributable(
+    step: Step,
+    target: TargetSystem,
+    payload: PayloadSource | None,
+) -> list[DriftRecord]:
     detail = step.detail
     if "marker_key" not in detail:
         return [

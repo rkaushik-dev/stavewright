@@ -67,7 +67,7 @@ class IndexEntry:
                 source=str(payload["source"]),
                 kind=str(payload["kind"]),
                 digest=Digest.parse(str(payload["digest"])),
-                size=int(payload["size"]),  # type: ignore[arg-type]
+                size=int(str(payload["size"])),
                 path=str(payload["path"]),
             )
         except (KeyError, ValueError) as exc:

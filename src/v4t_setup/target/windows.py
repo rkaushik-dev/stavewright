@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path, PureWindowsPath
+from typing import Any
 
 from v4t_setup.model.registry import DecodedValue, RegistryRoot, RegistryValueType
 from v4t_setup.target.base import AssemblyIdentity, ShortcutSpec, SystemFacts, TargetError
@@ -58,14 +59,20 @@ def require_windows(operation: str) -> None:
         )
 
 
-def _winreg():  # type: ignore[no-untyped-def]
+def _winreg() -> Any:
+    """The ``winreg`` module, imported late.
+
+    Typed as ``Any`` because there is no module to import off Windows, so the
+    stubs are not there either and every attribute access would need its own
+    ignore.
+    """
     require_windows("registry access")
     import winreg
 
     return winreg
 
 
-def hive_handle(root: RegistryRoot):  # type: ignore[no-untyped-def]
+def hive_handle(root: RegistryRoot) -> Any:
     """The ``winreg`` handle for a root.
 
     :raises TargetError: for the ``HKMU`` pseudo root, which has to be resolved
@@ -110,7 +117,7 @@ class WindowsTarget:
 
         usage = shutil.disk_usage(os.environ.get("SYSTEMDRIVE", "C:") + "\\")
         try:
-            elevated = bool(ctypes.windll.shell32.IsUserAnAdmin())  # type: ignore[attr-defined]
+            elevated = bool(ctypes.windll.shell32.IsUserAnAdmin())
         except (AttributeError, OSError):
             elevated = False
         return SystemFacts(
@@ -144,7 +151,8 @@ class WindowsTarget:
 
     def _view_flag(self) -> int:
         winreg = _winreg()
-        return winreg.KEY_WOW64_64KEY if self.view_64bit else winreg.KEY_WOW64_32KEY
+        flag: int = winreg.KEY_WOW64_64KEY if self.view_64bit else winreg.KEY_WOW64_32KEY
+        return flag
 
     # Filesystem
 
@@ -536,13 +544,16 @@ class WindowsTarget:
 def _decode_registry(raw: object, kind: int) -> DecodedValue:
     winreg = _winreg()
     if kind == winreg.REG_DWORD:
-        return DecodedValue(RegistryValueType.DWORD, int(raw))  # type: ignore[arg-type]
+        assert isinstance(raw, int)
+        return DecodedValue(RegistryValueType.DWORD, raw)
     if kind == winreg.REG_BINARY:
-        return DecodedValue(RegistryValueType.BINARY, bytes(raw))  # type: ignore[arg-type]
+        assert isinstance(raw, bytes)
+        return DecodedValue(RegistryValueType.BINARY, raw)
     if kind == winreg.REG_EXPAND_SZ:
         return DecodedValue(RegistryValueType.EXPAND_STRING, str(raw))
     if kind == winreg.REG_MULTI_SZ:
-        return DecodedValue(RegistryValueType.MULTI_STRING, tuple(raw))  # type: ignore[arg-type]
+        assert isinstance(raw, list)
+        return DecodedValue(RegistryValueType.MULTI_STRING, tuple(str(x) for x in raw))
     return DecodedValue(RegistryValueType.STRING, str(raw))
 
 
@@ -555,8 +566,10 @@ def _encode_registry(value: DecodedValue) -> tuple[object, int]:
         RegistryValueType.MULTI_STRING: winreg.REG_MULTI_SZ,
         RegistryValueType.STRING: winreg.REG_SZ,
     }
-    data = list(value.data) if value.type is RegistryValueType.MULTI_STRING else value.data
-    return data, mapping[value.type]
+    if value.type is RegistryValueType.MULTI_STRING:
+        assert isinstance(value.data, tuple)
+        return list(value.data), mapping[value.type]
+    return value.data, mapping[value.type]
 
 
 def value_type_name(value: DecodedValue) -> str:

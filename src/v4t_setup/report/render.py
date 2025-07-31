@@ -18,6 +18,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+from collections.abc import Callable
 from xml.etree import ElementTree
 
 from v4t_setup.finding import Severity
@@ -198,7 +199,7 @@ def to_junit(report: Report) -> str:
     return ElementTree.tostring(suite, encoding="unicode") + "\n"
 
 
-RENDERERS = {
+RENDERERS: dict[str, Callable[[Report], str]] = {
     "text": to_text,
     "json": to_json,
     "csv": to_csv,
@@ -218,7 +219,7 @@ def render(report: Report, fmt: str = "text") -> str:
         raise ValueError(
             f"unknown report format {fmt!r}, expected one of {', '.join(sorted(RENDERERS))}"
         ) from None
-    return renderer(report)  # type: ignore[operator]
+    return renderer(report)
 
 
 __all__ = [

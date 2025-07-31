@@ -18,6 +18,7 @@ from v4t_setup.cli.common import (
     require_directory,
     require_file,
 )
+from v4t_setup.finding import Finding
 from v4t_setup.gs1.dataset import EXPECTED_COLUMNS
 from v4t_setup.report.builders import template_report
 from v4t_setup.report.document import Report, findings_section, table_section
@@ -101,7 +102,7 @@ def lint_set(
     )
     report = Report(title="Template set", subtitle=str(directory))
     rows: list[list[str]] = []
-    findings = []
+    findings: list[Finding] = []
     for candidate in sorted(directory.iterdir()):
         if not candidate.is_file() or not is_template(candidate):
             continue

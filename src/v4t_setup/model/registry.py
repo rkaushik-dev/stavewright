@@ -143,18 +143,20 @@ def encode_value(value: DecodedValue) -> str:
     """Put the MSI decoration back on. Inverse of :func:`decode_value`."""
     match value.type:
         case RegistryValueType.DWORD:
-            return f"#{value.data}"
+            assert isinstance(value.data, int)
+            return f"#{value.data:d}"
         case RegistryValueType.BINARY:
             assert isinstance(value.data, bytes)
             return f"#x{value.data.hex().upper()}"
         case RegistryValueType.EXPAND_STRING:
+            assert isinstance(value.data, str)
             return f"#%{value.data}"
         case RegistryValueType.MULTI_STRING:
             assert isinstance(value.data, tuple)
             return "\0".join(value.data)
         case _:
-            text = str(value.data)
-            return f"#{text}" if text.startswith("#") else text
+            assert isinstance(value.data, str)
+            return f"#{value.data}" if value.data.startswith("#") else value.data
 
 
 @dataclass(frozen=True, slots=True)

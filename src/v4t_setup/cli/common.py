@@ -18,7 +18,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, NoReturn, TypeVar
 
 import typer
 
@@ -116,7 +116,7 @@ def emit(report: Report, fmt: str = DEFAULT_FORMAT, output: Path | None = None) 
     return report.outcome.exit_code
 
 
-def fail(message: str, code: int = EXIT_TOOLKIT) -> None:
+def fail(message: str, code: int = EXIT_TOOLKIT) -> NoReturn:
     """Print an error and stop.
 
     :raises typer.Exit: always.
