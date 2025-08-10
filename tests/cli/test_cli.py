@@ -380,3 +380,50 @@ def test_every_format_works_on_a_real_command(runner, bench, fmt):
     result = run(runner, "gs1", "check", str(GS1_DATA), "--format", fmt)
     assert result.exit_code == EXIT_FINDINGS
     assert result.stdout.strip()
+
+
+def test_bundle_build_refuses_a_manifest_with_holes(runner, bench):
+    out = bench / "built.json"
+    result = run(runner, "bundle", "build", str(AIP), "--out", str(out))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "payload sources are missing" in result.output
+    assert not out.exists()
+
+
+def test_bundle_build_writes_one_when_told_to(runner, bench):
+    out = bench / "built.json"
+    result = run(runner, "bundle", "build", str(AIP), "--out", str(out), "--allow-missing")
+    assert result.exit_code == EXIT_OK
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert len(payload["items"]) == 58
+
+
+def test_bundle_build_without_digests_is_complete(runner, bench):
+    out = bench / "built.json"
+    result = run(runner, "bundle", "build", str(AIP), "--out", str(out), "--no-digest")
+    assert result.exit_code == EXIT_OK
+    assert "0 items digested" in result.output
+
+
+def test_bundle_build_refuses_to_overwrite(runner, bench, manifest_file):
+    result = run(runner, "bundle", "build", str(AIP), "--out", str(manifest_file), "--no-digest")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "refusing to overwrite" in result.output
+
+
+def test_a_built_manifest_signs_stages_and_plans(runner, bench, profile_file):
+    out = bench / "built.json"
+    assert run(
+        runner, "bundle", "build", str(AIP), "--out", str(out), "--no-digest"
+    ).exit_code == EXIT_OK
+
+    private = bench / "bench.pem"
+    run(runner, "bundle", "keygen", "--out", str(private))
+    assert run(runner, "bundle", "sign", str(out), "--key", str(private)).exit_code == EXIT_OK
+
+    planned = run(
+        runner, "run", "plan", str(out),
+        "--profile", str(profile_file), "--aip", str(AIP), "--format", "json",
+    )
+    assert planned.exit_code == EXIT_OK
+    assert int(json.loads(planned.stdout)["facts"]["steps"]) > 40

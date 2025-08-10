@@ -11,10 +11,12 @@ from pathlib import Path
 
 import typer
 
+from v4t_setup.aip.builder import build_manifest
 from v4t_setup.aip.normalize import normalise
 from v4t_setup.aip.reader import read_aip
 from v4t_setup.cli.common import (
     DEFAULT_FORMAT,
+    echo_lines,
     emit,
     fail,
     get_context,
@@ -184,6 +186,55 @@ def stage(
     stager = Stager(staging or shared.settings.staging_root)
     result = stager.stage(manifest, source_root, signature=signature)
     raise typer.Exit(emit(stage_report(result), fmt, output))
+
+
+@app.command("build")
+@handle_errors
+def build(
+    ctx: typer.Context,
+    aip: Path = typer.Argument(..., help="An Advanced Installer project file."),
+    out: Path = typer.Option(..., "--out", "-o", help="Where to write the manifest."),
+    source: Path = typer.Option(
+        None, "--source", "-s", help="What the AIP source paths resolve against."
+    ),
+    install_level: int = typer.Option(
+        None, "--install-level", help="Only include components selected at this level."
+    ),
+    no_digest: bool = typer.Option(
+        False, "--no-digest", help="Skip reading the payload. Faster, and unsigned in effect."
+    ),
+    allow_missing: bool = typer.Option(
+        False, "--allow-missing", help="Write the manifest even when payload is absent."
+    ),
+    notes: str = typer.Option("", "--notes", help="Anything worth recording."),
+) -> None:
+    """Generate a manifest from a project file."""
+    shared = get_context(ctx)
+    require_file(aip, "project file")
+    source_root = source or aip.parent
+    require_directory(source_root, "payload source")
+    if out.exists():
+        fail(f"refusing to overwrite an existing manifest: {out}")
+
+    project = normalise(read_aip(aip))
+    report = build_manifest(
+        project,
+        source_root,
+        install_level=install_level or shared.settings.install_level,
+        digest_payload=not no_digest,
+        notes=notes,
+    )
+    # A manifest with holes in it is worse than no manifest, because it looks
+    # finished. Writing one takes a flag and the flag is in the output.
+    if not report.is_complete and not allow_missing:
+        echo_lines(report.lines(), err=True)
+        fail(
+            f"{len(report.missing_sources)} payload sources are missing, "
+            "pass --allow-missing to write the manifest anyway"
+        )
+    report.manifest.write(out)
+    echo_lines(report.lines())
+    typer.echo(f"wrote {out}")
 
 
 @app.command("new")
