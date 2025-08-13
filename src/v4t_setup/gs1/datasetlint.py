@@ -21,30 +21,28 @@ from v4t_setup.gs1.checkdigit import mod10_check_digit, verify_gtin
 from v4t_setup.gs1.dataset import Dataset, DatasetRow
 from v4t_setup.gs1.parse import parse
 from v4t_setup.gs1.validate import MarkingContext, validate
+from v4t_setup.ruleset import Rule as BaseRule
+from v4t_setup.ruleset import run_rules
 
 LOT_CODE = re.compile(r"^[A-Z]{2}:\d{2}$")
 ALIGNMENT_MARK = re.compile(r"^[A-Z]$")
 EAN13_LENGTH = 13
 
 
-class DatasetRule:
-    """Base class for a rule that looks at the whole file."""
+class DatasetRule(BaseRule[Dataset, "MarkingContext"]):
+    """A check over a whole data file."""
 
-    name = "dataset-rule"
-
-    def check(self, dataset: Dataset, context: MarkingContext) -> list[Finding]:
-        raise NotImplementedError
-
-    def _finding(
+    def _finding(  # type: ignore[override]
         self,
         severity: Severity,
         message: str,
         line: int | None = None,
         **extra: object,
     ) -> Finding:
-        return Finding(
-            rule=self.name, severity=severity, message=message, line=line, context=dict(extra)
-        )
+        # The dataset rules were written with the line number third and every
+        # one of them passes it positionally. Keeping that shape here is
+        # cheaper and clearer than editing forty call sites to name it.
+        return self._make(severity, message, line=line, context=dict(extra))
 
 
 class RaggedRowRule(DatasetRule):
@@ -329,10 +327,7 @@ def lint_dataset(
     rules: tuple[DatasetRule, ...] = DEFAULT_DATASET_RULES,
 ) -> list[Finding]:
     """Run *rules* over *dataset*, sorted by line then rule name."""
-    active = context or MarkingContext()
-    findings: list[Finding] = []
-    for rule in rules:
-        findings.extend(rule.check(dataset, active))
+    findings = run_rules(rules, dataset, context or MarkingContext())
     return sorted(findings, key=lambda f: (f.line or 0, f.rule))
 
 

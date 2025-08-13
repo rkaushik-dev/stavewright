@@ -19,6 +19,7 @@ from v4t_setup.finding import Finding, Severity
 from v4t_setup.model.locale import code_pages_for, needs_multiple_code_pages
 from v4t_setup.model.profile import TerminalProfile
 from v4t_setup.plan.steps import Plan, StepKind
+from v4t_setup.ruleset import Rule as BaseRule
 from v4t_setup.target.base import SystemFacts, TargetSystem
 from v4t_setup.util.msiver import InstalledProduct, UpgradeRow, evaluate_upgrades
 
@@ -55,29 +56,25 @@ class PreflightContext:
     """Fonts the template set names. Collected by the caller from the templates."""
 
 
-class Check:
-    """Base class."""
+class Check(BaseRule["PreflightContext", TargetSystem]):
+    """A check over a planned run, told about the machine it would run on.
+
+    The subject is the context and the context is the target, which reads
+    backwards until you notice that a check is about the plan and only consults
+    the machine. Renaming the two would touch every check for nothing.
+    """
 
     name = "check"
     title = "a check"
 
-    def check(self, context: PreflightContext, target: TargetSystem) -> list[Finding]:
-        raise NotImplementedError
-
-    def _finding(
+    def _finding(  # type: ignore[override]
         self,
         severity: Severity,
         message: str,
         subject: str | None = None,
         **extra: object,
     ) -> Finding:
-        return Finding(
-            rule=self.name,
-            severity=severity,
-            message=message,
-            subject=subject,
-            context=dict(extra),
-        )
+        return self._make(severity, message, subject=subject, context=dict(extra))
 
 
 class ElevationCheck(Check):

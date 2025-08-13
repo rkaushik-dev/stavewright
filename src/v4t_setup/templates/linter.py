@@ -16,6 +16,8 @@ from dataclasses import dataclass, field
 
 from v4t_setup.finding import Finding, Severity
 from v4t_setup.model.profile import TerminalProfile
+from v4t_setup.ruleset import Rule as BaseRule
+from v4t_setup.ruleset import run_rules
 from v4t_setup.templates.fieldspec import FieldSpec, find_field_specs
 from v4t_setup.templates.spf import SpfTemplate
 
@@ -60,18 +62,8 @@ class TemplateContext:
     supported_symbologies: frozenset[str] = SUPPORTED_SYMBOLOGIES
 
 
-class TemplateRule:
-    """Base class for a template rule."""
-
-    name = "template-rule"
-
-    def check(self, template: SpfTemplate, context: TemplateContext) -> list[Finding]:
-        raise NotImplementedError
-
-    def _finding(self, severity: Severity, message: str, **extra: object) -> Finding:
-        return Finding(
-            rule=self.name, severity=severity, message=message, context=dict(extra)
-        )
+class TemplateRule(BaseRule[SpfTemplate, TemplateContext]):
+    """A check over one template."""
 
 
 class StructureRule(TemplateRule):
@@ -310,11 +302,7 @@ def lint_template(
     rules: tuple[TemplateRule, ...] = DEFAULT_TEMPLATE_RULES,
 ) -> list[Finding]:
     """Run *rules* over *template*, in rule order."""
-    active = context or TemplateContext()
-    findings: list[Finding] = []
-    for rule in rules:
-        findings.extend(rule.check(template, active))
-    return findings
+    return run_rules(rules, template, context or TemplateContext())
 
 
 __all__ = [

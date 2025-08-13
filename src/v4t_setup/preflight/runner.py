@@ -22,6 +22,7 @@ from v4t_setup.finding import (
     worst_severity,
 )
 from v4t_setup.preflight.checks import DEFAULT_CHECKS, Check, PreflightContext
+from v4t_setup.ruleset import describe_rules, run_rules
 from v4t_setup.target.base import TargetSystem
 
 
@@ -90,17 +91,14 @@ def run_preflight(
     """
     waivers = waive or {}
     report = PreflightReport(waived=dict(waivers))
-    for check in checks:
-        if check.name in waivers:
-            continue
-        report.ran.append(check.name)
-        report.findings.extend(check.check(context, target))
+    report.ran = [check.name for check in checks if check.name not in waivers]
+    report.findings = run_rules(checks, context, target, skip=set(waivers))
     return report
 
 
 def describe_checks(checks: tuple[Check, ...] = DEFAULT_CHECKS) -> list[str]:
     """One line per check, for a help screen."""
-    return [f"{check.name}: {check.title}" for check in checks]
+    return describe_rules(checks)
 
 
 __all__ = ["PreflightReport", "describe_checks", "run_preflight"]

@@ -21,6 +21,8 @@ from v4t_setup.finding import Finding, Severity, has_errors, worst_severity
 from v4t_setup.gs1.checkdigit import mod10_check_digit, verify_mod10
 from v4t_setup.gs1.dates import parse_date
 from v4t_setup.gs1.parse import ElementString
+from v4t_setup.ruleset import Rule as BaseRule
+from v4t_setup.ruleset import run_rules
 
 PRIMARY_IDENTIFIERS = ("00", "01", "02", "8004", "8018")
 """AIs that identify the thing being marked. Exactly one should be present."""
@@ -38,30 +40,8 @@ class MarkingContext:
     require_primary: bool = True
 
 
-class Rule:
-    """Base class. Subclasses override :meth:`check`."""
-
-    name = "rule"
-
-    def check(self, string: ElementString, context: MarkingContext) -> list[Finding]:
-        raise NotImplementedError
-
-    def _finding(
-        self,
-        severity: Severity,
-        message: str,
-        ai: str | None = None,
-        line: int | None = None,
-        **extra: object,
-    ) -> Finding:
-        return Finding(
-            rule=self.name,
-            severity=severity,
-            message=message,
-            ai=ai,
-            line=line,
-            context=dict(extra),
-        )
+class Rule(BaseRule[ElementString, "MarkingContext"]):
+    """A check over one element string."""
 
 
 class CheckDigitRule(Rule):
@@ -269,11 +249,7 @@ def validate(
     rules: tuple[Rule, ...] = DEFAULT_RULES,
 ) -> list[Finding]:
     """Run *rules* over *string*, returning every finding in rule order."""
-    active = context or MarkingContext()
-    findings: list[Finding] = []
-    for rule in rules:
-        findings.extend(rule.check(string, active))
-    return findings
+    return run_rules(rules, string, context or MarkingContext())
 
 
 # Finding, Severity, has_errors and worst_severity live in v4t_setup.finding
