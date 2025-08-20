@@ -19,7 +19,7 @@ import base64
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +30,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey,
 )
 
+from v4t_setup import clock
 from v4t_setup.errors import SignatureError
 from v4t_setup.model.manifest import Manifest
 from v4t_setup.util.fsops import atomic_write_text
@@ -197,7 +198,7 @@ def sign_manifest(manifest: Manifest, key: Ed25519PrivateKey) -> Signature:
     return Signature(
         key_id=key_id_for(key.public_key()),
         value=base64.b64encode(key.sign(payload)).decode("ascii"),
-        signed_at=datetime.now(UTC),
+        signed_at=clock.now(),
         manifest_digest=str(manifest.digest()),
     )
 

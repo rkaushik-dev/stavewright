@@ -12,10 +12,11 @@ can be derived without anybody re-deriving it from the findings.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
+from v4t_setup import clock
 from v4t_setup.finding import Finding, Severity, count_by_severity, sort_findings, worst_severity
 
 
@@ -163,7 +164,7 @@ class Report:
 
     def stamp(self) -> Report:
         """Set ``generated_at`` to now. Returns self."""
-        self.generated_at = datetime.now(UTC)
+        self.generated_at = clock.now()
         return self
 
     def as_dict(self) -> dict[str, Any]:

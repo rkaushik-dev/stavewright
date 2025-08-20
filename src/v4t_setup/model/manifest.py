@@ -16,7 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -27,6 +27,7 @@ from v4t_setup.__about__ import (
     UPGRADE_CODE,
     __version__,
 )
+from v4t_setup.clock import now as utc_now
 from v4t_setup.errors import ManifestError, ManifestSchemaError
 from v4t_setup.model.payload import PayloadItem, PayloadKind, duplicate_ids
 from v4t_setup.model.profile import Architecture, TerminalModel
@@ -280,11 +281,6 @@ def read_manifest(path: Path) -> Manifest:
             context={"path": str(path), "detail": str(exc)},
         ) from exc
     return loads(text, source=path)
-
-
-def utc_now() -> datetime:
-    """Timezone aware now, so a manifest stamp is unambiguous across sites."""
-    return datetime.now(UTC)
 
 
 __all__ = ["Manifest", "loads", "read_manifest", "utc_now"]

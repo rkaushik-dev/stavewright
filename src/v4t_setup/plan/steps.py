@@ -15,10 +15,11 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
+from v4t_setup.clock import now as utc_now
 from v4t_setup.errors import PlanError
 from v4t_setup.model.profile import TerminalProfile
 from v4t_setup.util.digest import Digest
@@ -212,11 +213,6 @@ class Plan:
             f"{self.profile.describe()}: {len(self.steps)} steps, "
             f"plan {self.digest().short}, {stamp}"
         )
-
-
-def utc_now() -> datetime:
-    """Timezone aware now, so a plan stamp is not ambiguous across sites."""
-    return datetime.now(UTC)
 
 
 __all__ = ["IRREVERSIBLE_KINDS", "Plan", "Step", "StepKind", "utc_now"]

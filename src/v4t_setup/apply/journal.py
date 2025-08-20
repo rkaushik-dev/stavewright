@@ -20,11 +20,11 @@ import hashlib
 import json
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, TextIO
 
+from v4t_setup import clock
 from v4t_setup.__about__ import JOURNAL_SCHEMA_VERSION
 from v4t_setup.errors import JournalError
 from v4t_setup.util.fsops import ensure_dir
@@ -92,10 +92,6 @@ def digest_for(body: dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _now() -> str:
-    return datetime.now(UTC).isoformat()
-
-
 class Journal:
     """Writes records to a file, maintaining the chain."""
 
@@ -140,7 +136,7 @@ class Journal:
         body = {
             "sequence": self._sequence,
             "kind": kind.value,
-            "at": _now(),
+            "at": clock.stamp(),
             "previous": self._previous,
             "fields": fields,
         }

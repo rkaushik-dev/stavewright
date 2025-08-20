@@ -13,7 +13,6 @@ tells those two apart can retry the second and page somebody for the first.
 
 from __future__ import annotations
 
-import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
@@ -25,7 +24,7 @@ import typer
 from v4t_setup.config.settings import Settings, find_config_file, load_settings
 from v4t_setup.errors import V4TError
 from v4t_setup.logging import configure, new_run_id
-from v4t_setup.report.document import Outcome, Report
+from v4t_setup.report.document import Report
 from v4t_setup.report.render import RENDERERS, render
 from v4t_setup.util.fsops import atomic_write_text
 
@@ -146,16 +145,6 @@ def handle_errors(function: Callable[..., T]) -> Callable[..., T]:
     return wrapper
 
 
-def outcome_line(report: Report) -> str:
-    """One line naming the outcome, for a quiet run that wants no document."""
-    counts = report.counts()
-    summary = ", ".join(f"{count} {name}" for name, count in counts.items())
-    verdict = {Outcome.PASS: "ok", Outcome.WARN: "warnings", Outcome.FAIL: "failed"}[
-        report.outcome
-    ]
-    return f"{report.title}: {verdict}" + (f" ({summary})" if summary else "")
-
-
 def require_file(path: Path, what: str) -> Path:
     """Stop with a clear message when a path is not a readable file.
 
@@ -186,11 +175,6 @@ def echo_lines(lines: list[str], *, err: bool = False) -> None:
         typer.echo(line, err=err)
 
 
-def is_a_terminal() -> bool:
-    """True when stdout is a terminal, for deciding whether to be chatty."""
-    return sys.stdout.isatty()
-
-
 __all__ = [
     "DEFAULT_FORMAT",
     "EXIT_FINDINGS",
@@ -203,8 +187,6 @@ __all__ = [
     "fail",
     "get_context",
     "handle_errors",
-    "is_a_terminal",
-    "outcome_line",
     "require_directory",
     "require_file",
 ]
