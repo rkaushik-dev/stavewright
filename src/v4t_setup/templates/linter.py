@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from v4t_setup.finding import Finding, Severity
+from v4t_setup.gs1.symbology import Shape, all_symbologies, fits_head, is_known, resolve
 from v4t_setup.model.profile import TerminalProfile
 from v4t_setup.ruleset import Rule as BaseRule
 from v4t_setup.ruleset import run_rules
@@ -27,23 +28,13 @@ SYSTEM_FONTS = frozenset({"Arial", "Courier New", "Tahoma", "Times New Roman", "
 BUNDLED_FONTS = frozenset({"OCR-B"})
 """Fonts the package ships. ``ocrb.ttf`` is a component in the AIP."""
 
-SUPPORTED_SYMBOLOGIES = frozenset(
-    {
-        "EAN-13",
-        "EAN-13+2",
-        "EAN-13+5",
-        "EAN-8",
-        "UPC-A",
-        "UPC-E",
-        "CODE128",
-        "GS1-128",
-        "ITF-14",
-        "DataMatrix",
-        "GS1 DataMatrix",
-        "QR",
-    }
-)
-"""What the head firmware can render."""
+SUPPORTED_SYMBOLOGIES = frozenset(entry.name for entry in all_symbologies())
+"""What the head firmware can render.
+
+Taken from the symbology table rather than written out again. The two lists
+were already one name apart when this was a literal, and a name the linter
+accepts but the capacity model does not know is worse than either.
+"""
 
 PLACEHOLDER_VALUES = frozenset({"0" * n for n in range(8, 21)})
 """All zero runs, which is what an unbound barcode block is left holding."""
@@ -60,6 +51,16 @@ class TemplateContext:
     dataset_columns: frozenset[str] = frozenset()
     available_fonts: frozenset[str] = field(default_factory=lambda: SYSTEM_FONTS | BUNDLED_FONTS)
     supported_symbologies: frozenset[str] = SUPPORTED_SYMBOLOGIES
+    element_string_length: int | None = None
+    """How many characters the barcode blocks will actually carry.
+
+    A template on its own does not know, because the data comes from the job.
+    A caller that has the data file passes the longest element string in it and
+    the capacity rules become checkable.
+    """
+
+    module_dots: int = 2
+    """Dots per module the head is set to."""
 
 
 class TemplateRule(BaseRule[SpfTemplate, TemplateContext]):
@@ -274,6 +275,13 @@ class SourceSlotRule(TemplateRule):
 
 
 def _looks_like_symbology(text: str) -> bool:
+    """Whether a string in a barcode block is trying to name a symbology.
+
+    A block payload carries plenty of printable text that is not a symbology,
+    so the linter only complains about something that looks like an attempt.
+    """
+    if is_known(text):
+        return True
     upper = text.upper()
     return any(
         token in upper for token in ("EAN", "UPC", "CODE", "GS1", "ITF", "QR", "MATRIX")
@@ -284,11 +292,56 @@ def _specs(template: SpfTemplate) -> list[FieldSpec]:
     return find_field_specs(template.all_strings())
 
 
+class CapacityRule(TemplateRule):
+    """The symbology has to hold the data, and the symbol has to fit the head."""
+
+    name = "capacity"
+
+    def check(self, template: SpfTemplate, context: TemplateContext) -> list[Finding]:
+        length = context.element_string_length
+        if length is None:
+            return []
+        findings: list[Finding] = []
+        for block in template.of_kind(BARCODE_BLOCK):
+            for name in block.strings():
+                if not is_known(name):
+                    continue
+                symbology = resolve(name)
+                if not symbology.accepts_length(length):
+                    findings.append(
+                        self._finding(
+                            Severity.ERROR,
+                            "the data is not a length this symbology encodes",
+                            index=block.index,
+                            symbology=name,
+                            length=length,
+                            accepts=f"{symbology.min_characters}..{symbology.max_characters}",
+                        )
+                    )
+                    continue
+                if context.profile is None or symbology.shape is not Shape.MATRIX:
+                    continue
+                swath = context.profile.machine.swath_dots
+                if not fits_head(symbology, length, swath, context.module_dots):
+                    findings.append(
+                        self._finding(
+                            Severity.ERROR,
+                            "the symbol is wider than the print head swath",
+                            index=block.index,
+                            symbology=name,
+                            side_dots=symbology.modules_for(length) * context.module_dots,
+                            swath_dots=swath,
+                        )
+                    )
+        return findings
+
+
 DEFAULT_TEMPLATE_RULES: tuple[TemplateRule, ...] = (
     StructureRule(),
     BlockOrderRule(),
     DuplicateIndexRule(),
     SymbologyRule(),
+    CapacityRule(),
     PlaceholderRule(),
     FontRule(),
     BoundFieldRule(),
@@ -315,6 +368,7 @@ __all__ = [
     "TEMPLATE_BLOCK",
     "BlockOrderRule",
     "BoundFieldRule",
+    "CapacityRule",
     "DuplicateIndexRule",
     "FontRule",
     "PlaceholderRule",

@@ -327,3 +327,110 @@ def test_the_shipped_fonts_are_available(shipped):
 
 def test_the_shipped_source_slots_do_not_collide(shipped):
     assert SourceSlotRule().check(shipped, TemplateContext()) == []
+
+
+# Capacity, which needs to be told how long the data is.
+
+
+def _barcode(symbology: str):
+    return template(block("TEMPLATE"), block("BARCODELABEL_1", symbology))
+
+
+def test_capacity_says_nothing_without_a_data_length():
+    from v4t_setup.templates.linter import CapacityRule
+
+    assert CapacityRule().check(_barcode("GS1-128"), TemplateContext()) == []
+
+
+def test_a_length_the_symbology_encodes_passes():
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(element_string_length=22)
+    assert CapacityRule().check(_barcode("GS1-128"), context) == []
+
+
+def test_an_element_string_will_not_go_in_an_ean13():
+    # This is the failure the capacity rule exists for.
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(element_string_length=22)
+    findings = CapacityRule().check(_barcode("EAN-13"), context)
+    assert len(findings) == 1
+    assert findings[0].severity is Severity.ERROR
+    assert findings[0].context["accepts"] == "13..13"
+
+
+def test_the_shipped_symbology_is_the_same_story():
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(element_string_length=22)
+    assert CapacityRule().check(_barcode("EAN-13+2"), context)
+
+
+def test_a_thirteen_digit_gtin_fits_an_ean13():
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(element_string_length=13)
+    assert CapacityRule().check(_barcode("EAN-13"), context) == []
+
+
+def test_too_long_for_a_gs1_128():
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(element_string_length=60)
+    findings = CapacityRule().check(_barcode("GS1-128"), context)
+    assert findings[0].context["length"] == 60
+
+
+def test_a_matrix_that_fits_the_head(profile):
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(profile=profile, element_string_length=22)
+    assert CapacityRule().check(_barcode("GS1 DataMatrix"), context) == []
+
+
+def test_a_matrix_that_does_not_fit_a_mini(profile_mini):
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(
+        profile=profile_mini, element_string_length=1500, module_dots=2
+    )
+    findings = CapacityRule().check(_barcode("GS1 DataMatrix"), context)
+    assert any("wider than the print head swath" in f.message for f in findings)
+
+
+def test_a_wider_module_can_stop_a_matrix_fitting(profile_mini):
+    from v4t_setup.templates.linter import CapacityRule
+
+    narrow = TemplateContext(profile=profile_mini, element_string_length=500, module_dots=2)
+    wide = TemplateContext(profile=profile_mini, element_string_length=500, module_dots=4)
+    assert CapacityRule().check(_barcode("GS1 DataMatrix"), narrow) == []
+    assert CapacityRule().check(_barcode("GS1 DataMatrix"), wide)
+
+
+def test_a_linear_symbol_is_never_too_wide_for_the_head(profile_mini):
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(profile=profile_mini, element_string_length=40)
+    assert CapacityRule().check(_barcode("GS1-128"), context) == []
+
+
+def test_capacity_ignores_strings_that_are_not_symbologies():
+    from v4t_setup.templates.linter import CapacityRule
+
+    context = TemplateContext(element_string_length=22)
+    plain = template(block("TEMPLATE"), block("BARCODELABEL_1", "00000000000000"))
+    assert CapacityRule().check(plain, context) == []
+
+
+def test_the_supported_set_comes_from_the_symbology_table():
+    from v4t_setup.gs1.symbology import all_symbologies
+    from v4t_setup.templates.linter import SUPPORTED_SYMBOLOGIES
+
+    assert frozenset(e.name for e in all_symbologies()) == SUPPORTED_SYMBOLOGIES
+
+
+def test_capacity_runs_as_part_of_the_default_set(profile):
+    context = TemplateContext(profile=profile, element_string_length=22)
+    findings = lint_template(_barcode("EAN-13"), context)
+    assert any(f.rule == "capacity" for f in findings)
