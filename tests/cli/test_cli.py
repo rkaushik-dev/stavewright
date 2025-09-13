@@ -427,3 +427,97 @@ def test_a_built_manifest_signs_stages_and_plans(runner, bench, profile_file):
     )
     assert planned.exit_code == EXIT_OK
     assert int(json.loads(planned.stdout)["facts"]["steps"]) > 40
+
+
+def test_run_diff_of_a_manifest_against_itself(runner, bench, manifest_file, profile_file):
+    result = run(
+        runner, "run", "diff", str(manifest_file), str(manifest_file),
+        "--profile", str(profile_file), "--aip", str(AIP), "--format", "json",
+    )
+    assert result.exit_code == EXIT_OK
+    payload = json_output(result)
+    section = next(s for s in payload["sections"] if s["heading"] == "Difference")
+    assert section["lines"] == ["the two plans are the same"]
+
+
+def test_run_diff_reports_a_removed_item(runner, bench, manifest_file, profile_file):
+    trimmed = bench / "trimmed.json"
+    payload = json.loads(manifest_file.read_text(encoding="utf-8"))
+    payload["items"] = [i for i in payload["items"] if i["item_id"] != "file.imager"]
+    trimmed.write_text(json.dumps(payload, sort_keys=True, indent=2), encoding="utf-8")
+
+    result = run(
+        runner, "run", "diff", str(manifest_file), str(trimmed),
+        "--profile", str(profile_file), "--aip", str(AIP), "--format", "json",
+    )
+    assert result.exit_code == EXIT_OK
+    rows = next(
+        s for s in json_output(result)["sections"] if s["heading"] == "Difference"
+    )["rows"]
+    assert any(row[0] == "file.imager" and row[1] == "removed" for row in rows)
+
+
+def test_run_diff_says_when_nothing_would_change(runner, bench, manifest_file, profile_file):
+    result = run(
+        runner, "run", "diff", str(manifest_file), str(manifest_file),
+        "--profile", str(profile_file), "--aip", str(AIP),
+    )
+    assert "nothing on this terminal would change" in result.output
+
+
+def test_run_history_on_an_empty_directory(runner, bench):
+    (bench / "_journal").mkdir()
+    result = run(runner, "run", "history", "--format", "json")
+    assert result.exit_code == EXIT_OK
+    assert json_output(result)["facts"]["runs"] == "0"
+
+
+def test_run_history_after_an_apply(runner, bench, staged_bundle, profile_file):
+    run(
+        runner, "run", "apply", str(staged_bundle),
+        "--profile", str(profile_file), "--aip", str(AIP), "--dry-run",
+    )
+    result = run(runner, "run", "history", "--format", "json")
+    assert result.exit_code == EXIT_OK
+    payload = json_output(result)
+    assert payload["facts"]["runs"] == "1"
+    rows = next(s for s in payload["sections"] if s["heading"] == "Runs")["rows"]
+    assert rows[0][1] == "LINE-PC-04"
+    assert rows[0][3] == "complete"
+
+
+def test_run_history_can_be_narrowed_to_one_terminal(runner, bench, staged_bundle, profile_file):
+    run(
+        runner, "run", "apply", str(staged_bundle),
+        "--profile", str(profile_file), "--aip", str(AIP), "--dry-run",
+    )
+    result = run(runner, "run", "history", "--terminal", "LINE-PC-99", "--format", "json")
+    assert json_output(result)["facts"]["runs"] == "0"
+
+
+def test_run_history_of_a_directory_that_is_not_there(runner, bench):
+    result = run(runner, "run", "history", "--journals", "nowhere")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "does not exist" in result.output
+
+
+def test_preflight_reports_a_run_that_was_never_finished(
+    runner, bench, manifest_file, profile_file
+):
+    from v4t_setup import clock
+    from v4t_setup.apply.journal import Journal, RecordKind
+
+    journals = bench / "_journal"
+    journals.mkdir(exist_ok=True)
+    with clock.frozen(clock.utc(2026, 2, 3, 9, 0)), Journal(
+        journals / "run-0001aaaa.jsonl"
+    ) as journal:
+        journal.begin("sha256:abc", "LINE-PC-04", "0001aaaa")
+        journal.append(RecordKind.STEP_OK, step_id="dir.appdir")
+
+    result = run(
+        runner, "run", "preflight", str(manifest_file),
+        "--profile", str(profile_file), "--aip", str(AIP), "--offline",
+    )
+    assert result.exit_code == EXIT_FINDINGS
+    assert "never finished" in result.output

@@ -14,8 +14,9 @@ from __future__ import annotations
 
 from v4t_setup.apply.executor import ApplyResult
 from v4t_setup.apply.executor import Outcome as ApplyOutcome
-from v4t_setup.finding import Finding
+from v4t_setup.finding import Finding, Severity
 from v4t_setup.gs1.dataset import Dataset
+from v4t_setup.plan.diff import Change, PlanDiff
 from v4t_setup.plan.planner import PlanReport
 from v4t_setup.plan.steps import Plan
 from v4t_setup.preflight.runner import PreflightReport
@@ -29,6 +30,7 @@ from v4t_setup.report.document import (
 from v4t_setup.stage.stager import StagingReport
 from v4t_setup.templates.spf import SpfTemplate
 from v4t_setup.verify.drift import DriftReport
+from v4t_setup.verify.history import History
 
 MAX_TABLE_ROWS = 200
 """Beyond this a text table stops being readable. JSON keeps everything."""
@@ -225,6 +227,107 @@ def gs1_report(dataset: Dataset, findings: list[Finding]) -> Report:
     return report
 
 
+def plan_diff_report(result: PlanDiff, crossed: list[str] | None = None) -> Report:
+    """A comparison of two plans, as a document."""
+    report = Report(
+        title="Plan difference",
+        facts={"before": result.before_digest, "after": result.after_digest},
+    )
+    if result.is_identical:
+        report.add(lines_section("Difference", ["the two plans are the same"]))
+    else:
+        report.add(
+            table_section(
+                "Difference",
+                ["step", "change", "before", "after", "fields"],
+                [
+                    [
+                        entry.step_id,
+                        entry.change.value,
+                        "" if entry.before is None else str(entry.before),
+                        "" if entry.after is None else str(entry.after),
+                        ", ".join(entry.fields),
+                    ]
+                    for entry in result
+                    if entry.change is not Change.SAME
+                ],
+            )
+        )
+    report.add(
+        lines_section(
+            "Effect",
+            [
+                "applying the new plan would change this terminal"
+                if result.has_work
+                else "nothing on this terminal would change"
+            ],
+        )
+    )
+    if crossed:
+        report.add(
+            lines_section(
+                "Rollback changed",
+                list(crossed),
+                note=(
+                    "These steps moved across a step that cannot be rolled back, "
+                    "so a failure now leaves the terminal differently."
+                ),
+            )
+        )
+    report.outcome = Outcome.WARN if crossed else Outcome.PASS
+    return report
+
+
+def history_report(found: History, terminal: str | None = None) -> Report:
+    """A commissioning history, as a document."""
+    runs = found.for_terminal(terminal) if terminal else list(found)
+    report = Report(
+        title="Commissioning history",
+        subtitle=terminal or f"{len(found.terminals)} terminals",
+        facts={"runs": str(len(runs)), "journals": str(found.root or "")},
+    )
+    report.add(
+        table_section(
+            "Runs",
+            ["started", "terminal", "run", "outcome", "steps"],
+            [
+                [
+                    run.started_at.isoformat(sep=" ") if run.started_at else "",
+                    run.terminal,
+                    run.run_id,
+                    run.outcome or ("unreadable" if not run.is_readable else "never finished"),
+                    str(run.completed),
+                ]
+                for run in runs
+            ],
+        )
+    )
+    findings: list[Finding] = []
+    for run in runs:
+        if not run.is_readable:
+            findings.append(
+                Finding(
+                    rule="journal/damaged",
+                    severity=Severity.ERROR,
+                    message=run.damaged,
+                    subject=run.path.name,
+                )
+            )
+        elif run.is_unfinished:
+            findings.append(
+                Finding(
+                    rule="journal/unfinished",
+                    severity=Severity.WARNING,
+                    message="this run never wrote an end record",
+                    subject=run.run_id or run.path.name,
+                    context={"terminal": run.terminal, "completed": run.completed},
+                )
+            )
+    report.add_if(findings_section("Findings", findings))
+    report.derive_outcome()
+    return report
+
+
 def template_report(template: SpfTemplate, findings: list[Finding]) -> Report:
     """A template lint, as a document."""
     report = Report(
@@ -257,6 +360,8 @@ __all__ = [
     "apply_report",
     "drift_report",
     "gs1_report",
+    "history_report",
+    "plan_diff_report",
     "plan_report",
     "preflight_report",
     "stage_report",
