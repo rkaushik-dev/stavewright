@@ -1,0 +1,496 @@
+"""Taking a terminal's state away with you.
+
+A line PC on a factory floor has no network and the person standing at it is
+not the person who can work out what is wrong. What they can do is run one
+command, put the result on a USB stick and send it.
+
+A snapshot is everything a plan asks about, read off the machine and written to
+one JSON file. Loading it back gives an object that satisfies the target
+protocol for reading, so :func:`~v4t_setup.verify.reconcile.reconcile` runs
+against it exactly as it would against the real machine.
+
+It is read only. Every mutating call on a loaded snapshot raises, because a
+snapshot is a photograph and applying to a photograph is a way of believing you
+have fixed something.
+
+What gets captured is driven by the plan rather than by walking the disk. A
+terminal has tens of thousands of files and none of the ones the plan does not
+mention are any of our business.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from v4t_setup import clock
+from v4t_setup.errors import VerifyError
+from v4t_setup.model.registry import DecodedValue, RegistryRoot, RegistryValueType
+from v4t_setup.plan.steps import Plan, StepKind
+from v4t_setup.target.base import (
+    AssemblyIdentity,
+    ShortcutSpec,
+    SystemFacts,
+    TargetError,
+    TargetSystem,
+)
+from v4t_setup.util.digest import Digest
+from v4t_setup.util.fsops import atomic_write_text
+
+SNAPSHOT_SCHEMA_VERSION = 1
+SNAPSHOT_SUFFIX = ".v4tsnap.json"
+
+
+class ReadOnlyTargetError(TargetError):
+    """Raised on any attempt to change a snapshot."""
+
+
+def _identity_of(step: object) -> AssemblyIdentity | None:
+    detail = getattr(step, "detail", {})
+    if not {"assembly", "version", "public_key_token"} <= set(detail):
+        return None
+    return AssemblyIdentity(
+        name=str(detail["assembly"]),
+        version=str(detail["version"]),
+        public_key_token=str(detail["public_key_token"]),
+        processor_architecture=str(detail.get("processor_architecture", "x86")),
+    )
+
+
+@dataclass
+class Snapshot:
+    """A terminal's state, frozen.
+
+    Satisfies the read half of :class:`~v4t_setup.target.base.TargetSystem`.
+    """
+
+    terminal: str = ""
+    plan_digest: str = ""
+    taken_at: str = ""
+    facts: SystemFacts | None = None
+    files: dict[str, str] = field(default_factory=dict)
+    """Path to digest. The bytes are not captured, only what they hash to."""
+
+    directories: list[str] = field(default_factory=list)
+    registry: dict[str, tuple[str, str]] = field(default_factory=dict)
+    """``HIVE\\key\\name`` to (type, rendered value)."""
+
+    com_servers: list[str] = field(default_factory=list)
+    assemblies: list[str] = field(default_factory=list)
+    policies: list[str] = field(default_factory=list)
+    drivers: list[str] = field(default_factory=list)
+    fonts: list[str] = field(default_factory=list)
+    shortcuts: list[str] = field(default_factory=list)
+    controller_revision_value: str | None = None
+    source: Path | None = None
+
+    # Reading
+
+    def _refuse(self, what: str) -> None:
+        raise ReadOnlyTargetError(
+            f"a snapshot cannot {what}. It is a photograph of a terminal, "
+            "not the terminal."
+        )
+
+    def path_exists(self, path: str) -> bool:
+        key = _fold(path)
+        return key in self.files or key in {_fold(p) for p in self.directories}
+
+    def is_directory(self, path: str) -> bool:
+        return _fold(path) in {_fold(p) for p in self.directories}
+
+    def file_digest(self, path: str) -> Digest | None:
+        value = self.files.get(_fold(path))
+        return Digest.parse(value) if value else None
+
+    def read_file(self, path: str) -> bytes:
+        raise ReadOnlyTargetError(
+            "a snapshot records what a file hashed to, not what was in it"
+        )
+
+    def list_directory(self, path: str) -> list[str]:
+        prefix = _fold(path) + "/"
+        names = {
+            name[len(prefix) :].split("/")[0]
+            for name in [*self.files, *(_fold(p) for p in self.directories)]
+            if name.startswith(prefix)
+        }
+        return sorted(names)
+
+    def key_exists(self, root: RegistryRoot, key: str) -> bool:
+        prefix = f"{root.hive_name}\\{key}\\".lower()
+        return any(name.lower().startswith(prefix) for name in self.registry)
+
+    def read_value(self, root: RegistryRoot, key: str, name: str | None) -> DecodedValue | None:
+        stored = self.registry.get(_registry_key(root, key, name))
+        if stored is None:
+            return None
+        kind, rendered = stored
+        return _decode(kind, rendered)
+
+    def list_values(self, root: RegistryRoot, key: str) -> list[str]:
+        prefix = f"{root.hive_name}\\{key}\\".lower()
+        return sorted(
+            entry.split("\\")[-1]
+            for entry in self.registry
+            if entry.lower().startswith(prefix)
+        )
+
+    def is_com_registered(self, path: str) -> bool:
+        return _fold(path) in {_fold(p) for p in self.com_servers}
+
+    def has_assembly(self, identity: AssemblyIdentity) -> bool:
+        return str(identity) in self.assemblies
+
+    def has_policy(self, identity: AssemblyIdentity) -> bool:
+        return str(identity) in self.policies
+
+    def has_driver(self, inf_name: str) -> bool:
+        return inf_name.lower() in {name.lower() for name in self.drivers}
+
+    def has_font(self, name: str) -> bool:
+        return name.lower() in {font.lower() for font in self.fonts}
+
+    def has_shortcut(self, spec: ShortcutSpec) -> bool:
+        return _shortcut_key(spec) in self.shortcuts
+
+    def controller_revision(self) -> str | None:
+        return self.controller_revision_value
+
+    # Writing, all of which is refused
+
+    def make_directory(self, path: str) -> bool:
+        self._refuse("create a directory")
+        raise AssertionError  # pragma: no cover
+
+    def remove_directory(self, path: str) -> bool:
+        self._refuse("remove a directory")
+        raise AssertionError  # pragma: no cover
+
+    def write_file(self, path: str, data: bytes) -> bool:
+        self._refuse("write a file")
+        raise AssertionError  # pragma: no cover
+
+    def remove_file(self, path: str) -> bool:
+        self._refuse("remove a file")
+        raise AssertionError  # pragma: no cover
+
+    def create_key(self, root: RegistryRoot, key: str) -> bool:
+        self._refuse("create a registry key")
+        raise AssertionError  # pragma: no cover
+
+    def remove_key(self, root: RegistryRoot, key: str) -> bool:
+        self._refuse("remove a registry key")
+        raise AssertionError  # pragma: no cover
+
+    def write_value(
+        self, root: RegistryRoot, key: str, name: str | None, value: DecodedValue
+    ) -> bool:
+        self._refuse("write a registry value")
+        raise AssertionError  # pragma: no cover
+
+    def remove_value(self, root: RegistryRoot, key: str, name: str | None) -> bool:
+        self._refuse("remove a registry value")
+        raise AssertionError  # pragma: no cover
+
+    def register_com(self, path: str) -> bool:
+        self._refuse("register a control")
+        raise AssertionError  # pragma: no cover
+
+    def unregister_com(self, path: str) -> bool:
+        self._refuse("unregister a control")
+        raise AssertionError  # pragma: no cover
+
+    def install_assembly(self, identity: AssemblyIdentity, source: str) -> bool:
+        self._refuse("install an assembly")
+        raise AssertionError  # pragma: no cover
+
+    def remove_assembly(self, identity: AssemblyIdentity) -> bool:
+        self._refuse("remove an assembly")
+        raise AssertionError  # pragma: no cover
+
+    def install_policy(self, identity: AssemblyIdentity, source: str) -> bool:
+        self._refuse("install a policy")
+        raise AssertionError  # pragma: no cover
+
+    def remove_policy(self, identity: AssemblyIdentity) -> bool:
+        self._refuse("remove a policy")
+        raise AssertionError  # pragma: no cover
+
+    def stage_driver(self, source: str, inf_name: str) -> bool:
+        self._refuse("stage a driver")
+        raise AssertionError  # pragma: no cover
+
+    def remove_driver(self, inf_name: str) -> bool:
+        self._refuse("remove a driver")
+        raise AssertionError  # pragma: no cover
+
+    def program_controller(self, source: str, revision: str) -> bool:
+        self._refuse("program a controller")
+        raise AssertionError  # pragma: no cover
+
+    def install_font(self, source: str, name: str) -> bool:
+        self._refuse("install a font")
+        raise AssertionError  # pragma: no cover
+
+    def remove_font(self, name: str) -> bool:
+        self._refuse("remove a font")
+        raise AssertionError  # pragma: no cover
+
+    def create_shortcut(self, spec: ShortcutSpec) -> bool:
+        self._refuse("create a shortcut")
+        raise AssertionError  # pragma: no cover
+
+    def remove_shortcut(self, spec: ShortcutSpec) -> bool:
+        self._refuse("remove a shortcut")
+        raise AssertionError  # pragma: no cover
+
+    def run_installer(self, path: str, arguments: list[str]) -> int:
+        self._refuse("run an installer")
+        raise AssertionError  # pragma: no cover
+
+    # Serialisation
+
+    def to_dict(self) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "schema_version": SNAPSHOT_SCHEMA_VERSION,
+            "terminal": self.terminal,
+            "plan": self.plan_digest,
+            "taken_at": self.taken_at,
+            "files": dict(sorted(self.files.items())),
+            "directories": sorted(self.directories),
+            "registry": {
+                key: list(value) for key, value in sorted(self.registry.items())
+            },
+            "com_servers": sorted(self.com_servers),
+            "assemblies": sorted(self.assemblies),
+            "policies": sorted(self.policies),
+            "drivers": sorted(self.drivers),
+            "fonts": sorted(self.fonts),
+            "shortcuts": sorted(self.shortcuts),
+            "controller_revision": self.controller_revision_value,
+        }
+        if self.facts is not None:
+            payload["facts"] = {
+                "os_build": self.facts.os_build,
+                "architecture": self.facts.architecture,
+                "is_elevated": self.facts.is_elevated,
+                "free_bytes": self.facts.free_bytes,
+                "computer_name": self.facts.computer_name,
+            }
+        return payload
+
+    def dumps(self) -> str:
+        return json.dumps(self.to_dict(), sort_keys=True, indent=2) + "\n"
+
+    def write(self, path: Path) -> None:
+        atomic_write_text(path, self.dumps())
+
+    def describe(self) -> str:
+        where = self.source.name if self.source else "(in memory)"
+        return (
+            f"{where}: {self.terminal or 'unknown terminal'}, "
+            f"{len(self.files)} files, {len(self.registry)} registry values, "
+            f"taken {self.taken_at or 'at an unknown time'}"
+        )
+
+
+def _fold(path: str) -> str:
+    return path.replace("\\", "/").rstrip("/").lower()
+
+
+def _shortcut_key(spec: ShortcutSpec) -> str:
+    return f"{_fold(spec.directory)}/{spec.name.lower()}"
+
+
+def _registry_key(root: RegistryRoot, key: str, name: str | None) -> str:
+    return f"{root.hive_name}\\{key}\\{name or '(Default)'}"
+
+
+def _decode(kind: str, rendered: str) -> DecodedValue:
+    value_type = RegistryValueType(kind)
+    if value_type is RegistryValueType.DWORD:
+        return DecodedValue(value_type, int(rendered))
+    if value_type is RegistryValueType.BINARY:
+        return DecodedValue(value_type, bytes.fromhex(rendered))
+    if value_type is RegistryValueType.MULTI_STRING:
+        return DecodedValue(value_type, tuple(rendered.split(" | ")) if rendered else ())
+    return DecodedValue(value_type, rendered)
+
+
+def capture(plan: Plan, target: TargetSystem) -> Snapshot:
+    """Read everything *plan* asks about off *target*.
+
+    Driven by the plan rather than by walking the disk. A terminal has tens of
+    thousands of files and the ones the plan does not mention are none of our
+    business.
+    """
+    snapshot = Snapshot(
+        terminal=plan.profile.terminal_id,
+        plan_digest=str(plan.digest()),
+        taken_at=clock.stamp(),
+        facts=target.facts(),
+        controller_revision_value=target.controller_revision(),
+    )
+
+    for step in plan:
+        if step.target:
+            if step.kind is StepKind.CREATE_DIRECTORY:
+                if target.is_directory(step.target):
+                    snapshot.directories.append(step.target)
+            else:
+                digest = target.file_digest(step.target)
+                if digest is not None:
+                    snapshot.files[_fold(step.target)] = str(digest)
+
+        match step.kind:
+            case StepKind.REGISTER_COM:
+                if step.target and target.is_com_registered(step.target):
+                    snapshot.com_servers.append(step.target)
+            case StepKind.INSTALL_SXS_ASSEMBLY:
+                identity = _identity_of(step)
+                if identity is not None and target.has_assembly(identity):
+                    snapshot.assemblies.append(str(identity))
+            case StepKind.INSTALL_SXS_POLICY:
+                identity = _identity_of(step)
+                if identity is not None and target.has_policy(identity):
+                    snapshot.policies.append(str(identity))
+            case StepKind.STAGE_DRIVER:
+                inf = step.detail.get("inf")
+                if inf and target.has_driver(str(inf)):
+                    snapshot.drivers.append(str(inf))
+            case StepKind.INSTALL_FONT:
+                font = step.detail.get("font")
+                if font and target.has_font(str(font)):
+                    snapshot.fonts.append(str(font))
+            case StepKind.CREATE_SHORTCUT:
+                spec = _shortcut_of(step)
+                if spec is not None and target.has_shortcut(spec):
+                    snapshot.shortcuts.append(_shortcut_key(spec))
+            case StepKind.WRITE_REGISTRY:
+                _capture_registry(step, target, snapshot)
+            case StepKind.INSTALL_TEMPLATE_SET:
+                _capture_templates(step, target, snapshot)
+            case _:
+                pass
+    return snapshot
+
+
+def _shortcut_of(step: object) -> ShortcutSpec | None:
+    detail = getattr(step, "detail", {})
+    if not detail.get("directory") or not detail.get("target"):
+        return None
+    return ShortcutSpec(
+        name=str(detail.get("name") or getattr(step, "step_id", "")),
+        directory=str(detail["directory"]),
+        target=str(detail["target"]),
+    )
+
+
+def _capture_registry(step: object, target: TargetSystem, snapshot: Snapshot) -> None:
+    detail = getattr(step, "detail", {})
+    if "root" not in detail or "key" not in detail:
+        return
+    root = RegistryRoot(int(detail["root"]))
+    key = str(detail["key"])
+    name = detail.get("name")
+    value = target.read_value(root, key, str(name) if name is not None else None)
+    if value is not None:
+        snapshot.registry[_registry_key(root, key, name)] = (
+            value.type.value,
+            str(value),
+        )
+
+
+def _capture_templates(step: object, target: TargetSystem, snapshot: Snapshot) -> None:
+    from pathlib import PureWindowsPath
+
+    files = getattr(step, "detail", {}).get("files")
+    step_target = getattr(step, "target", None)
+    if not isinstance(files, list) or not step_target:
+        return
+    parent = PureWindowsPath(step_target).parent
+    for name in files:
+        path = str(parent / str(name))
+        digest = target.file_digest(path)
+        if digest is not None:
+            snapshot.files[_fold(path)] = str(digest)
+
+
+def loads(text: str, *, source: Path | None = None) -> Snapshot:
+    """Parse a snapshot.
+
+    :raises VerifyError: when the text is not a snapshot this build can read.
+    """
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise VerifyError(
+            "snapshot is not valid JSON",
+            context={"detail": str(exc)},
+        ) from exc
+    if not isinstance(payload, dict):
+        raise VerifyError("snapshot is not a JSON object")
+    schema = payload.get("schema_version", SNAPSHOT_SCHEMA_VERSION)
+    if not isinstance(schema, int) or schema > SNAPSHOT_SCHEMA_VERSION:
+        raise VerifyError(
+            "snapshot was written by a newer toolkit",
+            context={"found": schema, "understood": SNAPSHOT_SCHEMA_VERSION},
+        )
+    facts_payload = payload.get("facts")
+    facts = None
+    if isinstance(facts_payload, dict):
+        facts = SystemFacts(
+            os_build=int(facts_payload.get("os_build", 0)),
+            architecture=str(facts_payload.get("architecture", "")),
+            is_elevated=bool(facts_payload.get("is_elevated", False)),
+            free_bytes=int(facts_payload.get("free_bytes", 0)),
+            computer_name=str(facts_payload.get("computer_name", "")),
+        )
+    return Snapshot(
+        terminal=str(payload.get("terminal", "")),
+        plan_digest=str(payload.get("plan", "")),
+        taken_at=str(payload.get("taken_at", "")),
+        facts=facts,
+        files=dict(payload.get("files") or {}),
+        directories=list(payload.get("directories") or []),
+        registry={
+            key: (value[0], value[1])
+            for key, value in (payload.get("registry") or {}).items()
+        },
+        com_servers=list(payload.get("com_servers") or []),
+        assemblies=list(payload.get("assemblies") or []),
+        policies=list(payload.get("policies") or []),
+        drivers=list(payload.get("drivers") or []),
+        fonts=list(payload.get("fonts") or []),
+        shortcuts=list(payload.get("shortcuts") or []),
+        controller_revision_value=payload.get("controller_revision"),
+        source=source,
+    )
+
+
+def read_snapshot(path: Path) -> Snapshot:
+    """Read a snapshot from disk.
+
+    :raises VerifyError: when the file cannot be read or does not parse.
+    """
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise VerifyError(
+            "cannot read snapshot",
+            context={"path": str(path), "detail": str(exc)},
+        ) from exc
+    return loads(text, source=path)
+
+
+__all__ = [
+    "SNAPSHOT_SCHEMA_VERSION",
+    "SNAPSHOT_SUFFIX",
+    "ReadOnlyTargetError",
+    "Snapshot",
+    "capture",
+    "loads",
+    "read_snapshot",
+]
