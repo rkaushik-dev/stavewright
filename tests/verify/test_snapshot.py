@@ -93,8 +93,24 @@ def test_capture_records_the_terminal_and_the_plan(commissioned):
 def test_capture_records_the_facts(commissioned):
     plan, target = commissioned
     snapshot = capture(plan, target)
-    assert snapshot.facts is not None
-    assert snapshot.facts.architecture == "x64"
+    assert snapshot.system_facts is not None
+    assert snapshot.facts().architecture == "x64"
+
+
+def test_a_snapshot_with_no_facts_answers_with_zeroes():
+    # Not a raise. A preflight run against a snapshot should fail its checks
+    # honestly rather than blow up in the middle of them.
+    facts = Snapshot().facts()
+    assert facts.os_build == 0
+    assert facts.free_bytes == 0
+    assert not facts.is_elevated
+
+
+def test_a_snapshot_satisfies_the_target_protocol(commissioned):
+    from v4t_setup.target.base import TargetSystem
+
+    plan, target = commissioned
+    assert isinstance(capture(plan, target), TargetSystem)
 
 
 def test_capture_picks_up_every_kind(commissioned):

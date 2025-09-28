@@ -45,6 +45,7 @@ from v4t_setup.target.memory import MemoryTarget
 from v4t_setup.target.windows import IS_WINDOWS, WindowsTarget
 from v4t_setup.verify.history import find_unfinished, read_history
 from v4t_setup.verify.reconcile import reconcile
+from v4t_setup.verify.snapshot import capture, read_snapshot
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -201,6 +202,60 @@ def verify(
     result = build_plan(staged.manifest, profile, _load_directories(aip))
     target = _open_target(shared, offline)
     raise typer.Exit(emit(drift_report(reconcile(result.plan, target, staged)), fmt, output))
+
+
+@app.command("capture")
+@handle_errors
+def capture_terminal(
+    ctx: typer.Context,
+    bundle: Path = typer.Argument(..., help="A staged bundle directory."),
+    out: Path = typer.Option(..., "--out", "-o", help="Where to write the snapshot."),
+    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
+    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
+    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
+) -> None:
+    """Read this terminal's state into a file somebody else can look at."""
+    shared = get_context(ctx)
+    require_directory(bundle, "staged bundle")
+    profile = _load_profile(profile_path, terminal)
+    staged = open_bundle(bundle)
+    result = build_plan(staged.manifest, profile, _load_directories(aip), stamp=False)
+    snapshot = capture(result.plan, _open_target(shared, offline=False))
+    snapshot.write(out)
+    typer.echo(snapshot.describe())
+    typer.echo(f"wrote {out}")
+
+
+@app.command("offline")
+@handle_errors
+def offline_verify(
+    ctx: typer.Context,
+    snapshot_path: Path = typer.Argument(..., help="A snapshot taken on a terminal."),
+    bundle: Path = typer.Argument(..., help="The staged bundle it should match."),
+    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
+    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
+    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
+    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+) -> None:
+    """Reconcile a snapshot against a bundle, away from the terminal."""
+    get_context(ctx)
+    require_file(snapshot_path, "snapshot")
+    require_directory(bundle, "staged bundle")
+    profile = _load_profile(profile_path, terminal)
+    staged = open_bundle(bundle)
+    result = build_plan(staged.manifest, profile, _load_directories(aip), stamp=False)
+    snapshot = read_snapshot(snapshot_path)
+    if snapshot.plan_digest and snapshot.plan_digest != str(result.plan.digest()):
+        # Not fatal. A snapshot taken against an older bundle is still the best
+        # information anybody has about that machine, and saying so is more use
+        # than refusing to look.
+        typer.echo(
+            "warning: this snapshot was taken against a different plan "
+            f"({snapshot.plan_digest})",
+            err=True,
+        )
+    raise typer.Exit(emit(drift_report(reconcile(result.plan, snapshot, None)), fmt, output))
 
 
 @app.command("diff")

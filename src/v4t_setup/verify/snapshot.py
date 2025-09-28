@@ -68,7 +68,13 @@ class Snapshot:
     terminal: str = ""
     plan_digest: str = ""
     taken_at: str = ""
-    facts: SystemFacts | None = None
+    system_facts: SystemFacts | None = None
+    """What the machine reported. None when the snapshot did not record it.
+
+    Not called ``facts``. The target protocol has a ``facts()`` method, and a
+    field of the same name means a Snapshot reads like a target right up until
+    something calls it.
+    """
     files: dict[str, str] = field(default_factory=dict)
     """Path to digest. The bytes are not captured, only what they hash to."""
 
@@ -86,6 +92,19 @@ class Snapshot:
     source: Path | None = None
 
     # Reading
+
+    def facts(self) -> SystemFacts:
+        """What the machine reported when the snapshot was taken.
+
+        A snapshot with no recorded facts answers with zeroes rather than
+        raising, so a preflight run against one fails its checks honestly
+        instead of blowing up in the middle of them.
+        """
+        if self.system_facts is None:
+            return SystemFacts(
+                os_build=0, architecture="", is_elevated=False, free_bytes=0
+            )
+        return self.system_facts
 
     def _refuse(self, what: str) -> None:
         raise ReadOnlyTargetError(
@@ -271,13 +290,13 @@ class Snapshot:
             "shortcuts": sorted(self.shortcuts),
             "controller_revision": self.controller_revision_value,
         }
-        if self.facts is not None:
+        if self.system_facts is not None:
             payload["facts"] = {
-                "os_build": self.facts.os_build,
-                "architecture": self.facts.architecture,
-                "is_elevated": self.facts.is_elevated,
-                "free_bytes": self.facts.free_bytes,
-                "computer_name": self.facts.computer_name,
+                "os_build": self.system_facts.os_build,
+                "architecture": self.system_facts.architecture,
+                "is_elevated": self.system_facts.is_elevated,
+                "free_bytes": self.system_facts.free_bytes,
+                "computer_name": self.system_facts.computer_name,
             }
         return payload
 
@@ -330,7 +349,7 @@ def capture(plan: Plan, target: TargetSystem) -> Snapshot:
         terminal=plan.profile.terminal_id,
         plan_digest=str(plan.digest()),
         taken_at=clock.stamp(),
-        facts=target.facts(),
+        system_facts=target.facts(),
         controller_revision_value=target.controller_revision(),
     )
 
@@ -452,7 +471,7 @@ def loads(text: str, *, source: Path | None = None) -> Snapshot:
         terminal=str(payload.get("terminal", "")),
         plan_digest=str(payload.get("plan", "")),
         taken_at=str(payload.get("taken_at", "")),
-        facts=facts,
+        system_facts=facts,
         files=dict(payload.get("files") or {}),
         directories=list(payload.get("directories") or []),
         registry={
