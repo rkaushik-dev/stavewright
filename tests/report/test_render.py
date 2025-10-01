@@ -280,3 +280,34 @@ def test_junit_carries_a_timestamp_when_stamped():
 
 def test_junit_omits_the_timestamp_when_not_stamped():
     assert ElementTree.fromstring(to_junit(sample())).get("timestamp") is None
+
+
+def test_a_word_longer_than_the_width_goes_on_its_own_line():
+    # The hand rolled wrapper appended an over long word to the previous line,
+    # so a report carrying a long Windows path ran past the width it was given.
+    long_path = "C:" + "\\averylongdirectoryname" * 6 + "\\V4T.exe"
+    report = Report(title="x").add(
+        findings_section("f", [finding(message=f"cannot read {long_path}")])
+    )
+    lines = to_text(report, width=60).splitlines()
+    assert all(len(line) <= 60 for line in lines), max(lines, key=len)
+
+
+def test_wrapping_keeps_every_word():
+    message = " ".join(f"word{n}" for n in range(40))
+    report = Report(title="x").add(findings_section("f", [finding(message=message)]))
+    rendered = to_text(report, width=50)
+    for n in range(40):
+        assert f"word{n}" in rendered
+
+
+def test_an_empty_message_does_not_crash():
+    report = Report(title="x").add(findings_section("f", [finding(message=" ")]))
+    assert to_text(report, width=40)
+
+
+def test_a_note_is_wrapped_too():
+    note = "x " * 100
+    report = Report(title="x").add(lines_section("Plan", ["one"], note=note.strip()))
+    lines = to_text(report, width=48).splitlines()
+    assert all(len(line) <= 48 for line in lines)

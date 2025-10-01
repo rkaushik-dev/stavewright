@@ -18,6 +18,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import textwrap
 from collections.abc import Callable
 from xml.etree import ElementTree
 
@@ -35,21 +36,23 @@ def _rule(width: int, character: str = "-") -> str:
 
 
 def _wrap(text: str, width: int, indent: str = "") -> list[str]:
-    if not text:
+    """Wrap *text* to *width*, every line prefixed with *indent*.
+
+    This was hand rolled and it was wrong in a way nothing caught: a single
+    word longer than the width was appended to the previous line rather than
+    put on its own, so a report carrying a long Windows path silently ran past
+    the width it had been given. textwrap has handled that since 1999.
+    """
+    if not text.strip():
         return [""]
-    words = text.split()
-    lines: list[str] = []
-    current = indent
-    for word in words:
-        candidate = f"{current}{word} "
-        if len(candidate.rstrip()) > width and current.strip():
-            lines.append(current.rstrip())
-            current = f"{indent}{word} "
-        else:
-            current = candidate
-    if current.strip():
-        lines.append(current.rstrip())
-    return lines or [""]
+    return textwrap.wrap(
+        text,
+        width=width,
+        initial_indent=indent,
+        subsequent_indent=indent,
+        break_long_words=True,
+        break_on_hyphens=False,
+    ) or [""]
 
 
 def _table(columns: list[str], rows: list[list[str]], width: int) -> list[str]:
