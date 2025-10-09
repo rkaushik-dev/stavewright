@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from v4t_setup.finding import Finding, Severity
+from v4t_setup.gs1.hri import MAX_HRI_CHARACTERS
 from v4t_setup.gs1.symbology import Shape, all_symbologies, fits_head, is_known, resolve
 from v4t_setup.model.profile import TerminalProfile
 from v4t_setup.ruleset import Rule as BaseRule
@@ -39,8 +40,18 @@ accepts but the capacity model does not know is worse than either.
 PLACEHOLDER_VALUES = frozenset({"0" * n for n in range(8, 21)})
 """All zero runs, which is what an unbound barcode block is left holding."""
 
+MIN_ENCODED_RUN = 16
+"""A digit run at least this long in a text block is almost always a
+concatenated element string somebody pasted in without the brackets.
+
+Sixteen because a GTIN on its own is 16 characters with its AI and that is the
+shortest thing anyone actually does this with. Below it the run is far more
+likely to be a batch code or a weight, both of which are printed bare.
+"""
+
 TEMPLATE_BLOCK = "TEMPLATE"
 BARCODE_BLOCK = "BARCODELABEL"
+TEXT_BLOCK = "TEXTLABEL"
 
 
 @dataclass(frozen=True, slots=True)
@@ -336,6 +347,53 @@ class CapacityRule(TemplateRule):
         return findings
 
 
+class HumanReadableRule(TemplateRule):
+    """The text under a symbol has to be text a person can key back in.
+
+    Only literals are checkable here. A block bound to a data field prints
+    whatever the job supplies and the linter has no way to see that from the
+    template, so those are left to the dataset checks.
+
+    There is deliberately no check for a separator or a control character in a
+    literal. The block reader only returns printable runs, so a stray FNC1 has
+    already cut the string in two by the time a rule sees it and the check
+    could never fire. That defect is real, but the place to catch it is the
+    data file, where the text survives intact.
+    """
+
+    name = "human-readable"
+
+    def check(self, template: SpfTemplate, context: TemplateContext) -> list[Finding]:
+        findings: list[Finding] = []
+        for block in template.of_kind(TEXT_BLOCK):
+            for spec in find_field_specs(block.strings()):
+                literal = spec.literal
+                if literal is None:
+                    continue
+                findings.extend(self._check_literal(literal, block.index))
+        return findings
+
+    def _check_literal(self, literal: str, index: int | None) -> list[Finding]:
+        findings: list[Finding] = []
+        if len(literal) > MAX_HRI_CHARACTERS:
+            findings.append(
+                self._make(
+                    Severity.WARNING,
+                    "printed text is too long to read at line speed",
+                    context={"index": index, "length": len(literal), "limit": MAX_HRI_CHARACTERS},
+                )
+            )
+        if literal.isdigit() and len(literal) >= MIN_ENCODED_RUN:
+            findings.append(
+                self._make(
+                    Severity.WARNING,
+                    "printed text looks like the encoded form with no bracketed AI",
+                    context={"index": index, "text": literal},
+                )
+            )
+        return findings
+
+
 DEFAULT_TEMPLATE_RULES: tuple[TemplateRule, ...] = (
     StructureRule(),
     BlockOrderRule(),
@@ -346,6 +404,7 @@ DEFAULT_TEMPLATE_RULES: tuple[TemplateRule, ...] = (
     FontRule(),
     BoundFieldRule(),
     SourceSlotRule(),
+    HumanReadableRule(),
 )
 
 
@@ -362,15 +421,18 @@ __all__ = [
     "BARCODE_BLOCK",
     "BUNDLED_FONTS",
     "DEFAULT_TEMPLATE_RULES",
+    "MIN_ENCODED_RUN",
     "PLACEHOLDER_VALUES",
     "SUPPORTED_SYMBOLOGIES",
     "SYSTEM_FONTS",
     "TEMPLATE_BLOCK",
+    "TEXT_BLOCK",
     "BlockOrderRule",
     "BoundFieldRule",
     "CapacityRule",
     "DuplicateIndexRule",
     "FontRule",
+    "HumanReadableRule",
     "PlaceholderRule",
     "SourceSlotRule",
     "StructureRule",
