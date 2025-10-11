@@ -23,7 +23,7 @@ from v4t_setup.errors import ApplyError
 from v4t_setup.model.registry import DecodedValue, RegistryRoot, RegistryValueType
 from v4t_setup.plan.steps import Step, StepKind
 from v4t_setup.target.base import AssemblyIdentity, ShortcutSpec, TargetError, TargetSystem
-from v4t_setup.util.digest import Digest
+from v4t_setup.util.digest import digest_bytes
 
 
 class PayloadSource(Protocol):
@@ -106,31 +106,41 @@ class Action:
 class CreateDirectoryAction(Action):
     kind = StepKind.CREATE_DIRECTORY
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.is_directory(self._target(step))
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.make_directory(self._target(step))
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.remove_directory(self._target(step))
 
 
 class CopyFileAction(Action):
     kind = StepKind.COPY_FILE
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         current = target.file_digest(self._target(step))
         if current is None:
             return False
         if step.digest is not None:
             return current == step.digest
-        return current == _digest_of(payload.read(self._source(step)))
+        return current == digest_bytes(payload.read(self._source(step)))
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         data = payload.read(self._source(step))
         if step.digest is not None:
-            actual = _digest_of(data)
+            actual = digest_bytes(data)
             if actual != step.digest:
                 raise ApplyError(
                     "payload does not match the digest in the manifest",
@@ -142,7 +152,9 @@ class CopyFileAction(Action):
                 )
         return target.write_file(self._target(step), data)
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.remove_file(self._target(step))
 
 
@@ -172,15 +184,21 @@ class WriteRegistryAction(Action):
         )
         return root, key, (str(name) if name is not None else None), value
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         root, key, name, value = self._parts(step)
         return target.read_value(root, key, name) == value
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         root, key, name, value = self._parts(step)
         return target.write_value(root, key, name, value)
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         root, key, name, _ = self._parts(step)
         return target.remove_value(root, key, name)
 
@@ -188,16 +206,22 @@ class WriteRegistryAction(Action):
 class RegisterComAction(Action):
     kind = StepKind.REGISTER_COM
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         path = self._target(step)
         return target.path_exists(path) and target.is_com_registered(path)
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         path = self._target(step)
         changed = target.write_file(path, payload.read(self._source(step)))
         return target.register_com(path) or changed
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         path = self._target(step)
         unregistered = target.unregister_com(path)
         removed = target.remove_file(path)
@@ -205,7 +229,7 @@ class RegisterComAction(Action):
 
 
 class _AssemblyAction(Action):
-    policy = False
+    """Shared identity parsing for the assembly and the publisher policy."""
 
     def _identity(self, step: Step) -> AssemblyIdentity:
         detail = step.detail
@@ -226,30 +250,42 @@ class _AssemblyAction(Action):
 class InstallSxsAssemblyAction(_AssemblyAction):
     kind = StepKind.INSTALL_SXS_ASSEMBLY
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.has_assembly(self._identity(step))
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.install_assembly(
             self._identity(step), payload.local_path(self._source(step))
         )
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.remove_assembly(self._identity(step))
 
 
 class InstallSxsPolicyAction(_AssemblyAction):
     kind = StepKind.INSTALL_SXS_POLICY
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.has_policy(self._identity(step))
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.install_policy(
             self._identity(step), payload.local_path(self._source(step))
         )
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.remove_policy(self._identity(step))
 
 
@@ -265,13 +301,19 @@ class StageDriverAction(Action):
             )
         return str(inf)
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.has_driver(self._inf(step))
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.stage_driver(payload.local_path(self._source(step)), self._inf(step))
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.remove_driver(self._inf(step))
 
 
@@ -291,15 +333,21 @@ class ProgramFpgaAction(Action):
             )
         return str(revision)
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.controller_revision() == self._revision(step)
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.program_controller(
             payload.local_path(self._source(step)), self._revision(step)
         )
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         raise ApplyError(
             "a programmed controller cannot be rolled back, the previous "
             "bitstream is gone",
@@ -313,13 +361,19 @@ class InstallFontAction(Action):
     def _name(self, step: Step) -> str:
         return str(step.detail.get("font") or Path(step.source or "font").stem)
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.has_font(self._name(step))
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.install_font(payload.local_path(self._source(step)), self._name(step))
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.remove_font(self._name(step))
 
 
@@ -343,13 +397,19 @@ class CreateShortcutAction(Action):
             description=str(detail.get("description", "")),
         )
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.has_shortcut(self._spec(step))
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.create_shortcut(self._spec(step))
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         return target.remove_shortcut(self._spec(step))
 
 
@@ -368,17 +428,21 @@ class InstallTemplateSetAction(Action):
     def _destination(self, step: Step, name: str) -> str:
         return str(PureWindowsPath(self._target(step)).parent / name)
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         source = self._source(step)
         for name in self._files(step):
             current = target.file_digest(self._destination(step, name))
             if current is None:
                 return False
-            if current != _digest_of(payload.read(f"{source}/{name}")):
+            if current != digest_bytes(payload.read(f"{source}/{name}")):
                 return False
         return True
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         source = self._source(step)
         changed = False
         for name in self._files(step):
@@ -386,7 +450,9 @@ class InstallTemplateSetAction(Action):
             changed |= target.write_file(self._destination(step, name), data)
         return changed
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         removed = False
         for name in self._files(step):
             removed |= target.remove_file(self._destination(step, name))
@@ -410,14 +476,18 @@ class RunRedistributableAction(Action):
             str(detail.get("marker_name", "Installed")),
         )
 
-    def is_satisfied(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def is_satisfied(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         marker = self._marker(step)
         if marker is None:
             return False
         root, key, name = marker
         return target.read_value(root, key, name) is not None
 
-    def apply(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def apply(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         source = self._source(step)
         local = self._target(step) or payload.local_path(source)
         target.write_file(local, payload.read(source))
@@ -431,18 +501,14 @@ class RunRedistributableAction(Action):
             )
         return True
 
-    def revert(self, target, step, payload):  # type: ignore[no-untyped-def]
+    def revert(
+        self, target: TargetSystem, step: Step, payload: PayloadSource
+    ) -> bool:
         raise ApplyError(
             "the redistributable installs into the shared side by side store "
             "and is not ours to remove",
             context={"step": step.step_id},
         )
-
-
-def _digest_of(data: bytes) -> Digest:
-    from v4t_setup.util.digest import digest_bytes
-
-    return digest_bytes(data)
 
 
 ACTIONS: dict[StepKind, Action] = {
