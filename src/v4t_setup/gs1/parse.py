@@ -20,6 +20,7 @@ AI reads up to the next separator or the end of the string.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 from v4t_setup.errors import Gs1Error
@@ -74,7 +75,7 @@ class ElementString:
     def __len__(self) -> int:
         return len(self.elements)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[Element]:
         return iter(self.elements)
 
     def __contains__(self, ai: str) -> bool:

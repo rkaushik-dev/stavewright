@@ -16,6 +16,7 @@ accepting a dialect the front end would then fail to read.
 from __future__ import annotations
 
 import csv
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -136,7 +137,7 @@ class Dataset:
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[DatasetRow]:
         return iter(self.rows)
 
     def __getitem__(self, position: int) -> DatasetRow:

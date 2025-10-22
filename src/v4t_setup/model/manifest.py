@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path, PurePosixPath
@@ -119,7 +120,7 @@ class Manifest:
     def __len__(self) -> int:
         return len(self.items)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[PayloadItem]:
         return iter(self.items)
 
     def __contains__(self, item_id: str) -> bool:

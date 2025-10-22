@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
@@ -129,7 +130,7 @@ class Plan:
     def __len__(self) -> int:
         return len(self.steps)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[Step]:
         return iter(self.steps)
 
     def __getitem__(self, position: int) -> Step:

@@ -15,6 +15,7 @@ interesting part.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -148,7 +149,7 @@ class History:
     def __len__(self) -> int:
         return len(self.runs)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[RunSummary]:
         return iter(self.runs)
 
     def for_terminal(self, terminal: str) -> list[RunSummary]:

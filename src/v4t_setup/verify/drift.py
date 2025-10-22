@@ -14,6 +14,7 @@ never stopped anything.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -128,7 +129,7 @@ class DriftReport:
     def __len__(self) -> int:
         return len(self.records)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[DriftRecord]:
         return iter(self.records)
 
     @property

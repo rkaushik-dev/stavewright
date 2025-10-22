@@ -38,7 +38,7 @@ from v4t_setup.model.locale import BY_COMPONENT
 from v4t_setup.model.manifest import Manifest, utc_now
 from v4t_setup.model.payload import PayloadItem, PayloadKind
 from v4t_setup.model.profile import Architecture, TerminalModel
-from v4t_setup.util.digest import digest_file, digest_tree
+from v4t_setup.util.digest import Digest, digest_file, digest_tree
 
 COM_COMPONENTS = frozenset({"C1Sizer.ocx", "C1Sizer.ocx_1", "vsFlex8n.ocx", "vsFlex8n.ocx_1"})
 """Components that need registering. SelfReg says false for all four."""
@@ -258,7 +258,13 @@ def build_manifest(
     return report
 
 
-def _digest_source(root: Path, source: PurePosixPath):  # type: ignore[no-untyped-def]
+def _digest_source(root: Path, source: PurePosixPath) -> tuple[Digest | None, bool]:
+    """Digest whatever *source* points at, and say whether it was missing.
+
+    The second half of the pair is the interesting one. A source that is not
+    there is not an error at build time, because the AIP names files the
+    working copy does not always have, but it does have to reach the report.
+    """
     candidate = root / Path(*PureWindowsPath(str(source)).parts)
     if candidate.is_dir():
         return digest_tree(candidate), False

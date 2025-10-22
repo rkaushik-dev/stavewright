@@ -17,6 +17,7 @@ relative to an irreversible one is a step whose rollback story has changed.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -98,7 +99,7 @@ class PlanDiff:
     def __len__(self) -> int:
         return len(self.changes)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[StepChange]:
         return iter(self.changes)
 
     def of(self, change: Change) -> list[StepChange]:

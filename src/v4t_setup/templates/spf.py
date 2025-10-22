@@ -23,6 +23,7 @@ saved by a different build of the front end.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -117,7 +118,7 @@ class SpfTemplate:
     def __len__(self) -> int:
         return len(self.blocks)
 
-    def __iter__(self):  # type: ignore[no-untyped-def]
+    def __iter__(self) -> Iterator[SpfBlock]:
         return iter(self.blocks)
 
     @property
