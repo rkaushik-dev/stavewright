@@ -33,7 +33,6 @@ profile already says, because the two drift apart the moment it does.
 
 from __future__ import annotations
 
-import tomllib
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date
@@ -41,6 +40,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
+from v4t_setup.config.toml import load_toml
 from v4t_setup.errors import ConfigError
 from v4t_setup.model.profile import TerminalProfile
 
@@ -296,20 +296,7 @@ def read_roster(path: Path, profiles: dict[str, TerminalProfile]) -> Roster:
     :raises ConfigError: when the file cannot be read, is not TOML, or does not
         describe a plant this toolkit can act on.
     """
-    try:
-        raw = path.read_bytes()
-    except OSError as exc:
-        raise ConfigError(
-            "cannot read roster file",
-            context={"path": str(path), "detail": str(exc)},
-        ) from exc
-    try:
-        payload = tomllib.loads(raw.decode("utf-8"))
-    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as exc:
-        raise ConfigError(
-            "roster file is not valid TOML",
-            context={"path": str(path), "detail": str(exc)},
-        ) from exc
+    payload = load_toml(path, what="roster file")
     return parse_roster(payload, profiles, where=str(path))
 
 

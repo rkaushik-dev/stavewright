@@ -14,7 +14,6 @@ something to be set from a shell on a factory floor.
 from __future__ import annotations
 
 import os
-import tomllib
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -22,6 +21,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from v4t_setup.__about__ import BASE_INSTALL_LEVEL
+from v4t_setup.config.toml import load_toml
 from v4t_setup.errors import ConfigError
 from v4t_setup.logging import DEFAULT_LEVEL, LEVELS
 
@@ -142,20 +142,7 @@ def read_config_file(path: Path) -> dict[str, Any]:
 
     :raises ConfigError: when the file cannot be read or is not valid TOML.
     """
-    try:
-        raw = path.read_bytes()
-    except OSError as exc:
-        raise ConfigError(
-            "cannot read configuration file",
-            context={"path": str(path), "detail": str(exc)},
-        ) from exc
-    try:
-        payload = tomllib.loads(raw.decode("utf-8"))
-    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as exc:
-        raise ConfigError(
-            "configuration file is not valid TOML",
-            context={"path": str(path), "detail": str(exc)},
-        ) from exc
+    payload = load_toml(path, what="configuration file")
     section = payload.get(CONFIG_SECTION)
     if isinstance(section, dict):
         return dict(section)

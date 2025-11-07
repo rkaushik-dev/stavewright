@@ -19,7 +19,11 @@ from pathlib import Path
 
 import pytest
 
-SOURCE_ROOT = Path(__file__).resolve().parent.parent / "src" / "v4t_setup"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SOURCE_ROOT = PROJECT_ROOT / "src" / "v4t_setup"
+TEST_ROOT = PROJECT_ROOT / "tests"
+
+BOM = b"\xef\xbb\xbf"
 
 IGNORE = re.compile(r"#\s*type:\s*ignore(\[(?P<codes>[^\]]*)\])?")
 
@@ -28,6 +32,11 @@ CONTAINER_METHODS = {"__iter__", "__len__", "__contains__", "__getitem__"}
 
 def source_files() -> list[Path]:
     return sorted(SOURCE_ROOT.rglob("*.py"))
+
+
+def python_files() -> list[Path]:
+    """Everything this repository is responsible for, tests included."""
+    return sorted(SOURCE_ROOT.rglob("*.py")) + sorted(TEST_ROOT.rglob("*.py"))
 
 
 def relative(path: Path) -> str:
@@ -98,6 +107,23 @@ def test_a_container_method_says_what_it_contains(path):
         if isinstance(node.returns, ast.Name) and node.returns.id == "Iterator":
             vague.append(node.name)
     assert vague == [], f"{relative(path)}: {vague}"
+
+
+def test_no_python_file_carries_a_byte_order_mark():
+    # A PowerShell redirect on this bench writes UTF-8 with a BOM by default,
+    # and Python reads the mark as a non printable character in column one.
+    # The module still imports, because the import machinery strips it, so the
+    # first thing that noticed was ast.parse in the test above.
+    marked = [str(path) for path in python_files() if path.read_bytes().startswith(BOM)]
+    assert marked == []
+
+
+def test_no_python_file_has_windows_line_endings():
+    # .gitattributes turns normalisation off for the whole tree, so that the
+    # 2016 payload is stored byte for byte. That also means a file written
+    # through Python's text mode on Windows goes in with CRLF and stays there.
+    mixed = [str(path) for path in python_files() if b"\r\n" in path.read_bytes()]
+    assert mixed == []
 
 
 def test_the_container_methods_travel_together():

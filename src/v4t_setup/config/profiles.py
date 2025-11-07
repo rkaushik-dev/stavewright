@@ -36,35 +36,18 @@ A false there is indistinguishable from somebody meaning it.
 
 from __future__ import annotations
 
-import tomllib
 from pathlib import Path
 from typing import Any
 
 from pydantic import ValidationError
 
+from v4t_setup.config.toml import load_toml
 from v4t_setup.errors import ConfigError
 from v4t_setup.model.profile import TerminalProfile
 
 TERMINALS_TABLE = "terminals"
 PROFILE_SUFFIX = ".toml"
 CLEAR_KEY = "clear"
-
-
-def _read_toml(path: Path) -> dict[str, Any]:
-    try:
-        raw = path.read_bytes()
-    except OSError as exc:
-        raise ConfigError(
-            "cannot read profile file",
-            context={"path": str(path), "detail": str(exc)},
-        ) from exc
-    try:
-        return tomllib.loads(raw.decode("utf-8"))
-    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as exc:
-        raise ConfigError(
-            "profile file is not valid TOML",
-            context={"path": str(path), "detail": str(exc)},
-        ) from exc
 
 
 def _build(payload: dict[str, Any], *, where: str) -> TerminalProfile:
@@ -147,7 +130,7 @@ def read_profiles(path: Path) -> dict[str, TerminalProfile]:
 
     :raises ConfigError: when the file cannot be read or does not validate.
     """
-    return parse_profiles(_read_toml(path), where=str(path))
+    return parse_profiles(load_toml(path, what="profile file"), where=str(path))
 
 
 def read_profile(path: Path, terminal_id: str | None = None) -> TerminalProfile:
