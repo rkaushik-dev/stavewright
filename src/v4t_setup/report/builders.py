@@ -15,6 +15,8 @@ from __future__ import annotations
 from v4t_setup.apply.executor import ApplyResult
 from v4t_setup.apply.executor import Outcome as ApplyOutcome
 from v4t_setup.finding import Finding, Severity
+from v4t_setup.fleet.roster import Roster
+from v4t_setup.fleet.waves import Rollout
 from v4t_setup.gs1.dataset import Dataset
 from v4t_setup.plan.diff import Change, PlanDiff
 from v4t_setup.plan.planner import PlanReport
@@ -355,6 +357,85 @@ def template_report(template: SpfTemplate, findings: list[Finding]) -> Report:
     return report
 
 
+def roster_report(roster: Roster) -> Report:
+    """A plant roster, as a document."""
+    report = Report(
+        title="Plant roster",
+        subtitle=roster.plant,
+        facts={"terminals": str(len(roster)), "lines": str(len(roster.lines))},
+    )
+    report.add(
+        table_section(
+            "Terminals",
+            ["terminal", "line", "position", "criticality", "machine", "commissioned"],
+            [
+                [
+                    entry.terminal_id,
+                    entry.line,
+                    str(entry.position),
+                    entry.criticality.value,
+                    entry.profile.machine.value,
+                    entry.commissioned.isoformat() if entry.commissioned else "never",
+                ]
+                for entry in roster.in_working_order()
+            ],
+        )
+    )
+    never = roster.uncommissioned()
+    if never:
+        report.add(
+            lines_section(
+                "Never commissioned",
+                [entry.terminal_id for entry in never],
+                note="These have no run in the history and nothing to compare against.",
+            )
+        )
+    report.derive_outcome()
+    return report
+
+
+def rollout_report(rollout: Rollout, problems: list[str] | None = None) -> Report:
+    """A rollout plan, as a document.
+
+    :param problems: what :func:`check_rollout` said. They arrive as findings
+        rather than as a table, because a plan that does not hold is the one
+        thing in this report somebody has to act on.
+    """
+    machines = rollout.terminal_ids
+    report = Report(
+        title="Rollout plan",
+        subtitle=rollout.plant,
+        facts={
+            "waves": str(len(rollout)),
+            "terminals": str(len(machines)),
+            "stoppages": str(rollout.stoppages),
+        },
+    )
+    report.add(
+        table_section(
+            "Waves",
+            ["wave", "criticality", "terminals", "lines", "stoppage"],
+            [
+                [
+                    str(wave.number),
+                    wave.criticality.value,
+                    ", ".join(wave.terminal_ids),
+                    ", ".join(wave.lines),
+                    "yes" if wave.needs_stoppage else "no",
+                ]
+                for wave in rollout
+            ],
+        )
+    )
+    findings = [
+        Finding(rule="rollout", severity=Severity.ERROR, message=problem)
+        for problem in problems or []
+    ]
+    report.add_if(findings_section("Findings", findings))
+    report.derive_outcome()
+    return report
+
+
 __all__ = [
     "MAX_TABLE_ROWS",
     "apply_report",
@@ -364,6 +445,8 @@ __all__ = [
     "plan_diff_report",
     "plan_report",
     "preflight_report",
+    "rollout_report",
+    "roster_report",
     "stage_report",
     "template_report",
 ]
