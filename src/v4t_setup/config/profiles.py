@@ -36,6 +36,7 @@ A false there is indistinguishable from somebody meaning it.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -158,13 +159,21 @@ def read_profile(path: Path, terminal_id: str | None = None) -> TerminalProfile:
     )
 
 
-def load_directory(root: Path) -> dict[str, TerminalProfile]:
+def load_directory(
+    root: Path,
+    *,
+    skip: Iterable[str] = (),
+) -> dict[str, TerminalProfile]:
     """Read every ``.toml`` in *root*, merging the terminals they declare.
 
-    The settings file is skipped. A bench keeps ``v4t-setup.toml`` in the same
-    directory as its profiles, and trying to read it as one fails with a
-    message about missing terminals that tells the operator nothing.
+    The settings file is always skipped. A bench keeps ``v4t-setup.toml`` in
+    the same directory as its profiles, and trying to read it as one fails with
+    a message about missing terminals that tells the operator nothing.
 
+    :param skip: further file names to leave alone. The plant roster is the one
+        that matters: it lives beside the profiles it references, and it has no
+        ``terminal_id`` of its own, so reading it as a profile fails on a file
+        the caller deliberately put there.
     :raises ConfigError: when two files declare the same terminal, which means
         somebody has copied a file and forgotten to rename the table.
     """
@@ -172,10 +181,11 @@ def load_directory(root: Path) -> dict[str, TerminalProfile]:
 
     if not root.is_dir():
         raise ConfigError("profile directory does not exist", context={"path": str(root)})
+    ignored = {CONFIG_FILE_NAME, *skip}
     found: dict[str, TerminalProfile] = {}
     origin: dict[str, str] = {}
     for path in sorted(root.glob(f"*{PROFILE_SUFFIX}")):
-        if path.name == CONFIG_FILE_NAME:
+        if path.name in ignored:
             continue
         for terminal_id, profile in read_profiles(path).items():
             if terminal_id in found:

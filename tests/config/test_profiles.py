@@ -239,3 +239,35 @@ def test_loading_a_directory_skips_the_settings_file(tmp_path):
     write(tmp_path, MINI_ONLY, "line.toml")
     write(tmp_path, 'staging_root = "_staging"\n', CONFIG_FILE_NAME)
     assert sorted(load_directory(tmp_path)) == ["LINE-PC-09"]
+
+
+def test_loading_a_directory_can_skip_named_files(tmp_path):
+    write(tmp_path, LINE, "line.toml")
+    (tmp_path / "roster.toml").write_text('plant = "Wrexham"\n', encoding="utf-8")
+    profiles = load_directory(tmp_path, skip=["roster.toml"])
+    assert sorted(profiles) == ["LINE-PC-04", "LINE-PC-05", "LINE-PC-09"]
+
+
+def test_a_file_that_is_not_skipped_is_still_read_as_a_profile(tmp_path):
+    # The roster lives beside the profiles it references and has no
+    # terminal_id, so reading it as one fails on a file the caller put there
+    # deliberately. That is what the skip list is for.
+    write(tmp_path, LINE, "line.toml")
+    (tmp_path / "roster.toml").write_text('plant = "Wrexham"\n', encoding="utf-8")
+    with pytest.raises(ConfigError, match="no terminals and no terminal_id"):
+        load_directory(tmp_path)
+
+
+def test_the_settings_file_is_skipped_even_when_more_names_are_given(tmp_path):
+    from v4t_setup.config.settings import CONFIG_FILE_NAME
+
+    write(tmp_path, LINE, "line.toml")
+    (tmp_path / CONFIG_FILE_NAME).write_text("log_level = \"DEBUG\"\n", encoding="utf-8")
+    (tmp_path / "roster.toml").write_text('plant = "Wrexham"\n', encoding="utf-8")
+    kept = sorted(load_directory(tmp_path, skip=["roster.toml"]))
+    assert kept == ["LINE-PC-04", "LINE-PC-05", "LINE-PC-09"]
+
+
+def test_skipping_a_name_that_is_not_there_changes_nothing(tmp_path):
+    write(tmp_path, LINE, "line.toml")
+    assert load_directory(tmp_path, skip=["absent.toml"]) == load_directory(tmp_path)

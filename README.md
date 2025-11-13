@@ -36,9 +36,41 @@ against fixtures.
     run verify        bundle + terminal    -> what has drifted since
     run diff          two manifests        -> what a re-commission would do
     run history       the journals         -> what has been done to a terminal
+    fleet plan        roster + profiles    -> the order to work the plant in
+    fleet next        roster + profiles    -> the terminals to do tonight
 
 `gs1` and `template` are separate groups for the quality side, and neither
-needs a terminal.
+needs a terminal. `fleet` does not need one either: it answers what order to
+commission a plant in, which is a planning question rather than a bench one.
+
+## The plant roster
+
+A roster says where each terminal sits and what stopping it costs. It lives
+beside the profiles and references them by terminal id:
+
+    plant = "Wrexham"
+
+    [line.export]
+    criticality = "critical"
+    shift_pattern = "continuous"
+
+    [line.export.terminal.LINE-PC-04]
+    position = 1
+    commissioned = 2024-11-03
+
+    [line.export.terminal.LINE-PC-05]
+    position = 2
+
+`criticality` is `critical`, `normal` or `spare`, and it decides how many
+machines may be down at once: one, three, eight. `position` is upstream to
+downstream, so position 1 feeds position 2.
+
+    v4t-setup fleet plan roster.toml
+    v4t-setup fleet next roster.toml --batch 2
+
+A wave never takes two machines off one line and never mixes criticalities,
+and the spares go first so the bundle is proved against real hardware before
+anything that matters is touched.
 
 ## Getting started
 

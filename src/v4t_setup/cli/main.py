@@ -13,7 +13,7 @@ from pathlib import Path
 import typer
 
 from v4t_setup.__about__ import PRODUCT_NAME, __version__
-from v4t_setup.cli import cmd_bundle, cmd_gs1, cmd_run, cmd_template
+from v4t_setup.cli import cmd_bundle, cmd_fleet, cmd_gs1, cmd_run, cmd_template
 from v4t_setup.cli.common import EXIT_TOOLKIT, AppContext, echo_lines
 from v4t_setup.errors import V4TError
 
@@ -26,6 +26,7 @@ app = typer.Typer(
 
 app.add_typer(cmd_bundle.app, name="bundle", help="Build, sign and stage a bundle.")
 app.add_typer(cmd_run.app, name="run", help="Plan, check, apply and verify a terminal.")
+app.add_typer(cmd_fleet.app, name="fleet", help="Order a plant's terminals into waves.")
 app.add_typer(cmd_gs1.app, name="gs1", help="Validate GS1 element strings and data files.")
 app.add_typer(cmd_template.app, name="template", help="Inspect and lint print templates.")
 
