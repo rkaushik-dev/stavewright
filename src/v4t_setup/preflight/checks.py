@@ -67,13 +67,18 @@ class Check(BaseRule["PreflightContext", TargetSystem]):
     name = "check"
     title = "a check"
 
-    def _finding(  # type: ignore[override]
+    def _about(
         self,
         severity: Severity,
         message: str,
         subject: str | None = None,
         **extra: object,
     ) -> Finding:
+        """A finding about one thing on the terminal, named third.
+
+        Its own name rather than an override of ``_finding``, for the same
+        reason as the dataset rules: the base takes the AI in that position.
+        """
         return self._make(severity, message, subject=subject, context=dict(extra))
 
 
@@ -103,7 +108,7 @@ class ElevationCheck(Check):
         if not needing:
             return []
         return [
-            self._finding(
+            self._about(
                 Severity.ERROR,
                 "this plan needs administrator and the session is not elevated",
                 kinds=needing,
@@ -121,7 +126,7 @@ class OsVersionCheck(Check):
         build = context.facts.os_build
         if build in REFUSED_OS_BUILDS:
             return [
-                self._finding(
+                self._about(
                     Severity.ERROR,
                     "the package refuses this Windows version",
                     build=build,
@@ -129,7 +134,7 @@ class OsVersionCheck(Check):
             ]
         if build < MIN_OS_BUILD:
             return [
-                self._finding(
+                self._about(
                     Severity.ERROR,
                     "the package needs Windows XP or later",
                     build=build,
@@ -149,7 +154,7 @@ class ArchitectureCheck(Check):
         if context.facts.architecture == context.profile.architecture.value:
             return []
         return [
-            self._finding(
+            self._about(
                 Severity.ERROR,
                 "the profile and the machine disagree about the architecture",
                 profile=context.profile.architecture.value,
@@ -170,7 +175,7 @@ class FreeSpaceCheck(Check):
         if context.facts.free_bytes >= required:
             return []
         return [
-            self._finding(
+            self._about(
                 Severity.ERROR,
                 "not enough free space on the system drive",
                 required=required,
@@ -193,7 +198,7 @@ class NewerProductCheck(Check):
         findings: list[Finding] = []
         if decision.is_blocked:
             findings.append(
-                self._finding(
+                self._about(
                     Severity.ERROR,
                     "a newer build of the product is already on this terminal",
                     versions=[str(product.version) for product in decision.blocking],
@@ -201,7 +206,7 @@ class NewerProductCheck(Check):
             )
         if decision.removable:
             findings.append(
-                self._finding(
+                self._about(
                     Severity.WARNING,
                     "an older build is installed and will be removed first",
                     versions=[str(product.version) for product in decision.removable],
@@ -222,7 +227,7 @@ class ControllerCheck(Check):
             return []
         if not context.profile.machine.has_fpga:
             return [
-                self._finding(
+                self._about(
                     Severity.ERROR,
                     "the plan programs a controller this machine does not have",
                     machine=context.profile.machine.value,
@@ -232,7 +237,7 @@ class ControllerCheck(Check):
         wanted = context.profile.fpga_revision
         if current is None:
             return [
-                self._finding(
+                self._about(
                     Severity.WARNING,
                     "the controller reports no bitstream revision, it may be blank",
                     wanted=wanted,
@@ -240,7 +245,7 @@ class ControllerCheck(Check):
             ]
         if wanted and current != wanted:
             return [
-                self._finding(
+                self._about(
                     Severity.INFO,
                     "the controller will be reprogrammed",
                     installed=current,
@@ -272,7 +277,7 @@ class TemplateFontCheck(Check):
         if not missing:
             return []
         return [
-            self._finding(
+            self._about(
                 Severity.WARNING,
                 "a font the templates use is neither installed nor being installed",
                 fonts=missing,
@@ -291,7 +296,7 @@ class CodePageCheck(Check):
         if not needs_multiple_code_pages(languages):
             return []
         return [
-            self._finding(
+            self._about(
                 Severity.WARNING,
                 "the selected languages need more than one print head code page",
                 code_pages=sorted(code_pages_for(languages)),
@@ -312,7 +317,7 @@ class HaspCheck(Check):
             return []
         if context.hasp_serial is None:
             return [
-                self._finding(
+                self._about(
                     Severity.ERROR,
                     "the profile names a dongle and none is attached",
                     wanted=wanted,
@@ -320,7 +325,7 @@ class HaspCheck(Check):
             ]
         if context.hasp_serial != wanted:
             return [
-                self._finding(
+                self._about(
                     Severity.ERROR,
                     "the attached dongle is not the one this terminal is licensed with",
                     wanted=wanted,
@@ -340,7 +345,7 @@ class UnfinishedRunCheck(Check):
         if context.unfinished_journal is None:
             return []
         return [
-            self._finding(
+            self._about(
                 Severity.ERROR,
                 "a previous run on this terminal never finished, resume or roll it back",
                 journal=context.unfinished_journal,
@@ -358,7 +363,7 @@ class EmptyPlanCheck(Check):
         if len(context.plan):
             return []
         return [
-            self._finding(
+            self._about(
                 Severity.WARNING,
                 "the plan has no steps, nothing applies to this terminal",
                 terminal=context.profile.terminal_id,

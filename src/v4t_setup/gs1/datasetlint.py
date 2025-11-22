@@ -32,16 +32,19 @@ EAN13_LENGTH = 13
 class DatasetRule(BaseRule[Dataset, "MarkingContext"]):
     """A check over a whole data file."""
 
-    def _finding(  # type: ignore[override]
+    def _at(
         self,
         severity: Severity,
         message: str,
         line: int | None = None,
         **extra: object,
     ) -> Finding:
-        # The dataset rules were written with the line number third and every
-        # one of them passes it positionally. Keeping that shape here is
-        # cheaper and clearer than editing forty call sites to name it.
+        """A finding about one row, with the file line third.
+
+        Its own name rather than an override of ``_finding``. The base takes
+        the AI third and this takes a line number, so overriding it meant a
+        type ignore and meant mypy checked none of the fourteen call sites.
+        """
         return self._make(severity, message, line=line, context=dict(extra))
 
 
@@ -52,7 +55,7 @@ class RaggedRowRule(DatasetRule):
 
     def check(self, dataset: Dataset, context: MarkingContext) -> list[Finding]:
         return [
-            self._finding(
+            self._at(
                 Severity.WARNING,
                 "row stops before the last column",
                 row.line,
@@ -78,12 +81,12 @@ class GtinColumnRule(DatasetRule):
                 good = verify_gtin(gtin)
             except Gs1Error as exc:
                 findings.append(
-                    self._finding(Severity.ERROR, exc.message, row.line, value=gtin)
+                    self._at(Severity.ERROR, exc.message, row.line, value=gtin)
                 )
                 continue
             if not good:
                 findings.append(
-                    self._finding(
+                    self._at(
                         Severity.ERROR,
                         "GTIN check digit does not match the data",
                         row.line,
@@ -113,7 +116,7 @@ class ElementStringRule(DatasetRule):
                     parsed = parse(text)
                 except Gs1Error as exc:
                     findings.append(
-                        self._finding(
+                        self._at(
                             Severity.ERROR, exc.message, row.line, column=column, value=text
                         )
                     )
@@ -163,7 +166,7 @@ class ColumnAgreementRule(DatasetRule):
     ) -> list[Finding]:
         if in_string is None:
             return [
-                self._finding(
+                self._at(
                     Severity.ERROR,
                     f"element string carries no ({ai}) to match the {column} column",
                     row.line,
@@ -172,7 +175,7 @@ class ColumnAgreementRule(DatasetRule):
             ]
         if in_string != in_column:
             return [
-                self._finding(
+                self._at(
                     Severity.ERROR,
                     f"element string ({ai}) disagrees with the {column} column",
                     row.line,
@@ -198,7 +201,7 @@ class DuplicateSerialRule(DatasetRule):
                 continue
             if serial in first_seen:
                 findings.append(
-                    self._finding(
+                    self._at(
                         Severity.ERROR,
                         "serial number already used earlier in the file",
                         row.line,
@@ -225,13 +228,13 @@ class IndexContinuityRule(DatasetRule):
                 continue
             if not raw.isdigit():
                 findings.append(
-                    self._finding(Severity.ERROR, "index is not a number", row.line, value=raw)
+                    self._at(Severity.ERROR, "index is not a number", row.line, value=raw)
                 )
                 continue
             value = int(raw)
             if value != expected:
                 findings.append(
-                    self._finding(
+                    self._at(
                         Severity.WARNING,
                         "index is not the next one in sequence",
                         row.line,
@@ -250,7 +253,7 @@ class LotCodeRule(DatasetRule):
 
     def check(self, dataset: Dataset, context: MarkingContext) -> list[Finding]:
         return [
-            self._finding(
+            self._at(
                 Severity.WARNING,
                 "lot code is not in the two letter colon two digit form",
                 row.line,
@@ -268,7 +271,7 @@ class AlignmentMarkRule(DatasetRule):
 
     def check(self, dataset: Dataset, context: MarkingContext) -> list[Finding]:
         return [
-            self._finding(
+            self._at(
                 Severity.WARNING,
                 "alignment mark is not a single upper case letter",
                 row.line,
@@ -292,12 +295,12 @@ class Ean13ColumnRule(DatasetRule):
                 continue
             if not value.isdigit():
                 findings.append(
-                    self._finding(Severity.ERROR, "EAN13 is not numeric", row.line, value=value)
+                    self._at(Severity.ERROR, "EAN13 is not numeric", row.line, value=value)
                 )
                 continue
             if len(value) != EAN13_LENGTH:
                 findings.append(
-                    self._finding(
+                    self._at(
                         Severity.WARNING,
                         "EAN13 column does not hold thirteen digits",
                         row.line,

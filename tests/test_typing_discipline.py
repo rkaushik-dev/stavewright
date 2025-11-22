@@ -68,6 +68,16 @@ def test_no_function_hides_behind_an_untyped_ignore(path):
 
 
 @pytest.mark.parametrize("path", source_files(), ids=relative)
+def test_no_method_is_an_override_that_changes_what_an_argument_means(path):
+    # Two rule subclasses used to override the base's finding helper with a
+    # different third argument, one a line number and one a subject. The ignore
+    # made that compile and meant mypy checked none of the thirty one call
+    # sites. A helper with a different meaning gets a different name.
+    offenders = [number for number, codes in ignores(path) if codes == "override"]
+    assert offenders == [], f"{relative(path)} lines {offenders}"
+
+
+@pytest.mark.parametrize("path", source_files(), ids=relative)
 def test_every_ignore_names_its_code(path):
     bare = [number for number, codes in ignores(path) if not codes]
     assert bare == [], f"{relative(path)} lines {bare}"
