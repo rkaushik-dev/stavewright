@@ -22,8 +22,11 @@ from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from itertools import pairwise
+from pathlib import Path
+from typing import Any
 
-from v4t_setup.errors import PlanError
+from v4t_setup.config.toml import load_toml
+from v4t_setup.errors import ConfigError, PlanError
 from v4t_setup.fleet.waves import Rollout, Wave
 
 DEFAULT_PER_MACHINE = timedelta(minutes=25)
@@ -228,13 +231,85 @@ def schedule_rollout(
     )
 
 
+WINDOW_TABLE = "window"
+
+
+def parse_windows(payload: dict[str, Any], *, where: str = "(in memory)") -> list[Window]:
+    """Read the maintenance calendar out of a parsed document.
+
+    The calendar is its own file rather than part of the roster. Different
+    owner, different cadence: the roster changes when a line is re-laid, the
+    calendar changes every month::
+
+        [[window]]
+        label = "monday night"
+        start = 2025-06-02T22:00:00Z
+        end = 2025-06-03T02:00:00Z
+
+    :raises ConfigError: when the window list is not a list of tables, or an
+        entry is missing a start or an end.
+    :raises PlanError: when a window is backwards, has naive times, or two of
+        them overlap.
+    """
+    entries = payload.get(WINDOW_TABLE, [])
+    if not isinstance(entries, list):
+        raise ConfigError(
+            "the window entry is not a list of tables",
+            context={"where": where},
+        )
+    windows: list[Window] = []
+    for position, entry in enumerate(entries, start=1):
+        if not isinstance(entry, dict):
+            raise ConfigError(
+                "a window entry is not a table",
+                context={"where": where, "position": position},
+            )
+        windows.append(
+            Window(
+                start=_moment(entry.get("start"), "start", position, where),
+                end=_moment(entry.get("end"), "end", position, where),
+                label=str(entry.get("label", "")),
+            )
+        )
+    return check_windows(windows)
+
+
+def _moment(value: object, field: str, position: int, where: str) -> datetime:
+    if not isinstance(value, datetime):
+        raise ConfigError(
+            f"a window needs a {field} time",
+            context={"where": where, "position": position, "value": repr(value)},
+        )
+    if value.tzinfo is None:
+        # TOML allows a local date-time with no offset. Accepting it here would
+        # mean the schedule reads differently depending on which laptop opened
+        # the file, and the offset is one character to type.
+        raise ConfigError(
+            f"a window {field} time needs an offset, such as Z",
+            context={"where": where, "position": position, "value": value.isoformat()},
+        )
+    return value
+
+
+def read_windows(path: Path) -> list[Window]:
+    """Read a maintenance calendar file.
+
+    :raises ConfigError: when the file cannot be read or does not describe
+        windows this toolkit can schedule against.
+    """
+    return parse_windows(load_toml(path, what="maintenance calendar"), where=str(path))
+
+
 __all__ = [
     "DEFAULT_CHANGEOVER",
     "DEFAULT_PER_MACHINE",
+    "WINDOW_TABLE",
     "Booking",
     "Schedule",
     "Window",
     "check_windows",
+    "parse_windows",
+    "read_windows",
     "schedule_rollout",
     "wave_duration",
 ]
