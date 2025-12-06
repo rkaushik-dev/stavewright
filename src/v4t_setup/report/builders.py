@@ -12,10 +12,13 @@ findings, and a plan is never a failure by itself.
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from v4t_setup.apply.executor import ApplyResult
 from v4t_setup.apply.executor import Outcome as ApplyOutcome
 from v4t_setup.finding import Finding, Severity
 from v4t_setup.fleet.roster import Roster
+from v4t_setup.fleet.schedule import Schedule, Window
 from v4t_setup.fleet.waves import Rollout
 from v4t_setup.gs1.dataset import Dataset
 from v4t_setup.plan.diff import Change, PlanDiff
@@ -436,6 +439,75 @@ def rollout_report(rollout: Rollout, problems: list[str] | None = None) -> Repor
     return report
 
 
+def schedule_report(schedule: Schedule, windows: list[Window] | None = None) -> Report:
+    """A dated rollout, as a document.
+
+    A wave that fits nowhere is an error rather than a note. The whole reason
+    to date a rollout is to find out what the offered windows will not hold,
+    and that answer is no use if it renders as a line somebody scrolls past.
+    """
+    report = Report(
+        title="Rollout schedule",
+        subtitle=schedule.plant,
+        facts={
+            "booked": str(len(schedule)),
+            "unplaced": str(len(schedule.unplaced)),
+            "working_time": _hours(schedule.working_time),
+            "finishes": schedule.finishes_at.isoformat(sep=" ") if schedule.finishes_at else "",
+        },
+    )
+    if windows:
+        report.add(
+            table_section(
+                "Windows",
+                ["window", "opens", "closes", "hours", "booked"],
+                [
+                    [
+                        window.label or "(unnamed)",
+                        window.start.isoformat(sep=" "),
+                        window.end.isoformat(sep=" "),
+                        _hours(window.duration),
+                        str(len(schedule.in_window(window.label))),
+                    ]
+                    for window in windows
+                ],
+            )
+        )
+    report.add(
+        table_section(
+            "Bookings",
+            ["wave", "starts", "ends", "window", "terminals"],
+            [
+                [
+                    str(booking.wave.number),
+                    booking.start.isoformat(sep=" "),
+                    booking.end.isoformat(sep=" "),
+                    booking.window.label or "(unnamed)",
+                    ", ".join(booking.wave.terminal_ids),
+                ]
+                for booking in schedule
+            ],
+        )
+    )
+    findings = [
+        Finding(
+            rule="schedule/unplaced",
+            severity=Severity.ERROR,
+            message="this wave does not fit any offered window",
+            subject=", ".join(wave.terminal_ids),
+            context={"wave": wave.number, "machines": len(wave)},
+        )
+        for wave in schedule.unplaced
+    ]
+    report.add_if(findings_section("Findings", findings))
+    report.derive_outcome()
+    return report
+
+
+def _hours(span: timedelta) -> str:
+    return f"{span.total_seconds() / 3600:.1f}"
+
+
 __all__ = [
     "MAX_TABLE_ROWS",
     "apply_report",
@@ -447,6 +519,7 @@ __all__ = [
     "preflight_report",
     "rollout_report",
     "roster_report",
+    "schedule_report",
     "stage_report",
     "template_report",
 ]

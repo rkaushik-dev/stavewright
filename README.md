@@ -68,6 +68,21 @@ downstream, so position 1 feeds position 2.
     v4t-setup fleet plan roster.toml
     v4t-setup fleet next roster.toml --batch 2
 
+The maintenance calendar is its own file, because it changes every month and
+the roster does not:
+
+    [[window]]
+    label = "monday night"
+    start = 2025-06-02T22:00:00Z
+    end = 2025-06-03T02:00:00Z
+
+    v4t-setup fleet schedule roster.toml calendar.toml --engineers 2
+
+That exits 1 when a wave fits in no window, which is the answer it is there to
+give. A wave never spans two windows: half the steps in a commissioning run
+cannot be rolled back, so a machine left part done at the end of a shift is
+somebody's morning gone.
+
 A wave never takes two machines off one line and never mixes criticalities,
 and the spares go first so the bundle is proved against real hardware before
 anything that matters is touched.

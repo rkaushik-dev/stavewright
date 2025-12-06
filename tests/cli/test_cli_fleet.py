@@ -260,3 +260,131 @@ def test_a_plan_that_does_not_hold_exits_with_findings(runner, bench, plant, mon
     result = run(runner, "fleet", "plan", str(plant))
     assert result.exit_code == EXIT_FINDINGS
     assert "something is wrong" in result.output
+
+
+CALENDAR = """
+[[window]]
+label = "monday night"
+start = 2025-06-02T22:00:00Z
+end = 2025-06-03T02:00:00Z
+
+[[window]]
+label = "tuesday night"
+start = 2025-06-03T22:00:00Z
+end = 2025-06-04T02:00:00Z
+"""
+
+
+@pytest.fixture
+def calendar(bench):
+    path = bench / "calendar.toml"
+    path.write_text(CALENDAR, encoding="utf-8")
+    return path
+
+
+def test_scheduling_a_plant(runner, plant, calendar):
+    result = run(runner, "fleet", "schedule", str(plant), str(calendar))
+    assert result.exit_code == EXIT_OK, result.output
+    assert "Rollout schedule" in result.output
+    assert "monday night" in result.output
+
+
+def test_the_schedule_books_every_wave(runner, plant, calendar):
+    result = run(runner, "fleet", "schedule", str(plant), str(calendar), "--format", "json")
+    facts = json_output(result)["facts"]
+    assert facts["unplaced"] == "0"
+    assert facts["booked"] == "4"
+
+
+def test_the_first_booking_opens_the_window(runner, plant, calendar):
+    result = run(runner, "fleet", "schedule", str(plant), str(calendar), "--format", "json")
+    sections = json_output(result)["sections"]
+    bookings = next(part for part in sections if part["heading"] == "Bookings")
+    assert bookings["rows"][0][1] == "2025-06-02 22:00:00+00:00"
+
+
+def test_more_engineers_change_nothing_when_every_wave_is_one_machine(runner, plant, calendar):
+    # Which is this plant: two critical machines on one line, and the other
+    # two alone on theirs. A second pair of hands has nothing to do.
+    one = run(runner, "fleet", "schedule", str(plant), str(calendar), "--format", "json")
+    three = run(
+        runner, "fleet", "schedule", str(plant), str(calendar), "-e", "3", "--format", "json"
+    )
+    assert json_output(three)["facts"]["finishes"] == json_output(one)["facts"]["finishes"]
+
+
+def test_more_engineers_finish_sooner_when_a_wave_has_several(runner, bench, plant, calendar):
+    wide = "\n".join(
+        ["plant = \"Wrexham\""]
+        + [
+            f"\n[line.line{n}]\n\n[line.line{n}.terminal.{name}]\nposition = 1"
+            for n, name in enumerate(("EXPORT-01", "EXPORT-02", "SAMPLE-01"), start=1)
+        ]
+    )
+    plant.write_text(wide, encoding="utf-8")
+    one = run(runner, "fleet", "schedule", str(plant), str(calendar), "--format", "json")
+    three = run(
+        runner, "fleet", "schedule", str(plant), str(calendar), "-e", "3", "--format", "json"
+    )
+    assert json_output(three)["facts"]["finishes"] < json_output(one)["facts"]["finishes"]
+
+
+def test_a_slower_bench_can_run_out_of_window(runner, plant, calendar):
+    result = run(runner, "fleet", "schedule", str(plant), str(calendar), "--minutes", "600")
+    assert result.exit_code == EXIT_FINDINGS
+    assert "does not fit any offered window" in result.output
+
+
+def test_scheduling_only_what_is_pending(runner, plant, calendar):
+    result = run(
+        runner, "fleet", "schedule", str(plant), str(calendar), "--pending", "--format", "json"
+    )
+    assert json_output(result)["facts"]["booked"] == "3"
+
+
+def test_a_batch_limit_makes_more_waves(runner, plant, calendar):
+    result = run(
+        runner, "fleet", "schedule", str(plant), str(calendar), "--batch", "1", "--format", "json"
+    )
+    assert json_output(result)["facts"]["booked"] == "4"
+
+
+def test_a_missing_calendar_is_a_toolkit_error(runner, bench, plant):
+    result = run(runner, "fleet", "schedule", str(plant), str(bench / "gone.toml"))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "maintenance calendar does not exist" in result.output
+
+
+def test_a_calendar_with_overlapping_windows_is_refused(runner, bench, plant, calendar):
+    calendar.write_text(
+        CALENDAR.replace("start = 2025-06-03T22:00:00Z", "start = 2025-06-03T01:00:00Z"),
+        encoding="utf-8",
+    )
+    result = run(runner, "fleet", "schedule", str(plant), str(calendar))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "windows overlap" in result.output
+
+
+def test_a_calendar_with_a_naive_time_is_refused(runner, bench, plant, calendar):
+    calendar.write_text(
+        CALENDAR.replace("2025-06-02T22:00:00Z", "2025-06-02T22:00:00"), encoding="utf-8"
+    )
+    result = run(runner, "fleet", "schedule", str(plant), str(calendar))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "needs an offset" in result.output
+
+
+def test_an_empty_calendar_places_nothing(runner, bench, plant, calendar):
+    calendar.write_text("", encoding="utf-8")
+    result = run(runner, "fleet", "schedule", str(plant), str(calendar), "--format", "json")
+    assert json_output(result)["facts"]["booked"] == "0"
+
+
+def test_writing_the_schedule_to_a_file(runner, bench, plant, calendar):
+    out = bench / "schedule.json"
+    result = run(
+        runner, "fleet", "schedule", str(plant), str(calendar),
+        "--format", "json", "--output", str(out),
+    )
+    assert result.exit_code == EXIT_OK
+    assert "Rollout schedule" in out.read_text(encoding="utf-8")
