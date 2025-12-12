@@ -36,20 +36,18 @@ from v4t_setup.report.builders import rollout_report, roster_report, schedule_re
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
 
-def _load(roster_path: Path, profiles: Path | None, *beside: Path | None) -> Roster:
+def _load(roster_path: Path, profiles: Path | None) -> Roster:
     """Read the roster and the profiles it references.
 
-    :param beside: other documents this command was given. They are usually in
-        the same directory as the profiles, and the profile loader reads every
-        TOML it finds, so each one has to be named or it gets parsed as a
-        profile and fails on a file the operator put there deliberately. Every
-        command that grows an argument has to add it here.
+    The roster and the calendar sit in the same directory as the profiles.
+    Keeping them out of the scan is the loader's job, not this one's, because
+    it was this one's for two commits and both commands that grew an argument
+    forgot to update it.
     """
     require_file(roster_path, "roster file")
     profile_dir = profiles or roster_path.parent
     require_directory(profile_dir, "profile directory")
-    others = [path.name for path in beside if path is not None]
-    known = load_directory(profile_dir, skip=[roster_path.name, *others])
+    known = load_directory(profile_dir)
     if not known:
         fail(f"no terminal profiles in {profile_dir}")
     return read_roster(roster_path, known)
@@ -142,7 +140,7 @@ def schedule(
     """
     get_context(ctx)
     require_file(calendar, "maintenance calendar")
-    roster = _load(roster_path, profiles, calendar)
+    roster = _load(roster_path, profiles)
 
     wanted: list[str] = []
     if pending:

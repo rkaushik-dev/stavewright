@@ -4,6 +4,7 @@ import pytest
 
 from v4t_setup.config.profiles import (
     describe_profiles,
+    is_profile_document,
     load_directory,
     parse_profiles,
     read_profile,
@@ -241,33 +242,68 @@ def test_loading_a_directory_skips_the_settings_file(tmp_path):
     assert sorted(load_directory(tmp_path)) == ["LINE-PC-09"]
 
 
-def test_loading_a_directory_can_skip_named_files(tmp_path):
+def test_a_scan_leaves_the_roster_alone(tmp_path):
     write(tmp_path, LINE, "line.toml")
     (tmp_path / "roster.toml").write_text('plant = "Wrexham"\n', encoding="utf-8")
-    profiles = load_directory(tmp_path, skip=["roster.toml"])
-    assert sorted(profiles) == ["LINE-PC-04", "LINE-PC-05", "LINE-PC-09"]
+    assert sorted(load_directory(tmp_path)) == ["LINE-PC-04", "LINE-PC-05", "LINE-PC-09"]
 
 
-def test_a_file_that_is_not_skipped_is_still_read_as_a_profile(tmp_path):
-    # The roster lives beside the profiles it references and has no
-    # terminal_id, so reading it as one fails on a file the caller put there
-    # deliberately. That is what the skip list is for.
+def test_a_scan_leaves_the_calendar_alone(tmp_path):
     write(tmp_path, LINE, "line.toml")
+    (tmp_path / "calendar.toml").write_text(
+        "[[window]]\nstart = 2025-06-02T22:00:00Z\nend = 2025-06-03T02:00:00Z\n",
+        encoding="utf-8",
+    )
+    assert sorted(load_directory(tmp_path)) == ["LINE-PC-04", "LINE-PC-05", "LINE-PC-09"]
+
+
+def test_a_named_path_still_refuses_a_document_that_is_not_a_profile(tmp_path):
     (tmp_path / "roster.toml").write_text('plant = "Wrexham"\n', encoding="utf-8")
     with pytest.raises(ConfigError, match="no terminals and no terminal_id"):
+        read_profiles(tmp_path / "roster.toml")
+
+
+def test_a_scan_still_refuses_a_document_that_is_not_toml(tmp_path):
+    write(tmp_path, LINE, "line.toml")
+    (tmp_path / "broken.toml").write_text("plant = ", encoding="utf-8")
+    with pytest.raises(ConfigError, match="not valid TOML"):
         load_directory(tmp_path)
 
 
-def test_the_settings_file_is_skipped_even_when_more_names_are_given(tmp_path):
-    from v4t_setup.config.settings import CONFIG_FILE_NAME
-
+def test_a_scan_still_refuses_a_profile_that_does_not_validate(tmp_path):
     write(tmp_path, LINE, "line.toml")
-    (tmp_path / CONFIG_FILE_NAME).write_text("log_level = \"DEBUG\"\n", encoding="utf-8")
-    (tmp_path / "roster.toml").write_text('plant = "Wrexham"\n', encoding="utf-8")
-    kept = sorted(load_directory(tmp_path, skip=["roster.toml"]))
-    assert kept == ["LINE-PC-04", "LINE-PC-05", "LINE-PC-09"]
+    write(tmp_path, 'terminal_id = "LINE-PC-77"\nmachine = "s-jet-9000"\n', "odd.toml")
+    with pytest.raises(ConfigError, match="terminal profile is not valid"):
+        load_directory(tmp_path)
 
 
-def test_skipping_a_name_that_is_not_there_changes_nothing(tmp_path):
+def test_a_document_declaring_a_terminal_id_is_a_profile():
+    assert is_profile_document({"terminal_id": "LINE-PC-04"})
+
+
+def test_a_document_declaring_a_terminals_table_is_a_profile():
+    assert is_profile_document({"terminals": {"LINE-PC-04": {}}})
+
+
+def test_a_roster_is_not_a_profile():
+    assert not is_profile_document({"plant": "Wrexham", "line": {}})
+
+
+def test_a_calendar_is_not_a_profile():
+    assert not is_profile_document({"window": []})
+
+
+def test_a_settings_file_is_not_a_profile():
+    assert not is_profile_document({"staging_root": "_staging"})
+
+
+def test_an_empty_document_is_not_a_profile():
+    assert not is_profile_document({})
+
+
+def test_a_mistyped_key_means_the_file_is_ignored(tmp_path):
+    # The cost of recognising profiles by content. It is documented on
+    # load_directory rather than left for somebody to find.
     write(tmp_path, LINE, "line.toml")
-    assert load_directory(tmp_path, skip=["absent.toml"]) == load_directory(tmp_path)
+    write(tmp_path, 'terminal_ids = "LINE-PC-77"\n', "typo.toml")
+    assert "LINE-PC-77" not in load_directory(tmp_path)

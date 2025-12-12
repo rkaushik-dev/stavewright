@@ -36,7 +36,6 @@ A false there is indistinguishable from somebody meaning it.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -159,35 +158,43 @@ def read_profile(path: Path, terminal_id: str | None = None) -> TerminalProfile:
     )
 
 
-def load_directory(
-    root: Path,
-    *,
-    skip: Iterable[str] = (),
-) -> dict[str, TerminalProfile]:
-    """Read every ``.toml`` in *root*, merging the terminals they declare.
+def is_profile_document(payload: dict[str, Any]) -> bool:
+    """Whether a parsed TOML document is trying to be a profile file.
 
-    The settings file is always skipped. A bench keeps ``v4t-setup.toml`` in
-    the same directory as its profiles, and trying to read it as one fails with
-    a message about missing terminals that tells the operator nothing.
+    A profile declares either a ``terminal_id`` at the top level or a
+    ``[terminals]`` table. Nothing else this toolkit reads does either.
+    """
+    return "terminal_id" in payload or TERMINALS_TABLE in payload
 
-    :param skip: further file names to leave alone. The plant roster is the one
-        that matters: it lives beside the profiles it references, and it has no
-        ``terminal_id`` of its own, so reading it as a profile fails on a file
-        the caller deliberately put there.
+
+def load_directory(root: Path) -> dict[str, TerminalProfile]:
+    """Read every profile in *root*, merging the terminals they declare.
+
+    A directory scan reads files nobody named, so it only takes documents that
+    declare a terminal. The settings file, the plant roster and the maintenance
+    calendar all live here and not one of them is a profile.
+
+    This was a skip list first, and every command that grew an argument had to
+    remember to add to it. Two commands in a row did not, and each failed on a
+    file the operator had deliberately put there.
+
+    The cost is worth naming: a profile with ``terminal_ids`` typed by mistake
+    is now ignored rather than refused. :func:`read_profiles` on a named path
+    still refuses it, which is what every command that takes one profile file
+    uses, and a scan reports how many terminals it found.
+
     :raises ConfigError: when two files declare the same terminal, which means
         somebody has copied a file and forgotten to rename the table.
     """
-    from v4t_setup.config.settings import CONFIG_FILE_NAME
-
     if not root.is_dir():
         raise ConfigError("profile directory does not exist", context={"path": str(root)})
-    ignored = {CONFIG_FILE_NAME, *skip}
     found: dict[str, TerminalProfile] = {}
     origin: dict[str, str] = {}
     for path in sorted(root.glob(f"*{PROFILE_SUFFIX}")):
-        if path.name in ignored:
+        payload = load_toml(path, what="profile file")
+        if not is_profile_document(payload):
             continue
-        for terminal_id, profile in read_profiles(path).items():
+        for terminal_id, profile in parse_profiles(payload, where=str(path)).items():
             if terminal_id in found:
                 raise ConfigError(
                     "two profile files declare the same terminal",
@@ -211,6 +218,7 @@ __all__ = [
     "PROFILE_SUFFIX",
     "TERMINALS_TABLE",
     "describe_profiles",
+    "is_profile_document",
     "load_directory",
     "parse_profiles",
     "read_profile",
