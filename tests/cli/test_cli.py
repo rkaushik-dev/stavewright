@@ -153,9 +153,52 @@ def test_template_lint_set(runner, bench):
 
 
 def test_template_lint_set_of_a_directory_with_no_templates(runner, bench):
+    # An empty report used to come back, which reads as a clean set. It is
+    # almost always the wrong directory.
     result = run(runner, "template", "lint-set", str(bench), "--format", "json")
-    assert result.exit_code == EXIT_OK
-    assert json_output(result)["facts"]["templates"] == "0"
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "no templates in this directory" in result.output
+
+
+def test_template_lint_set_finds_the_data_file_beside_the_templates(runner, bench):
+    result = run(runner, "template", "lint-set", str(TEMPLATE.parent), "--format", "json")
+    facts = json_output(result)["facts"]
+    assert facts["data_file"] == "GS1-1.txt"
+    assert facts["longest_element_string"] == "28"
+
+
+def test_template_lint_set_reports_the_fonts(runner, bench):
+    result = run(runner, "template", "lint-set", str(TEMPLATE.parent))
+    assert "Fonts the terminal needs" in result.output
+    assert "Arial" in result.output
+
+
+def test_template_lint_set_with_a_named_data_file(runner, bench):
+    result = run(
+        runner, "template", "lint-set", str(TEMPLATE.parent),
+        "--data", str(GS1_DATA), "--format", "json",
+    )
+    assert json_output(result)["facts"]["data_file"] == "GS1-1.txt"
+
+
+def test_template_lint_set_with_a_data_file_that_is_not_there(runner, bench):
+    result = run(runner, "template", "lint-set", str(TEMPLATE.parent), "--data", "gone.txt")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "data file does not exist" in result.output
+
+
+def test_template_lint_set_with_a_profile(runner, bench, profile_file):
+    result = run(
+        runner, "template", "lint-set", str(TEMPLATE.parent),
+        "--profile", str(profile_file), "--format", "json",
+    )
+    assert json_output(result)["facts"]["templates"] == "1"
+
+
+def test_template_lint_set_with_a_profile_that_is_not_there(runner, bench):
+    result = run(runner, "template", "lint-set", str(TEMPLATE.parent), "--profile", "gone.toml")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "terminal profile does not exist" in result.output
 
 
 def test_template_lint_set_of_a_file(runner, bench):

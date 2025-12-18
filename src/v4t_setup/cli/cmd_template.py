@@ -18,13 +18,14 @@ from v4t_setup.cli.common import (
     require_directory,
     require_file,
 )
-from v4t_setup.finding import Finding
+from v4t_setup.config.profiles import read_profile
 from v4t_setup.gs1.dataset import EXPECTED_COLUMNS
-from v4t_setup.report.builders import template_report
-from v4t_setup.report.document import Report, findings_section, table_section
+from v4t_setup.report.builders import template_report, template_set_report
+from v4t_setup.report.document import table_section
 from v4t_setup.templates.fieldspec import find_field_specs
 from v4t_setup.templates.linter import TemplateContext, lint_template
-from v4t_setup.templates.spf import is_template, read_spf
+from v4t_setup.templates.pack import lint_template_set, read_template_set
+from v4t_setup.templates.spf import read_spf
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -88,44 +89,33 @@ def lint(
 def lint_set(
     ctx: typer.Context,
     directory: Path = typer.Argument(..., help="A directory of templates."),
-    with_dataset: bool = typer.Option(
-        False, "--with-dataset", help="Check field bindings against the standard columns."
+    data_file: Path = typer.Option(
+        None, "--data", "-d", help="The job data file. Found beside the templates otherwise."
+    ),
+    profile_path: Path = typer.Option(
+        None, "--profile", "-p", help="A terminal profile, so the head swath is checked too."
     ),
     fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
     output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
 ) -> None:
-    """Check every template in a directory."""
+    """Check every template in a directory against the data file beside them.
+
+    This used to lint each template on its own with a fixed column list, which
+    could not see the two defects that actually matter: a field bound to a
+    column the job does not supply, and a symbology that will not hold the
+    element strings in it.
+    """
     get_context(ctx)
     require_directory(directory, "template directory")
-    context = TemplateContext(
-        dataset_columns=frozenset(EXPECTED_COLUMNS) if with_dataset else frozenset()
-    )
-    report = Report(title="Template set", subtitle=str(directory))
-    rows: list[list[str]] = []
-    findings: list[Finding] = []
-    for candidate in sorted(directory.iterdir()):
-        if not candidate.is_file() or not is_template(candidate):
-            continue
-        template = read_spf(candidate)
-        found = lint_template(template, context)
-        findings.extend(
-            type(finding)(
-                rule=finding.rule,
-                severity=finding.severity,
-                message=finding.message,
-                ai=finding.ai,
-                line=finding.line,
-                subject=candidate.name,
-                context=finding.context,
-            )
-            for finding in found
-        )
-        rows.append([candidate.name, str(len(template)), str(len(found))])
-    report.add(table_section("Templates", ["file", "blocks", "findings"], rows))
-    report.add_if(findings_section("Findings", findings))
-    report.facts["templates"] = str(len(rows))
-    report.derive_outcome()
-    raise typer.Exit(emit(report, fmt, output))
+    if data_file is not None:
+        require_file(data_file, "data file")
+    profile = None
+    if profile_path is not None:
+        require_file(profile_path, "terminal profile")
+        profile = read_profile(profile_path)
+    templates = read_template_set(directory, data_file=data_file)
+    findings = lint_template_set(templates, profile)
+    raise typer.Exit(emit(template_set_report(templates, findings), fmt, output))
 
 
 __all__ = ["app"]
