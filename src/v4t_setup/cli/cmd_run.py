@@ -16,6 +16,7 @@ from v4t_setup.apply.executor import Executor, dry_run
 from v4t_setup.cli.common import (
     DEFAULT_FORMAT,
     AppContext,
+    echo_lines,
     emit,
     fail,
     get_context,
@@ -24,6 +25,7 @@ from v4t_setup.cli.common import (
     require_file,
 )
 from v4t_setup.config.profiles import read_profile
+from v4t_setup.finding import Finding
 from v4t_setup.model.directory import DirectoryTable
 from v4t_setup.model.manifest import read_manifest
 from v4t_setup.model.profile import TerminalProfile
@@ -43,6 +45,7 @@ from v4t_setup.stage.stager import open_bundle
 from v4t_setup.target.base import TargetSystem
 from v4t_setup.target.memory import MemoryTarget
 from v4t_setup.target.windows import IS_WINDOWS, WindowsTarget
+from v4t_setup.templates.pack import read_template_set
 from v4t_setup.verify.history import find_unfinished, read_history
 from v4t_setup.verify.reconcile import reconcile
 from v4t_setup.verify.snapshot import capture, read_snapshot
@@ -69,6 +72,37 @@ def _open_target(shared: AppContext, offline: bool) -> TargetSystem:
     if offline or not IS_WINDOWS:
         return MemoryTarget()
     return WindowsTarget()
+
+
+def _required_fonts(directory: Path | None) -> frozenset[str]:
+    """The fonts a template set names, for the preflight font check.
+
+    That check has been in the runner from the start and has never had
+    anything to check, because nothing collected the fonts. This is the
+    collector: a directory of templates, read the same way ``template
+    lint-set`` reads it.
+
+    Nothing here lints. A template with a font the terminal does not have is a
+    preflight finding about the terminal, and a template that is broken in some
+    other way is a question for the quality group, not for the bench at two in
+    the morning.
+    """
+    if directory is None:
+        return frozenset()
+    require_directory(directory, "template directory")
+    return read_template_set(directory).fonts
+
+
+def _one_line(finding: Finding) -> str:
+    """A finding as one line, context and all.
+
+    The message on its own is not enough here. "a font the templates use is
+    neither installed nor being installed" without the font name is a warning
+    the operator can do nothing with at two in the morning.
+    """
+    detail = ", ".join(f"{key}={finding.context[key]}" for key in sorted(finding.context))
+    subject = f" [{finding.subject}]" if finding.subject else ""
+    return f"{finding.message}{subject}" + (f" ({detail})" if detail else "")
 
 
 def _unfinished(shared: AppContext, terminal: str) -> str | None:
@@ -112,6 +146,9 @@ def preflight(
     profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
     terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
     aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
+    templates: Path = typer.Option(
+        None, "--templates", help="The template set, so its fonts are checked too."
+    ),
     offline: bool = typer.Option(False, "--offline", help="Check against an empty machine."),
     fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
     output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
@@ -127,6 +164,7 @@ def preflight(
         profile=profile,
         facts=target.facts(),
         unfinished_journal=_unfinished(shared, profile.terminal_id),
+        required_fonts=_required_fonts(templates),
     )
     report = run_preflight(context, target, waive=shared.settings.waived_checks)
     raise typer.Exit(emit(preflight_report(report, profile.terminal_id), fmt, output))
@@ -140,6 +178,9 @@ def apply(
     profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
     terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
     aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
+    templates: Path = typer.Option(
+        None, "--templates", help="The template set, so its fonts are checked too."
+    ),
     dry: bool = typer.Option(False, "--dry-run", help="Apply to a scratch machine instead."),
     skip_preflight: bool = typer.Option(
         False, "--skip-preflight", help="Do not run preflight first. Say why in the ticket."
@@ -162,11 +203,17 @@ def apply(
             facts=target.facts(),
             payload_bytes=staged.total_bytes(),
             unfinished_journal=_unfinished(shared, profile.terminal_id),
+            required_fonts=_required_fonts(templates),
         )
         checks = run_preflight(context, target, waive=shared.settings.waived_checks)
         if not checks.passed:
             emit(preflight_report(checks, profile.terminal_id), fmt, output)
             fail("preflight found problems, nothing was applied", code=1)
+        # Preflight passed, so the run goes ahead, but warnings still have to
+        # reach the operator. They go to stderr as lines rather than as a second
+        # report, because stdout carries one document and --format json means
+        # one document.
+        echo_lines([f"preflight warning: {_one_line(f)}" for f in checks.findings], err=True)
 
     journal = shared.settings.journal_for(shared.run_id)
     if dry:

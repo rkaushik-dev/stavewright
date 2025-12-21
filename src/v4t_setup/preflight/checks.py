@@ -53,7 +53,12 @@ class PreflightContext:
     hasp_serial: str | None = None
     unfinished_journal: str | None = None
     required_fonts: frozenset[str] = frozenset()
-    """Fonts the template set names. Collected by the caller from the templates."""
+    """Fonts the template set names.
+
+    Empty means nobody told the checks about a template set, and the font check
+    stands down rather than guessing. ``run preflight --templates`` fills it in
+    from the same set reader the template commands use.
+    """
 
 
 class Check(BaseRule["PreflightContext", TargetSystem]):

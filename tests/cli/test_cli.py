@@ -564,3 +564,84 @@ def test_preflight_reports_a_run_that_was_never_finished(
     )
     assert result.exit_code == EXIT_FINDINGS
     assert "never finished" in result.output
+
+
+def test_preflight_without_templates_says_nothing_about_fonts(
+    runner, bench, manifest_file, profile_file
+):
+    result = run(
+        runner, "run", "preflight", str(manifest_file),
+        "--profile", str(profile_file), "--aip", str(AIP), "--offline", "--format", "json",
+    )
+    findings = [
+        finding
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+    ]
+    assert not any(finding["rule"] == "template-font" for finding in findings)
+
+
+def test_preflight_with_templates_checks_their_fonts(
+    runner, bench, manifest_file, profile_file
+):
+    # Arial is on any Windows box but not on the empty machine --offline uses,
+    # and the bundle installs no font, so the check has something to say.
+    result = run(
+        runner, "run", "preflight", str(manifest_file),
+        "--profile", str(profile_file), "--aip", str(AIP), "--offline",
+        "--templates", str(TEMPLATE.parent), "--format", "json",
+    )
+    findings = [
+        finding
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+    ]
+    fonts = [finding for finding in findings if finding["rule"] == "template-font"]
+    assert fonts
+    assert fonts[0]["context"]["fonts"] == ["Arial"]
+
+
+def test_preflight_with_a_template_directory_that_is_not_there(
+    runner, bench, manifest_file, profile_file
+):
+    result = run(
+        runner, "run", "preflight", str(manifest_file),
+        "--profile", str(profile_file), "--aip", str(AIP), "--offline",
+        "--templates", "nowhere",
+    )
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "template directory does not exist" in result.output
+
+
+def test_apply_takes_the_same_option(runner, bench, staged_bundle, profile_file):
+    # A missing font is a warning, so the run goes ahead. It still has to
+    # reach the operator, which it does on stderr rather than as a second
+    # document on stdout.
+    result = run(
+        runner, "run", "apply", str(staged_bundle),
+        "--profile", str(profile_file), "--aip", str(AIP), "--dry-run",
+        "--templates", str(TEMPLATE.parent),
+    )
+    assert result.exit_code == EXIT_OK, result.output
+    assert "preflight warning:" in result.output
+    assert "Arial" in result.output
+
+
+def test_apply_without_templates_warns_about_no_fonts(
+    runner, bench, staged_bundle, profile_file
+):
+    result = run(
+        runner, "run", "apply", str(staged_bundle),
+        "--profile", str(profile_file), "--aip", str(AIP), "--dry-run",
+    )
+    assert result.exit_code == EXIT_OK, result.output
+    assert "Arial" not in result.output
+
+
+def test_a_preflight_warning_carries_its_detail(runner, bench, staged_bundle, profile_file):
+    result = run(
+        runner, "run", "apply", str(staged_bundle),
+        "--profile", str(profile_file), "--aip", str(AIP), "--dry-run",
+        "--templates", str(TEMPLATE.parent),
+    )
+    assert "fonts=['Arial']" in result.output
