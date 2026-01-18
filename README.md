@@ -36,6 +36,8 @@ against fixtures.
     run verify        bundle + terminal    -> what has drifted since
     run diff          two manifests        -> what a re-commission would do
     run history       the journals         -> what has been done to a terminal
+    bundle msi        a built .msi         -> what is inside it
+    bundle match      an .msi + setup.aip  -> whether one built the other
     fleet plan        roster + profiles    -> the order to work the plant in
     fleet next        roster + profiles    -> the terminals to do tonight
 
@@ -151,6 +153,15 @@ runs is the terminal and not what somebody remembered to type.
 
 A build server that tells 1 and 2 apart can retry the second and page somebody
 for the first.
+
+## The MSI in this repository was not built from the project file in it
+
+    v4t-setup bundle match msi-quattro/msi-Jet600.msi setup.aip
+
+says so. Different upgrade code, different product name, and the manufacturer
+is still `Default Company Name`. The comparison is by identity and table
+membership rather than by digest, because two builds of the same project differ
+in every byte and are still the same product.
 
 ## Known findings in the shipped payload
 

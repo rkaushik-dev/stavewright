@@ -25,7 +25,9 @@ from v4t_setup.cli.common import (
     require_file,
 )
 from v4t_setup.model.manifest import Manifest, read_manifest, utc_now
-from v4t_setup.report.builders import stage_report
+from v4t_setup.msi.compare import compare_project, compare_tables
+from v4t_setup.msi.tables import read_msi
+from v4t_setup.report.builders import msi_compare_report, msi_report, stage_report
 from v4t_setup.report.document import Report, table_section
 from v4t_setup.signing import (
     KeyRing,
@@ -87,6 +89,48 @@ def inspect(
             )
         )
     raise typer.Exit(emit(report, fmt))
+
+
+@app.command("msi")
+@handle_errors
+def msi(
+    ctx: typer.Context,
+    path: Path = typer.Argument(..., help="A built .msi."),
+    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+) -> None:
+    """Read a built installer and say what is in it."""
+    get_context(ctx)
+    require_file(path, "installer")
+    raise typer.Exit(emit(msi_report(read_msi(path)), fmt, output))
+
+
+@app.command("match")
+@handle_errors
+def match(
+    ctx: typer.Context,
+    path: Path = typer.Argument(..., help="A built .msi."),
+    aip: Path = typer.Argument(..., help="The project file it should have come from."),
+    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+) -> None:
+    """Say whether an installer was built from a project file.
+
+    Exits 1 when it was not, so a release script can gate on it. Comparison is
+    by identity and table membership: two builds of the same project differ in
+    every byte and are still the same product.
+    """
+    get_context(ctx)
+    require_file(path, "installer")
+    require_file(aip, "project file")
+    database = read_msi(path)
+    project = normalise(read_aip(aip))
+    report = msi_compare_report(
+        database,
+        compare_tables(project, database),
+        compare_project(project, database),
+    )
+    raise typer.Exit(emit(report, fmt, output))
 
 
 @app.command("sign")

@@ -645,3 +645,63 @@ def test_a_preflight_warning_carries_its_detail(runner, bench, staged_bundle, pr
         "--templates", str(TEMPLATE.parent),
     )
     assert "fonts=['Arial']" in result.output
+
+
+MSI = AIP.parent / "msi-quattro" / "msi-Jet600.msi"
+
+
+def test_bundle_msi_reads_the_shipped_installer(runner, bench):
+    result = run(runner, "bundle", "msi", str(MSI), "--format", "json")
+    assert result.exit_code == EXIT_OK, result.output
+    facts = json_output(result)["facts"]
+    assert facts["product"] == "msi-Jet600"
+    assert facts["version"] == "1.0.0"
+    assert facts["codepage"] == "1252"
+
+
+def test_bundle_msi_lists_the_tables(runner, bench):
+    result = run(runner, "bundle", "msi", str(MSI), "--format", "json")
+    rows = json_output(result)["sections"][0]["rows"]
+    assert len(rows) == 32
+    assert ["Directory", "539", "3", "Directory"] in rows
+
+
+def test_bundle_msi_of_something_that_is_not_one(runner, bench):
+    result = run(runner, "bundle", "msi", str(AIP))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "signature" in result.output
+
+
+def test_bundle_msi_of_a_missing_file(runner, bench):
+    result = run(runner, "bundle", "msi", "gone.msi")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "installer does not exist" in result.output
+
+
+def test_bundle_match_says_the_shipped_pair_do_not_match(runner, bench):
+    result = run(runner, "bundle", "match", str(MSI), str(AIP))
+    assert result.exit_code == EXIT_FINDINGS
+    assert "UpgradeCode does not match" in result.output
+
+
+def test_bundle_match_shows_the_table_counts(runner, bench):
+    result = run(runner, "bundle", "match", str(MSI), str(AIP), "--format", "json")
+    rows = json_output(result)["sections"][0]["rows"]
+    directory = next(row for row in rows if row[0] == "Directory")
+    assert directory[1] == "38"
+    assert directory[2] == "539"
+
+
+def test_bundle_match_writes_to_a_file(runner, bench):
+    out = bench / "match.json"
+    result = run(
+        runner, "bundle", "match", str(MSI), str(AIP), "--format", "json", "--output", str(out)
+    )
+    assert result.exit_code == EXIT_FINDINGS
+    assert "Installer against project" in out.read_text(encoding="utf-8")
+
+
+def test_bundle_match_with_a_missing_project_file(runner, bench):
+    result = run(runner, "bundle", "match", str(MSI), "gone.aip")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "project file does not exist" in result.output
