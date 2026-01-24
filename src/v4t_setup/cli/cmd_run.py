@@ -33,7 +33,7 @@ from v4t_setup.plan.diff import crossed_irreversible, diff_plans
 from v4t_setup.plan.planner import build_plan
 from v4t_setup.preflight.checks import PreflightContext
 from v4t_setup.preflight.runner import run_preflight
-from v4t_setup.report.builders import (
+from v4t_setup.report.builders.terminal import (
     apply_report,
     drift_report,
     history_report,

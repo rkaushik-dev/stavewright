@@ -31,7 +31,7 @@ from v4t_setup.config.profiles import load_directory
 from v4t_setup.fleet.roster import Roster, read_roster
 from v4t_setup.fleet.schedule import DEFAULT_PER_MACHINE, read_windows, schedule_rollout
 from v4t_setup.fleet.waves import check_rollout, plan_rollout
-from v4t_setup.report.builders import rollout_report, roster_report, schedule_report
+from v4t_setup.report.builders.fleet import rollout_report, roster_report, schedule_report
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 

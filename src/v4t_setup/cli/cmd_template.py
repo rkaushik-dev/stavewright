@@ -20,7 +20,7 @@ from v4t_setup.cli.common import (
 )
 from v4t_setup.config.profiles import read_profile
 from v4t_setup.gs1.dataset import EXPECTED_COLUMNS
-from v4t_setup.report.builders import template_report, template_set_report
+from v4t_setup.report.builders.quality import template_report, template_set_report
 from v4t_setup.report.document import table_section
 from v4t_setup.templates.fieldspec import find_field_specs
 from v4t_setup.templates.linter import TemplateContext, lint_template

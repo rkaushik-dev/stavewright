@@ -8,7 +8,7 @@ from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPatter
 from v4t_setup.fleet.schedule import Window, schedule_rollout
 from v4t_setup.fleet.waves import Rollout, plan_rollout
 from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.report.builders import schedule_report
+from v4t_setup.report.builders.fleet import schedule_report
 from v4t_setup.report.document import Outcome
 from v4t_setup.report.render import to_csv, to_json, to_text
 

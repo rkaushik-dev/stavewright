@@ -11,18 +11,17 @@ from v4t_setup.plan.planner import build_plan
 from v4t_setup.plan.steps import Plan, Step, StepKind
 from v4t_setup.preflight.checks import PreflightContext
 from v4t_setup.preflight.runner import run_preflight
-from v4t_setup.report.builders import (
-    MAX_TABLE_ROWS,
+from v4t_setup.report.builders.quality import gs1_report, template_report
+from v4t_setup.report.builders.terminal import (
     apply_report,
     drift_report,
-    gs1_report,
     plan_report,
     preflight_report,
     stage_report,
-    template_report,
 )
 from v4t_setup.report.document import Outcome, SectionKind
 from v4t_setup.report.render import render
+from v4t_setup.report.shared import MAX_TABLE_ROWS
 from v4t_setup.target.memory import MemoryTarget
 from v4t_setup.templates.linter import lint_template
 from v4t_setup.templates.spf import read_spf

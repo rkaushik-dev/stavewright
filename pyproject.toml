@@ -98,6 +98,9 @@ ignore = [
 # Typer declares options as function argument defaults. That is the whole
 # design of the library, so B008 has nothing useful to say about the CLI.
 "src/v4t_setup/cli/*" = ["B008"]
+# The package exports are resolved lazily, so the imports at the top of
+# __init__ exist for the type checker and are unused at runtime by design.
+"src/v4t_setup/__init__.py" = ["F401"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["v4t_setup"]

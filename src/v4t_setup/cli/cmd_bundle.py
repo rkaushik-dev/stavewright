@@ -27,7 +27,8 @@ from v4t_setup.cli.common import (
 from v4t_setup.model.manifest import Manifest, read_manifest, utc_now
 from v4t_setup.msi.compare import compare_project, compare_tables
 from v4t_setup.msi.tables import read_msi
-from v4t_setup.report.builders import msi_compare_report, msi_report, stage_report
+from v4t_setup.report.builders.installer import msi_compare_report, msi_report
+from v4t_setup.report.builders.terminal import stage_report
 from v4t_setup.report.document import Report, table_section
 from v4t_setup.signing import (
     KeyRing,

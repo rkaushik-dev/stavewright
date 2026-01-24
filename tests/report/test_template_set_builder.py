@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.report.builders import template_set_report
+from v4t_setup.report.builders.quality import template_set_report
 from v4t_setup.report.document import Outcome
 from v4t_setup.report.render import to_json, to_text
 from v4t_setup.templates.pack import TemplateSet, lint_template_set, read_template_set

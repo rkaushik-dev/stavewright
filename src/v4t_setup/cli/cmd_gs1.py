@@ -23,7 +23,7 @@ from v4t_setup.gs1.dataset import read_dataset
 from v4t_setup.gs1.datasetlint import lint_dataset
 from v4t_setup.gs1.parse import parse
 from v4t_setup.gs1.validate import MarkingContext, validate
-from v4t_setup.report.builders import gs1_report
+from v4t_setup.report.builders.quality import gs1_report
 from v4t_setup.report.document import Report, findings_section, lines_section
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
