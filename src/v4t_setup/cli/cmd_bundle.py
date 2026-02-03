@@ -25,8 +25,11 @@ from v4t_setup.cli.common import (
     require_file,
 )
 from v4t_setup.model.manifest import Manifest, read_manifest, utc_now
+from v4t_setup.msi.cfb import read_compound_file
 from v4t_setup.msi.compare import compare_project, compare_tables
-from v4t_setup.msi.tables import read_msi
+from v4t_setup.msi.lint import lint_msi
+from v4t_setup.msi.summary import read_summary
+from v4t_setup.msi.tables import read_database, read_msi
 from v4t_setup.report.builders.installer import msi_compare_report, msi_report
 from v4t_setup.report.builders.terminal import stage_report
 from v4t_setup.report.document import Report, table_section
@@ -100,10 +103,19 @@ def msi(
     fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
     output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
 ) -> None:
-    """Read a built installer and say what is in it."""
+    """Read a built installer, and check it makes sense on its own terms.
+
+    An MSI is a relational database with nothing enforcing its foreign keys, so
+    a component can name a directory that is not there and the build succeeds.
+    Exits 1 when something is wrong with it.
+    """
     get_context(ctx)
     require_file(path, "installer")
-    raise typer.Exit(emit(msi_report(read_msi(path)), fmt, output))
+    source = read_compound_file(path)
+    database = read_database(source, path)
+    summary = read_summary(source)
+    report = msi_report(database, summary, lint_msi(database, summary))
+    raise typer.Exit(emit(report, fmt, output))
 
 
 @app.command("match")

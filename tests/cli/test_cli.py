@@ -705,3 +705,18 @@ def test_bundle_match_with_a_missing_project_file(runner, bench):
     result = run(runner, "bundle", "match", str(MSI), "gone.aip")
     assert result.exit_code == EXIT_TOOLKIT
     assert "project file does not exist" in result.output
+
+
+def test_bundle_msi_reports_the_package_code(runner, bench):
+    result = run(runner, "bundle", "msi", str(MSI), "--format", "json")
+    facts = json_output(result)["facts"]
+    assert facts["package_code"] == "{345299C7-6DE9-4E9E-AFCD-D230D2F0F642}"
+    assert facts["platform"] == "Intel"
+    assert facts["schema"] == "200"
+
+
+def test_bundle_msi_of_a_sound_installer_passes(runner, bench):
+    # The shipped one is internally consistent, whatever else is wrong with it.
+    result = run(runner, "bundle", "msi", str(MSI))
+    assert result.exit_code == EXIT_OK
+    assert "Findings" not in result.output

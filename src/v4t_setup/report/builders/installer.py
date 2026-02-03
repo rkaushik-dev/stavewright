@@ -4,27 +4,38 @@ from __future__ import annotations
 
 from v4t_setup.finding import Finding
 from v4t_setup.msi.compare import SetDifference
+from v4t_setup.msi.summary import SummaryInformation
 from v4t_setup.msi.tables import MsiDatabase
 from v4t_setup.report.document import (
-    Outcome,
     Report,
     findings_section,
     table_section,
 )
 
 
-def msi_report(database: MsiDatabase) -> Report:
+def msi_report(
+    database: MsiDatabase,
+    summary: SummaryInformation | None = None,
+    findings: list[Finding] | None = None,
+) -> Report:
     """What is inside an installer, as a document."""
+    facts = {
+        "product": database.property("ProductName") or "",
+        "version": database.property("ProductVersion") or "",
+        "upgrade_code": database.property("UpgradeCode") or "",
+        "manufacturer": database.property("Manufacturer") or "",
+        "codepage": str(database.pool.codepage),
+    }
+    if summary is not None:
+        facts["package_code"] = summary.package_code or ""
+        facts["platform"] = summary.platform or ""
+        facts["schema"] = str(summary.schema_version or "")
+        facts["built_by"] = summary.creating_application or ""
+        facts["saved"] = summary.saved_at.isoformat(sep=" ") if summary.saved_at else ""
     report = Report(
         title="Installer database",
         subtitle=database.describe(),
-        facts={
-            "product": database.property("ProductName") or "",
-            "version": database.property("ProductVersion") or "",
-            "upgrade_code": database.property("UpgradeCode") or "",
-            "manufacturer": database.property("Manufacturer") or "",
-            "codepage": str(database.pool.codepage),
-        },
+        facts=facts,
     )
     report.add(
         table_section(
@@ -41,7 +52,8 @@ def msi_report(database: MsiDatabase) -> Report:
             ],
         )
     )
-    report.outcome = Outcome.PASS
+    report.add_if(findings_section("Findings", findings or []))
+    report.derive_outcome()
     return report
 
 
