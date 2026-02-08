@@ -5,6 +5,7 @@ from __future__ import annotations
 from v4t_setup.apply.executor import ApplyResult
 from v4t_setup.apply.executor import Outcome as ApplyOutcome
 from v4t_setup.finding import Finding, Severity
+from v4t_setup.plan.cost import estimate_plan
 from v4t_setup.plan.diff import Change, PlanDiff
 from v4t_setup.plan.planner import PlanReport
 from v4t_setup.plan.steps import Plan
@@ -25,6 +26,7 @@ from v4t_setup.verify.history import History
 def plan_report(result: PlanReport) -> Report:
     """A commissioning plan, as a document."""
     plan = result.plan
+    estimate = estimate_plan(plan)
     report = Report(
         title="Commissioning plan",
         subtitle=plan.profile.describe(),
@@ -32,6 +34,8 @@ def plan_report(result: PlanReport) -> Report:
             "plan": str(plan.digest()),
             "steps": str(len(plan)),
             "terminal": plan.profile.terminal_id,
+            "minutes": f"{estimate.minutes:.0f}",
+            "estimate": estimate.describe(),
         },
     )
     rows = [
@@ -60,6 +64,19 @@ def plan_report(result: PlanReport) -> Report:
                 ],
             )
         )
+    report.add(
+        table_section(
+            "Where the time goes",
+            ["kind", "minutes"],
+            [
+                [kind, f"{span.total_seconds() / 60:.1f}"]
+                for kind, span in sorted(
+                    estimate.by_kind.items(), key=lambda pair: -pair[1].total_seconds()
+                )
+            ],
+            note="Before the verify pass, which adds about a quarter.",
+        )
+    )
     irreversible = plan.irreversible_steps
     if irreversible:
         report.add(
