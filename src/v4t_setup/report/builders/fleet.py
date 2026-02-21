@@ -7,6 +7,7 @@ from datetime import timedelta
 from v4t_setup.finding import Finding, Severity
 from v4t_setup.fleet.roster import Roster
 from v4t_setup.fleet.schedule import Schedule, Window
+from v4t_setup.fleet.status import PlantStatus, Standing
 from v4t_setup.fleet.waves import Rollout
 from v4t_setup.report.document import (
     Report,
@@ -14,6 +15,66 @@ from v4t_setup.report.document import (
     lines_section,
     table_section,
 )
+
+
+def status_report(status: PlantStatus) -> Report:
+    """The roster read against the journals, as a document.
+
+    A disputed terminal is a warning rather than an error. The two records
+    disagreeing is a bookkeeping problem, not a machine problem, and putting it
+    at the same level as a half commissioned terminal would bury the one that
+    matters.
+    """
+    counts = status.counts()
+    report = Report(
+        title="Plant standing",
+        subtitle=status.plant,
+        facts={
+            "terminals": str(len(status)),
+            "outstanding": str(len(status.outstanding)),
+            **{name: str(count) for name, count in counts.items()},
+        },
+    )
+    report.add(
+        table_section(
+            "Terminals",
+            ["terminal", "line", "standing", "last run", "note"],
+            [
+                [
+                    item.terminal_id,
+                    item.entry.line,
+                    item.standing.value,
+                    item.last_run_at.isoformat(sep=" ") if item.last_run_at else "",
+                    item.note,
+                ]
+                for item in status
+            ],
+        )
+    )
+    findings = [
+        Finding(
+            rule="standing",
+            severity=(
+                Severity.ERROR if item.standing.blocks_others else Severity.WARNING
+            ),
+            message=item.note or f"this terminal is {item.standing.value}",
+            subject=item.terminal_id,
+            context={"standing": item.standing.value, "line": item.entry.line},
+        )
+        for item in status
+        if item.standing in (Standing.UNFINISHED, Standing.DISPUTED)
+    ]
+    report.add_if(findings_section("Findings", findings))
+    if status.outstanding:
+        report.add(
+            lines_section(
+                "Still to do",
+                status.outstanding,
+                note="In the order the rollout planner would work them.",
+            )
+        )
+    report.derive_outcome()
+    return report
 
 
 def roster_report(roster: Roster) -> Report:
@@ -168,4 +229,5 @@ __all__ = [
     "rollout_report",
     "roster_report",
     "schedule_report",
+    "status_report",
 ]

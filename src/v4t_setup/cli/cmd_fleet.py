@@ -19,6 +19,7 @@ import typer
 
 from v4t_setup.cli.common import (
     DEFAULT_FORMAT,
+    AppContext,
     echo_lines,
     emit,
     fail,
@@ -30,8 +31,15 @@ from v4t_setup.cli.common import (
 from v4t_setup.config.profiles import load_directory
 from v4t_setup.fleet.roster import Roster, read_roster
 from v4t_setup.fleet.schedule import DEFAULT_PER_MACHINE, read_windows, schedule_rollout
+from v4t_setup.fleet.status import plant_status
 from v4t_setup.fleet.waves import check_rollout, plan_rollout
-from v4t_setup.report.builders.fleet import rollout_report, roster_report, schedule_report
+from v4t_setup.report.builders.fleet import (
+    rollout_report,
+    roster_report,
+    schedule_report,
+    status_report,
+)
+from v4t_setup.verify.history import History, read_history
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -75,6 +83,50 @@ def list_terminals(
     raise typer.Exit(emit(roster_report(roster), fmt, output))
 
 
+def _pending(shared: AppContext, roster: Roster, journals: Path | None) -> list[str]:
+    """Terminals the bench still has work on.
+
+    The roster's ``commissioned`` date is somebody's typing and the journals
+    are the toolkit's own record. When there are journals to read, they decide,
+    which means a machine somebody commissioned and forgot to write down does
+    not get done twice.
+    """
+    root = journals or shared.settings.journal_root
+    if root is None or not root.is_dir():
+        return [entry.terminal_id for entry in roster.uncommissioned()]
+    return plant_status(roster, read_history(root)).outstanding
+
+
+@app.command("status")
+@handle_errors
+def status(
+    ctx: typer.Context,
+    roster_path: Path = typer.Argument(..., help="The plant roster."),
+    profiles: Path = typer.Option(
+        None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
+    ),
+    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
+    stale_days: int = typer.Option(
+        365, "--stale-days", help="How old a finished run may be and still count."
+    ),
+    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+) -> None:
+    """Read the roster against the journals and say where the plant stands.
+
+    Exits 1 when a terminal is part commissioned, because that one has to be
+    dealt with before anything else moves. The two records disagreeing about
+    whether a machine was ever done is a warning: it is a bookkeeping problem,
+    not a machine somebody has to stand at.
+    """
+    shared = get_context(ctx)
+    roster = _load(roster_path, profiles)
+    root = journals or shared.settings.journal_root
+    history = read_history(root) if root is not None and root.is_dir() else History()
+    standing = plant_status(roster, history, stale_after=timedelta(days=stale_days))
+    raise typer.Exit(emit(status_report(standing), fmt, output))
+
+
 @app.command("plan")
 @handle_errors
 def plan(
@@ -87,8 +139,9 @@ def plan(
         None, "--only", help="Terminal to include. Repeat it. Order is ignored."
     ),
     pending: bool = typer.Option(
-        False, "--pending", help="Only machines that have never been commissioned."
+        False, "--pending", help="Only machines the journals say still need doing."
     ),
+    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
     batch: int = typer.Option(
         None, "--batch", "-b", help="Never put more than this many machines in one wave."
     ),
@@ -96,12 +149,12 @@ def plan(
     output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
 ) -> None:
     """Work out the wave order for a plant."""
-    get_context(ctx)
+    shared = get_context(ctx)
     roster = _load(roster_path, profiles)
 
     wanted = list(only or [])
     if pending:
-        never = [entry.terminal_id for entry in roster.uncommissioned()]
+        never = _pending(shared, roster, journals)
         wanted = sorted(set(wanted) & set(never)) if wanted else never
         if not wanted:
             fail("every terminal in this roster has been commissioned already")
@@ -125,8 +178,9 @@ def schedule(
         None, "--minutes", help="Minutes per machine. Defaults to the bench figure."
     ),
     pending: bool = typer.Option(
-        False, "--pending", help="Only machines that have never been commissioned."
+        False, "--pending", help="Only machines the journals say still need doing."
     ),
+    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
     batch: int = typer.Option(
         None, "--batch", "-b", help="Never put more than this many machines in one wave."
     ),
@@ -138,13 +192,13 @@ def schedule(
     Exits with findings when a wave fits nowhere, which is the answer this
     command exists to give.
     """
-    get_context(ctx)
+    shared = get_context(ctx)
     require_file(calendar, "maintenance calendar")
     roster = _load(roster_path, profiles)
 
     wanted: list[str] = []
     if pending:
-        wanted = [entry.terminal_id for entry in roster.uncommissioned()]
+        wanted = _pending(shared, roster, journals)
         if not wanted:
             fail("every terminal in this roster has been commissioned already")
 
@@ -167,6 +221,7 @@ def next_wave(
     profiles: Path = typer.Option(
         None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
     ),
+    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
     batch: int = typer.Option(
         None, "--batch", "-b", help="Never put more than this many machines in one wave."
     ),
@@ -176,9 +231,9 @@ def next_wave(
     Deliberately plain. This is the one command whose output goes into a shell
     loop, so it prints terminal ids and nothing else.
     """
-    get_context(ctx)
+    shared = get_context(ctx)
     roster = _load(roster_path, profiles)
-    never = [entry.terminal_id for entry in roster.uncommissioned()]
+    never = _pending(shared, roster, journals)
     if not never:
         fail("every terminal in this roster has been commissioned already")
     rollout = plan_rollout(roster, only=never, batch_limit=batch)

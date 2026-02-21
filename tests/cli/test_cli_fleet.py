@@ -6,7 +6,7 @@ from typer.testing import CliRunner
 from v4t_setup.cli.common import EXIT_FINDINGS, EXIT_OK, EXIT_TOOLKIT
 from v4t_setup.cli.main import app
 
-from .conftest import json_output
+from .conftest import AIP, json_output
 
 PROFILES = """
 machine = "s-jet600"
@@ -388,3 +388,97 @@ def test_writing_the_schedule_to_a_file(runner, bench, plant, calendar):
     )
     assert result.exit_code == EXIT_OK
     assert "Rollout schedule" in out.read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def journals(runner, bench, plant, staged_bundle):
+    """A real journal, written by a dry run against EXPORT-01.
+
+    Hand writing one would mean inventing the hash chain, and a fabricated
+    journal that the reader rejects looks exactly like no journal at all.
+    """
+    result = runner.invoke(
+        app,
+        [
+            "-q", "run", "apply", str(staged_bundle),
+            "--profile", str(bench / "profiles.toml"), "--terminal", "EXPORT-01",
+            "--aip", str(AIP), "--dry-run",
+        ],
+    )
+    assert result.exit_code == EXIT_OK, result.output
+    return bench / "_journal"
+
+
+def test_status_of_a_plant_with_no_journals(runner, plant):
+    result = run(runner, "fleet", "status", str(plant), "--format", "json")
+    facts = json_output(result)["facts"]
+    assert facts["terminals"] == "4"
+    assert facts["never"] == "3"
+
+
+def test_status_reports_a_disputed_terminal(runner, plant):
+    # EXPORT-01 has a commissioned date in the roster and no journal at all.
+    # A warning rather than an error: the two records disagreeing is a
+    # bookkeeping problem, not a machine that needs somebody standing at it.
+    result = run(runner, "fleet", "status", str(plant))
+    assert result.exit_code == EXIT_OK
+    assert "no run in the journals" in result.output
+
+
+def test_status_lists_what_is_still_to_do(runner, plant):
+    result = run(runner, "fleet", "status", str(plant))
+    assert "Still to do" in result.output
+    assert "BENCH-01" in result.output
+
+
+def test_status_reads_a_journal_directory(runner, plant, journals):
+    result = run(
+        runner, "fleet", "status", str(plant), "--journals", str(journals), "--format", "json"
+    )
+    facts = json_output(result)["facts"]
+    assert facts.get("commissioned") == "1"
+    assert facts["outstanding"] == "3"
+
+
+def test_a_stale_window_can_be_narrowed(runner, plant, journals):
+    result = run(
+        runner, "fleet", "status", str(plant), "--journals", str(journals),
+        "--stale-days", "0", "--format", "json",
+    )
+    # The run is seconds old, so nothing but a zero window makes it stale.
+    assert json_output(result)["facts"].get("stale") == "1"
+
+
+def test_status_writes_to_a_file(runner, bench, plant):
+    out = bench / "standing.json"
+    result = run(runner, "fleet", "status", str(plant), "--format", "json", "--output", str(out))
+    assert result.exit_code == EXIT_OK
+    assert "Plant standing" in out.read_text(encoding="utf-8")
+
+
+def test_pending_uses_the_journals_when_there_are_some(runner, plant, journals):
+    # EXPORT-01 is done according to the journal, so it drops out even though
+    # nothing about the roster changed.
+    result = run(
+        runner, "fleet", "plan", str(plant), "--pending", "--journals", str(journals),
+        "--format", "json",
+    )
+    rows = json_output(result)["sections"][0]["rows"]
+    covered = {name for row in rows for name in row[2].split(", ")}
+    assert "EXPORT-01" not in covered
+    assert covered == {"BENCH-01", "SAMPLE-01", "EXPORT-02"}
+
+
+def test_the_next_wave_uses_the_journals_too(runner, plant, journals):
+    result = run(runner, "fleet", "next", str(plant), "--journals", str(journals))
+    assert result.output.split() == ["BENCH-01"]
+
+
+def test_pending_falls_back_to_the_roster_with_no_journals(runner, plant, tmp_path):
+    result = run(
+        runner, "fleet", "plan", str(plant), "--pending",
+        "--journals", str(tmp_path / "nowhere"), "--format", "json",
+    )
+    rows = json_output(result)["sections"][0]["rows"]
+    covered = {name for row in rows for name in row[2].split(", ")}
+    assert covered == {"BENCH-01", "SAMPLE-01", "EXPORT-02"}

@@ -38,6 +38,7 @@ against fixtures.
     run history       the journals         -> what has been done to a terminal
     bundle msi        a built .msi         -> what is inside it
     bundle match      an .msi + setup.aip  -> whether one built the other
+    fleet status      roster + journals    -> where the plant actually stands
     fleet plan        roster + profiles    -> the order to work the plant in
     fleet next        roster + profiles    -> the terminals to do tonight
 
