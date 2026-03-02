@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import NoReturn
 
 from v4t_setup import clock
 from v4t_setup.errors import VerifyError
@@ -106,7 +107,13 @@ class Snapshot:
             )
         return self.system_facts
 
-    def _refuse(self, what: str) -> None:
+    def _refuse(self, what: str) -> NoReturn:
+        """Refuse a write, and tell the type checker this never returns.
+
+        Written as ``-> None`` it did return as far as mypy was concerned, so
+        every one of the twenty two write methods needed an unreachable
+        ``raise AssertionError`` under the call to satisfy its return type.
+        """
         raise ReadOnlyTargetError(
             f"a snapshot cannot {what}. It is a photograph of a terminal, "
             "not the terminal."
@@ -181,93 +188,71 @@ class Snapshot:
 
     def make_directory(self, path: str) -> bool:
         self._refuse("create a directory")
-        raise AssertionError  # pragma: no cover
 
     def remove_directory(self, path: str) -> bool:
         self._refuse("remove a directory")
-        raise AssertionError  # pragma: no cover
 
     def write_file(self, path: str, data: bytes) -> bool:
         self._refuse("write a file")
-        raise AssertionError  # pragma: no cover
 
     def remove_file(self, path: str) -> bool:
         self._refuse("remove a file")
-        raise AssertionError  # pragma: no cover
 
     def create_key(self, root: RegistryRoot, key: str) -> bool:
         self._refuse("create a registry key")
-        raise AssertionError  # pragma: no cover
 
     def remove_key(self, root: RegistryRoot, key: str) -> bool:
         self._refuse("remove a registry key")
-        raise AssertionError  # pragma: no cover
 
     def write_value(
         self, root: RegistryRoot, key: str, name: str | None, value: DecodedValue
     ) -> bool:
         self._refuse("write a registry value")
-        raise AssertionError  # pragma: no cover
 
     def remove_value(self, root: RegistryRoot, key: str, name: str | None) -> bool:
         self._refuse("remove a registry value")
-        raise AssertionError  # pragma: no cover
 
     def register_com(self, path: str) -> bool:
         self._refuse("register a control")
-        raise AssertionError  # pragma: no cover
 
     def unregister_com(self, path: str) -> bool:
         self._refuse("unregister a control")
-        raise AssertionError  # pragma: no cover
 
     def install_assembly(self, identity: AssemblyIdentity, source: str) -> bool:
         self._refuse("install an assembly")
-        raise AssertionError  # pragma: no cover
 
     def remove_assembly(self, identity: AssemblyIdentity) -> bool:
         self._refuse("remove an assembly")
-        raise AssertionError  # pragma: no cover
 
     def install_policy(self, identity: AssemblyIdentity, source: str) -> bool:
         self._refuse("install a policy")
-        raise AssertionError  # pragma: no cover
 
     def remove_policy(self, identity: AssemblyIdentity) -> bool:
         self._refuse("remove a policy")
-        raise AssertionError  # pragma: no cover
 
     def stage_driver(self, source: str, inf_name: str) -> bool:
         self._refuse("stage a driver")
-        raise AssertionError  # pragma: no cover
 
     def remove_driver(self, inf_name: str) -> bool:
         self._refuse("remove a driver")
-        raise AssertionError  # pragma: no cover
 
     def program_controller(self, source: str, revision: str) -> bool:
         self._refuse("program a controller")
-        raise AssertionError  # pragma: no cover
 
     def install_font(self, source: str, name: str) -> bool:
         self._refuse("install a font")
-        raise AssertionError  # pragma: no cover
 
     def remove_font(self, name: str) -> bool:
         self._refuse("remove a font")
-        raise AssertionError  # pragma: no cover
 
     def create_shortcut(self, spec: ShortcutSpec) -> bool:
         self._refuse("create a shortcut")
-        raise AssertionError  # pragma: no cover
 
     def remove_shortcut(self, spec: ShortcutSpec) -> bool:
         self._refuse("remove a shortcut")
-        raise AssertionError  # pragma: no cover
 
     def run_installer(self, path: str, arguments: list[str]) -> int:
         self._refuse("run an installer")
-        raise AssertionError  # pragma: no cover
 
     # Serialisation
 
