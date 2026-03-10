@@ -128,6 +128,7 @@ jobs:
           /tmp/clean/bin/python -m pip install dist/*.whl
           /tmp/clean/bin/v4t-setup --version
           /tmp/clean/bin/v4t-setup checks
+          /tmp/clean/bin/v4t-setup rules
           /tmp/clean/bin/v4t-setup gs1 parse "(01)01001000173250(21)0001"
 
       - uses: actions/upload-artifact@v4
@@ -180,4 +181,33 @@ jobs:
           if counts.get("error", 0) < 100:
               sys.exit(f"expected the known findings, got {counts}")
           print("gs1 findings:", counts)
+          PY
+
+      # The shipped MSI is internally consistent, so this one has to stay clean.
+      - name: read the built installer
+        run: python -m v4t_setup.cli.main bundle msi msi-quattro/msi-Jet600.msi
+
+      # And it was not built from the project file beside it, so this one has to
+      # stay dirty. Both directions matter: a comparator that says two unrelated
+      # installers match is worse than no comparator.
+      - name: the installer still does not match the project file
+        run: |
+          set +e
+          python -m v4t_setup.cli.main bundle match \
+            msi-quattro/msi-Jet600.msi setup.aip --format json --output match.json
+          code=$?
+          set -e
+          test "$code" -eq 1 || { echo "expected exit 1, got $code"; exit 1; }
+          python - <<'PY'
+          import json, sys
+          report = json.loads(open("match.json").read())
+          findings = [
+              finding
+              for section in report["sections"]
+              for finding in section.get("findings", [])
+          ]
+          codes = [f["subject"] for f in findings]
+          if "UpgradeCode" not in codes:
+              sys.exit(f"expected an UpgradeCode finding, got {codes}")
+          print("match findings:", len(findings))
           PY

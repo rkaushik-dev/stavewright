@@ -720,3 +720,38 @@ def test_bundle_msi_of_a_sound_installer_passes(runner, bench):
     result = run(runner, "bundle", "msi", str(MSI))
     assert result.exit_code == EXIT_OK
     assert "Findings" not in result.output
+
+
+def test_rules_lists_every_rule_group(runner, bench):
+    result = run(runner, "rules")
+    assert result.exit_code == EXIT_OK
+    for group in ("gs1:", "gs1 data file:", "template:", "preflight:"):
+        assert group in result.output
+
+
+def test_rules_names_rules_that_exist(runner, bench):
+    result = run(runner, "rules")
+    assert "gs1: check-digit" in result.output
+    assert "template: human-readable" in result.output
+    assert "preflight: template-font" in result.output
+
+
+def test_every_rule_the_command_lists_is_unique(runner, bench):
+    result = run(runner, "rules")
+    lines = [line for line in result.output.splitlines() if line.strip()]
+    assert len(lines) == len(set(lines))
+
+
+def test_the_gs1_check_only_reports_rules_the_command_lists(runner, bench):
+    listed = {
+        line.split(": ", 1)[1]
+        for line in run(runner, "rules").output.splitlines()
+        if line.strip()
+    }
+    result = run(runner, "gs1", "check", str(GS1_DATA), "--format", "json")
+    reported = {
+        finding["rule"]
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+    }
+    assert reported <= listed, sorted(reported - listed)

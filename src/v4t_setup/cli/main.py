@@ -78,6 +78,44 @@ def list_formats() -> None:
     echo_lines(sorted(RENDERERS))
 
 
+@app.command("rules")
+def list_rules() -> None:
+    """List every rule name any command can report, and where it comes from.
+
+    A finding in a report is a rule name and a message, and the name is what a
+    waiver in the settings file matches on. Getting the list out of the code
+    beats keeping a copy of it in the README, which was already two names out.
+    """
+    from v4t_setup.gs1.datasetlint import DEFAULT_DATASET_RULES
+    from v4t_setup.gs1.validate import DEFAULT_RULES
+    from v4t_setup.preflight.checks import DEFAULT_CHECKS
+    from v4t_setup.ruleset import rule_names
+    from v4t_setup.templates.linter import DEFAULT_TEMPLATE_RULES
+
+    element_string = rule_names(DEFAULT_RULES)
+    dataset = rule_names(DEFAULT_DATASET_RULES)
+
+    # A dataset rule that validates a whole element string reports the inner
+    # rule under its own name with the outer one in front, so a waiver on
+    # check-digit does not match element-string/check-digit. Those composed
+    # names are real rule names and belong in this list.
+    composed = [
+        f"{outer}/{inner}"
+        for outer in dataset
+        if outer in ("element-string",)
+        for inner in element_string
+    ]
+
+    groups = (
+        ("gs1", element_string),
+        ("gs1 data file", dataset + composed),
+        ("template", rule_names(DEFAULT_TEMPLATE_RULES)),
+        ("preflight", rule_names(DEFAULT_CHECKS)),
+    )
+    for group, names in groups:
+        echo_lines([f"{group}: {name}" for name in names])
+
+
 def run() -> None:
     """Console script entry point."""
     app()
