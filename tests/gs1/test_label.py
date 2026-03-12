@@ -1,0 +1,204 @@
+from __future__ import annotations
+
+import pytest
+
+from v4t_setup.finding import Severity
+from v4t_setup.gs1.label import (
+    RULE,
+    RULES,
+    SSCC_LENGTH,
+    LabelKind,
+    LabelSpec,
+    check_label,
+    check_labels,
+    check_sscc,
+    describe_rules,
+)
+from v4t_setup.gs1.parse import parse
+
+# A real SSCC: 17 digits and the mod 10 check digit that follows from them.
+GOOD_SSCC = "006141411234567890"
+
+ITEM = "(01)01001000173250(21)0001"
+CASE = "(01)01001000173250(10)AD47-001(30)12"
+PALLET = f"(00){GOOD_SSCC}(01)01001000173250(30)48"
+
+
+def spec(kind: LabelKind, text: str, **kwargs) -> LabelSpec:
+    return LabelSpec(kind=kind, string=parse(text), **kwargs)
+
+
+def messages(findings) -> str:
+    return " | ".join(finding.message for finding in findings)
+
+
+def test_the_sscc_used_in_these_tests_is_a_real_one():
+    assert check_sscc(GOOD_SSCC) is None
+
+
+def test_an_sscc_of_the_wrong_length():
+    assert "18 digits, this one is 3" in check_sscc("123")
+
+
+def test_an_sscc_with_a_letter_in_it():
+    assert check_sscc("00614141123456789A") == "an SSCC is digits only"
+
+
+def test_an_sscc_with_the_wrong_check_digit():
+    wrong = GOOD_SSCC[:-1] + ("0" if GOOD_SSCC[-1] != "0" else "1")
+    assert "check digit should be" in check_sscc(wrong)
+
+
+def test_an_empty_sscc():
+    assert check_sscc("") is not None
+
+
+def test_the_length_is_the_documented_one():
+    assert SSCC_LENGTH == 18
+
+
+def test_a_good_item_mark_passes():
+    assert check_label(spec(LabelKind.ITEM, ITEM)) == []
+
+
+def test_a_good_case_label_passes():
+    assert check_label(spec(LabelKind.CASE, CASE)) == []
+
+
+def test_a_good_pallet_label_passes():
+    assert check_label(spec(LabelKind.PALLET, PALLET)) == []
+
+
+def test_an_item_mark_with_only_a_gtin():
+    findings = check_label(spec(LabelKind.ITEM, "(01)01001000173250"))
+    assert len(findings) == 1
+    assert findings[0].severity is Severity.ERROR
+    assert "to tell one from another" in findings[0].message
+
+
+def test_a_batch_is_enough_to_tell_items_apart():
+    assert check_label(spec(LabelKind.ITEM, "(01)01001000173250(10)AD47-001")) == []
+
+
+def test_an_item_mark_with_no_gtin():
+    findings = check_label(spec(LabelKind.ITEM, "(21)0001"))
+    assert "has to carry a GTIN" in messages(findings)
+
+
+def test_an_sscc_on_an_item_mark():
+    findings = check_label(spec(LabelKind.ITEM, f"(01)01001000173250(21)1(00){GOOD_SSCC}"))
+    assert "An SSCC does not belong on an item label" in messages(findings)
+
+
+def test_a_count_on_an_item_mark():
+    findings = check_label(spec(LabelKind.ITEM, "(01)01001000173250(21)1(30)12"))
+    assert "does not belong on an item label" in messages(findings)
+
+
+def test_a_case_label_with_no_batch():
+    findings = check_label(spec(LabelKind.CASE, "(01)01001000173250(30)12"))
+    error = next(f for f in findings if "has to carry" in f.message)
+    assert error.severity is Severity.ERROR
+    assert error.context["ai"] == "10"
+
+
+def test_a_case_label_with_no_count_is_only_a_warning():
+    findings = check_label(spec(LabelKind.CASE, "(01)01001000173250(10)AD47-001"))
+    assert len(findings) == 1
+    assert findings[0].severity is Severity.WARNING
+    assert "normally carries" in findings[0].message
+
+
+def test_a_pallet_label_with_no_sscc():
+    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250(30)48"))
+    error = next(f for f in findings if "has to carry" in f.message)
+    assert error.severity is Severity.ERROR
+    assert "an SSCC" in error.message
+
+
+def test_a_serial_on_a_pallet_label():
+    findings = check_label(spec(LabelKind.PALLET, f"(00){GOOD_SSCC}(21)0001"))
+    assert "A SERIAL does not belong on a pallet label" in messages(findings)
+
+
+def test_a_pallet_label_with_a_broken_sscc():
+    wrong = GOOD_SSCC[:-1] + ("0" if GOOD_SSCC[-1] != "0" else "1")
+    findings = check_label(spec(LabelKind.PALLET, f"(00){wrong}(01)01001000173250(30)48"))
+    error = next(f for f in findings if "not usable" in f.message)
+    assert error.severity is Severity.ERROR
+    assert error.context["value"] == wrong
+
+
+def test_a_missing_gtin_on_a_pallet_is_only_a_warning():
+    findings = check_label(spec(LabelKind.PALLET, f"(00){GOOD_SSCC}(30)48"))
+    assert [finding.severity for finding in findings] == [Severity.WARNING]
+    assert "normally carries a GTIN" in findings[0].message
+
+
+def test_a_customer_can_insist_on_more():
+    findings = check_label(spec(LabelKind.ITEM, ITEM, extra_required=("17",)))
+    assert "has to carry an USE BY OR EXPIRY" in messages(findings)
+
+
+def test_the_extra_requirement_is_satisfied_when_it_is_there():
+    label = spec(LabelKind.ITEM, "(01)01001000173250(21)1(17)261231", extra_required=("17",))
+    assert check_label(label) == []
+
+
+def test_a_finding_carries_the_reference_when_there_is_one():
+    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250", reference="T3.spf"))
+    assert all(finding.subject == "T3.spf" for finding in findings)
+
+
+def test_a_finding_falls_back_to_the_label_kind():
+    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250"))
+    assert all(finding.subject == "pallet" for finding in findings)
+
+
+def test_every_finding_carries_the_rule_and_the_kind():
+    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250"))
+    assert all(finding.rule == RULE for finding in findings)
+    assert all(finding.context["label"] == "pallet" for finding in findings)
+
+
+def test_checking_several_labels_at_once():
+    findings = check_labels(
+        [
+            spec(LabelKind.ITEM, ITEM),
+            spec(LabelKind.PALLET, "(01)01001000173250"),
+        ]
+    )
+    assert findings
+    assert all(finding.context["label"] == "pallet" for finding in findings)
+
+
+def test_checking_nothing():
+    assert check_labels([]) == []
+
+
+@pytest.mark.parametrize("kind", list(LabelKind))
+def test_every_kind_has_rules(kind):
+    assert RULES[kind].kind is kind
+
+
+def test_no_ai_is_both_required_and_forbidden():
+    for rules in RULES.values():
+        assert not set(rules.required) & set(rules.forbidden)
+
+
+def test_no_ai_is_both_expected_and_forbidden():
+    for rules in RULES.values():
+        assert not set(rules.expected) & set(rules.forbidden)
+
+
+def test_the_rules_describe_themselves():
+    lines = describe_rules()
+    assert len(lines) == len(LabelKind)
+    assert lines[0].startswith("item: needs GTIN")
+    assert "an SSCC" not in lines[0]
+
+
+def test_the_descriptions_read_with_the_right_articles():
+    text = "\n".join(describe_rules())
+    assert "an SERIAL" not in text
+    assert "a SERIAL" in text
