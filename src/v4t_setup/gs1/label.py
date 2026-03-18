@@ -16,8 +16,15 @@ The count is the one people leave off, and a case that says nothing about how
 many is a case somebody has to open.
 
 A pallet label. An SSCC, which is the thing the whole logistics chain scans,
-and normally a GTIN and a count of the cases on it. A pallet without an SSCC
+and normally the GTIN of what is on it and how many. A pallet without an SSCC
 is a pallet that cannot be tracked, and that is an error rather than a warning.
+
+The pallet rules are the ones worth reading twice. The GTIN goes in ``(02)``,
+not ``(01)``, and the count in ``(37)``, not ``(30)``. ``(00)`` and ``(01)``
+are both primary identifiers and an element string may only carry one, so a
+pallet label with ``(01)`` on it does not just break a convention: it fails the
+element string rules as well. This table said ``(01)`` and ``(30)`` for a day
+and the validator was what noticed.
 
 The AIs each kind must, may and must not carry are tables rather than code,
 because they change when a customer's specification changes and everybody who
@@ -45,6 +52,9 @@ BEST_BEFORE = "15"
 EXPIRY = "17"
 SERIAL = "21"
 COUNT = "30"
+CONTAINED_COUNT = "37"
+"""Count of trade items in a logistic unit. ``(30)`` is the count on a trade
+item itself, and the two are not interchangeable."""
 
 SSCC_LENGTH = 18
 
@@ -94,8 +104,8 @@ RULES: dict[LabelKind, LabelRules] = {
         kind=LabelKind.PALLET,
         required=(SSCC,),
         one_of=(),
-        expected=(GTIN, COUNT),
-        forbidden=(SERIAL,),
+        expected=(CONTENT, CONTAINED_COUNT),
+        forbidden=(SERIAL, GTIN),
     ),
 }
 
@@ -267,6 +277,8 @@ def describe_rules() -> list[str]:
 
 __all__ = [
     "BATCH",
+    "CONTAINED_COUNT",
+    "CONTENT",
     "COUNT",
     "GTIN",
     "RULE",

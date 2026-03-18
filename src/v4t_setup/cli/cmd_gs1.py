@@ -13,7 +13,9 @@ import typer
 from v4t_setup.cli.common import (
     DEFAULT_FORMAT,
     AppContext,
+    echo_lines,
     emit,
+    fail,
     get_context,
     handle_errors,
     require_file,
@@ -21,7 +23,9 @@ from v4t_setup.cli.common import (
 from v4t_setup.gs1.ai import all_identifiers
 from v4t_setup.gs1.dataset import read_dataset
 from v4t_setup.gs1.datasetlint import lint_dataset
-from v4t_setup.gs1.parse import parse
+from v4t_setup.gs1.label import LabelKind, LabelSpec, check_label
+from v4t_setup.gs1.label import describe_rules as describe_label_rules
+from v4t_setup.gs1.parse import ElementString, parse
 from v4t_setup.gs1.validate import MarkingContext, validate
 from v4t_setup.report.builders.quality import gs1_report
 from v4t_setup.report.document import Report, findings_section, lines_section
@@ -34,6 +38,30 @@ def _context(shared: AppContext, max_length: int | None) -> MarkingContext:
         reference_year=shared.settings.reference_year,
         max_encoded_length=max_length,
     )
+
+
+def _label_spec(kind: str, parsed: ElementString, require: list[str] | None) -> LabelSpec:
+    """Turn a ``--label`` value into a spec, or stop with the list of kinds."""
+    try:
+        chosen = LabelKind(kind)
+    except ValueError:
+        fail(
+            f"no label kind called {kind}, expected one of "
+            f"{', '.join(member.value for member in LabelKind)}"
+        )
+    return LabelSpec(
+        kind=chosen,
+        string=parsed,
+        extra_required=tuple(require or ()),
+    )
+
+
+@app.command("labels")
+@handle_errors
+def list_label_rules(ctx: typer.Context) -> None:
+    """List what each kind of label has to carry."""
+    get_context(ctx)
+    echo_lines(describe_label_rules())
 
 
 @app.command("check")
@@ -60,18 +88,32 @@ def parse_element_string(
     max_length: int = typer.Option(
         None, "--max-length", help="Longest encoded string the head can mark."
     ),
+    label: str = typer.Option(
+        None, "--label", help="Also check it as an item, case or pallet label."
+    ),
+    require: list[str] = typer.Option(
+        None, "--require", help="An AI this customer insists on. Repeat it."
+    ),
     fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
 ) -> None:
-    """Parse one element string and check it."""
+    """Parse one element string and check it.
+
+    Without ``--label`` this says whether the data is well formed. With one it
+    also says whether it is the right data for that kind of label, which is a
+    different question and the one that gets pallets rejected.
+    """
     shared = get_context(ctx)
     parsed = parse(text)
     findings = validate(parsed, _context(shared, max_length))
+    if label is not None:
+        findings.extend(check_label(_label_spec(label, parsed, require)))
     report = Report(
         title="GS1 element string",
         subtitle=parsed.bracketed(),
         facts={
             "elements": str(len(parsed)),
             "encoded_length": str(parsed.encoded_length()),
+            **({"label": label} if label is not None else {}),
         },
     )
     report.add(

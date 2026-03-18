@@ -755,3 +755,70 @@ def test_the_gs1_check_only_reports_rules_the_command_lists(runner, bench):
         for finding in section.get("findings", [])
     }
     assert reported <= listed, sorted(reported - listed)
+
+
+GOOD_SSCC = "006141411234567890"
+
+
+def test_gs1_labels_lists_the_kinds(runner, bench):
+    result = run(runner, "gs1", "labels")
+    assert result.exit_code == EXIT_OK
+    for kind in ("item:", "case:", "pallet:"):
+        assert kind in result.output
+
+
+def test_gs1_parse_without_a_label_says_nothing_about_one(runner, bench):
+    result = run(runner, "gs1", "parse", "(01)01001000173250", "--format", "json")
+    assert result.exit_code == EXIT_OK
+    assert "label" not in json_output(result)["facts"]
+
+
+def test_gs1_parse_as_an_item_mark(runner, bench):
+    # Legal as an element string, useless as an item mark: nothing can be
+    # recalled by a GTIN on its own.
+    result = run(runner, "gs1", "parse", "(01)01001000173250", "--label", "item")
+    assert result.exit_code == EXIT_FINDINGS
+    assert "to tell one from another" in result.output
+
+
+def test_a_good_item_mark_passes_as_one(runner, bench):
+    result = run(
+        runner, "gs1", "parse", "(01)01001000173250(21)0001", "--label", "item", "--format", "json"
+    )
+    assert result.exit_code == EXIT_OK
+    assert json_output(result)["facts"]["label"] == "item"
+
+
+def test_gs1_parse_as_a_pallet_label(runner, bench):
+    result = run(
+        runner, "gs1", "parse", f"(00){GOOD_SSCC}(02)01001000173250(37)48",
+        "--label", "pallet",
+    )
+    assert result.exit_code == EXIT_OK, result.output
+
+
+def test_a_pallet_label_with_a_serial_on_it(runner, bench):
+    result = run(
+        runner, "gs1", "parse", f"(00){GOOD_SSCC}(21)0001", "--label", "pallet"
+    )
+    assert result.exit_code == EXIT_FINDINGS
+    assert "does not belong on a pallet label" in result.output
+
+
+def test_a_customer_requirement_can_be_added(runner, bench):
+    result = run(
+        runner, "gs1", "parse", "(01)01001000173250(21)0001",
+        "--label", "item", "--require", "17",
+    )
+    assert result.exit_code == EXIT_FINDINGS
+    assert "has to carry an USE BY OR EXPIRY" in result.output
+
+
+def test_a_label_kind_that_is_not_one(runner, bench):
+    result = run(runner, "gs1", "parse", "(01)01001000173250", "--label", "crate")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "expected one of item, case, pallet" in result.output
+
+
+def test_the_rules_command_lists_the_label_rule(runner, bench):
+    assert "gs1 label: label" in run(runner, "rules").output

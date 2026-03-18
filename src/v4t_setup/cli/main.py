@@ -106,8 +106,11 @@ def list_rules() -> None:
         for inner in element_string
     ]
 
+    from v4t_setup.gs1.label import RULE as LABEL_RULE
+
     groups = (
         ("gs1", element_string),
+        ("gs1 label", [LABEL_RULE]),
         ("gs1 data file", dataset + composed),
         ("template", rule_names(DEFAULT_TEMPLATE_RULES)),
         ("preflight", rule_names(DEFAULT_CHECKS)),

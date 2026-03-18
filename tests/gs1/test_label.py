@@ -21,7 +21,7 @@ GOOD_SSCC = "006141411234567890"
 
 ITEM = "(01)01001000173250(21)0001"
 CASE = "(01)01001000173250(10)AD47-001(30)12"
-PALLET = f"(00){GOOD_SSCC}(01)01001000173250(30)48"
+PALLET = f"(00){GOOD_SSCC}(02)01001000173250(37)48"
 
 
 def spec(kind: LabelKind, text: str, **kwargs) -> LabelSpec:
@@ -110,7 +110,7 @@ def test_a_case_label_with_no_count_is_only_a_warning():
 
 
 def test_a_pallet_label_with_no_sscc():
-    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250(30)48"))
+    findings = check_label(spec(LabelKind.PALLET, "(02)01001000173250(37)48"))
     error = next(f for f in findings if "has to carry" in f.message)
     assert error.severity is Severity.ERROR
     assert "an SSCC" in error.message
@@ -123,16 +123,29 @@ def test_a_serial_on_a_pallet_label():
 
 def test_a_pallet_label_with_a_broken_sscc():
     wrong = GOOD_SSCC[:-1] + ("0" if GOOD_SSCC[-1] != "0" else "1")
-    findings = check_label(spec(LabelKind.PALLET, f"(00){wrong}(01)01001000173250(30)48"))
+    findings = check_label(spec(LabelKind.PALLET, f"(00){wrong}(02)01001000173250(37)48"))
     error = next(f for f in findings if "not usable" in f.message)
     assert error.severity is Severity.ERROR
     assert error.context["value"] == wrong
 
 
-def test_a_missing_gtin_on_a_pallet_is_only_a_warning():
-    findings = check_label(spec(LabelKind.PALLET, f"(00){GOOD_SSCC}(30)48"))
+def test_a_missing_content_gtin_on_a_pallet_is_only_a_warning():
+    findings = check_label(spec(LabelKind.PALLET, f"(00){GOOD_SSCC}(37)48"))
     assert [finding.severity for finding in findings] == [Severity.WARNING]
-    assert "normally carries a GTIN" in findings[0].message
+    assert "normally carries a CONTENT" in findings[0].message
+
+
+def test_a_trade_item_gtin_does_not_belong_on_a_pallet():
+    # (00) and (01) are both primary identifiers, so this breaks the element
+    # string rules as well. The table said (01) for a day and the validator
+    # was what noticed.
+    findings = check_label(spec(LabelKind.PALLET, f"(00){GOOD_SSCC}(01)01001000173250"))
+    assert "A GTIN does not belong on a pallet label" in messages(findings)
+
+
+def test_the_trade_item_count_does_not_satisfy_a_pallet():
+    findings = check_label(spec(LabelKind.PALLET, f"(00){GOOD_SSCC}(02)01001000173250(30)48"))
+    assert "normally carries a COUNT" in messages(findings)
 
 
 def test_a_customer_can_insist_on_more():
@@ -146,17 +159,17 @@ def test_the_extra_requirement_is_satisfied_when_it_is_there():
 
 
 def test_a_finding_carries_the_reference_when_there_is_one():
-    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250", reference="T3.spf"))
+    findings = check_label(spec(LabelKind.PALLET, "(02)01001000173250", reference="T3.spf"))
     assert all(finding.subject == "T3.spf" for finding in findings)
 
 
 def test_a_finding_falls_back_to_the_label_kind():
-    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250"))
+    findings = check_label(spec(LabelKind.PALLET, "(02)01001000173250"))
     assert all(finding.subject == "pallet" for finding in findings)
 
 
 def test_every_finding_carries_the_rule_and_the_kind():
-    findings = check_label(spec(LabelKind.PALLET, "(01)01001000173250"))
+    findings = check_label(spec(LabelKind.PALLET, "(02)01001000173250"))
     assert all(finding.rule == RULE for finding in findings)
     assert all(finding.context["label"] == "pallet" for finding in findings)
 
@@ -165,7 +178,7 @@ def test_checking_several_labels_at_once():
     findings = check_labels(
         [
             spec(LabelKind.ITEM, ITEM),
-            spec(LabelKind.PALLET, "(01)01001000173250"),
+            spec(LabelKind.PALLET, "(02)01001000173250"),
         ]
     )
     assert findings
@@ -202,3 +215,20 @@ def test_the_descriptions_read_with_the_right_articles():
     text = "\n".join(describe_rules())
     assert "an SERIAL" not in text
     assert "a SERIAL" in text
+
+
+def test_the_canonical_pallet_label_passes_the_element_string_rules_too():
+    # (00) and (02) are both primary identifiers and the validator refused the
+    # pair until this module was written. A pallet label that the label rules
+    # accept and the element string rules refuse would be useless.
+    from v4t_setup.gs1.validate import validate
+
+    assert validate(parse(PALLET)) == []
+    assert check_label(spec(LabelKind.PALLET, PALLET)) == []
+
+
+def test_two_primary_identifiers_that_are_not_that_pair_are_still_refused():
+    from v4t_setup.gs1.validate import validate
+
+    findings = validate(parse("(01)01001000173250(02)01001000173250"))
+    assert any("more than one primary identifier" in f.message for f in findings)

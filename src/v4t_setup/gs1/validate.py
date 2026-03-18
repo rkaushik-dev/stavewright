@@ -27,6 +27,16 @@ from v4t_setup.ruleset import run_rules
 PRIMARY_IDENTIFIERS = ("00", "01", "02", "8004", "8018")
 """AIs that identify the thing being marked. Exactly one should be present."""
 
+ALLOWED_PAIRS = frozenset({frozenset({"00", "02"})})
+"""Primary identifiers that may appear together after all.
+
+``(00)`` identifies a pallet and ``(02)`` says what is on it, and the two
+together are the standard logistic label. This rule refused that pairing
+until the label rules were written and the canonical pallet label failed it.
+Everything else on the list identifies one thing, so two of them means two
+things and the reader cannot know which.
+"""
+
 DATE_AIS = ("11", "12", "13", "15", "16", "17")
 
 
@@ -87,7 +97,7 @@ class PrimaryIdentifierRule(Rule):
                 )
             ]
         findings: list[Finding] = []
-        if len(present) > 1:
+        if len(present) > 1 and frozenset(present) not in ALLOWED_PAIRS:
             findings.append(
                 self._finding(
                     Severity.ERROR,
@@ -257,6 +267,7 @@ def validate(
 # most callers meet them first.
 
 __all__ = [
+    "ALLOWED_PAIRS",
     "DATE_AIS",
     "DEFAULT_RULES",
     "PRIMARY_IDENTIFIERS",
