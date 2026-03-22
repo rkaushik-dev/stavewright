@@ -44,7 +44,7 @@ def test_checks_lists_the_preflight_checks(runner, bench):
 def test_formats_lists_the_renderers(runner, bench):
     result = run(runner, "formats")
     assert result.exit_code == EXIT_OK
-    assert set(result.output.split()) == {"csv", "json", "junit", "text"}
+    assert set(result.output.split()) == {"csv", "json", "junit", "markdown", "text"}
 
 
 def test_an_unknown_format_is_a_toolkit_error(runner, bench):

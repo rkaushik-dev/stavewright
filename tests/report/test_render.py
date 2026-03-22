@@ -21,6 +21,7 @@ from v4t_setup.report.render import (
     to_csv,
     to_json,
     to_junit,
+    to_markdown,
     to_text,
 )
 
@@ -62,7 +63,7 @@ def sample() -> Report:
 
 
 def test_the_renderer_table_covers_every_advertised_format():
-    assert sorted(RENDERERS) == ["csv", "json", "junit", "text"]
+    assert sorted(RENDERERS) == ["csv", "json", "junit", "markdown", "text"]
 
 
 def test_render_dispatches():
@@ -311,3 +312,72 @@ def test_a_note_is_wrapped_too():
     report = Report(title="x").add(lines_section("Plan", ["one"], note=note.strip()))
     lines = to_text(report, width=48).splitlines()
     assert all(len(line) <= 48 for line in lines)
+
+
+def test_markdown_starts_with_the_title_as_a_heading():
+    assert to_markdown(sample()).splitlines()[0] == "# Commissioning report"
+
+
+def test_markdown_carries_the_subtitle_and_outcome():
+    lines = to_markdown(sample()).splitlines()
+    assert "_LINE-PC-04_" in lines
+    assert "**Outcome:** fail" in lines
+
+
+def test_markdown_lists_the_facts_sorted():
+    lines = to_markdown(sample()).splitlines()
+    facts = [line for line in lines if line.startswith("- **")]
+    assert facts[0].startswith("- **bundle:**")
+
+
+def test_markdown_makes_a_real_table():
+    lines = to_markdown(sample()).splitlines()
+    header = next(index for index, line in enumerate(lines) if line.startswith("| id "))
+    assert set(lines[header + 1].replace(" ", "").replace("|", "")) == {"-"}
+    assert lines[header + 2].startswith("| file.v4t |")
+
+
+def test_markdown_escapes_the_backslashes_in_a_windows_path():
+    text = to_markdown(sample())
+    assert r"C:\\Sellenis\\S-jet600\\V4T.exe" in text
+
+
+def test_markdown_escapes_a_pipe_so_it_does_not_end_the_cell():
+    report = Report(title="x").add(table_section("T", ["a"], [["one|two"]]))
+    assert r"one\|two" in to_markdown(report)
+
+
+def test_markdown_flattens_a_newline_in_a_cell():
+    report = Report(title="x").add(table_section("T", ["a"], [["one\ntwo"]]))
+    assert "| one two |" in to_markdown(report)
+
+
+def test_markdown_renders_findings_as_a_list():
+    text = to_markdown(sample())
+    assert "- **error** `check-digit` check digit does not match the data" in text
+
+
+def test_markdown_renders_a_lines_section_as_a_list():
+    assert "- 12 steps" in to_markdown(sample())
+
+
+def test_markdown_carries_the_section_notes():
+    assert "_Built from the manifest._" in to_markdown(sample())
+
+
+def test_markdown_of_an_empty_report():
+    text = to_markdown(Report(title="Nothing"))
+    assert text.splitlines()[0] == "# Nothing"
+    assert "**Outcome:** pass" in text
+
+
+def test_markdown_ends_with_one_newline():
+    text = to_markdown(sample())
+    assert text.endswith("\n")
+    assert not text.endswith("\n\n")
+
+
+def test_markdown_has_a_heading_per_section():
+    text = to_markdown(sample())
+    for heading in ("## Plan", "## Steps", "## GS1"):
+        assert heading in text

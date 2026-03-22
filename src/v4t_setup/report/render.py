@@ -1,8 +1,9 @@
 """Turning a report document into something a person or a machine reads.
 
-Four renderers. Text goes on the bench screen, JSON goes into the ticket, CSV
-goes into a spreadsheet because that is what quality departments run on, and
-JUnit goes to whatever is watching the build.
+Five renderers. Text goes on the bench screen, markdown goes into the ticket
+system, JSON goes into whatever reads the ticket afterwards, CSV goes into a
+spreadsheet because that is what quality departments run on, and JUnit goes to
+whatever is watching the build.
 
 Every renderer returns a string rather than writing anywhere. Deciding where
 output goes belongs to the CLI, and a renderer that prints cannot be tested
@@ -202,8 +203,60 @@ def to_junit(report: Report) -> str:
     return ElementTree.tostring(suite, encoding="unicode") + "\n"
 
 
+def _escape(text: str) -> str:
+    """Make one cell safe inside a markdown table.
+
+    A pipe ends the cell and a backslash before it is how markdown says
+    otherwise. Windows paths are full of backslashes and registry keys are
+    full of them, so this runs on nearly every table this toolkit prints.
+    """
+    return text.replace("\\", "\\\\").replace("|", "\\|").replace("\n", " ")
+
+
+def to_markdown(report: Report) -> str:
+    """Render for something that renders markdown.
+
+    The commissioning group pastes reports into the ticket system, which reads
+    markdown and does not read the text renderer's column alignment. This is
+    the same content, laid out so that it survives the paste.
+    """
+    lines = [f"# {report.title}"]
+    if report.subtitle:
+        lines.append(f"_{report.subtitle}_")
+    lines.append("")
+    lines.append(f"**Outcome:** {report.outcome.value}")
+
+    if report.facts:
+        lines.append("")
+        lines.extend(f"- **{key}:** {report.facts[key]}" for key in sorted(report.facts))
+
+    for section in report.sections:
+        lines.append("")
+        lines.append(f"## {section.heading}")
+        if section.note:
+            lines.append("")
+            lines.append(f"_{section.note}_")
+        lines.append("")
+        if section.kind is SectionKind.TABLE:
+            lines.append("| " + " | ".join(_escape(name) for name in section.columns) + " |")
+            lines.append("| " + " | ".join("---" for _ in section.columns) + " |")
+            lines.extend(
+                "| " + " | ".join(_escape(cell) for cell in row) + " |"
+                for row in section.rows
+            )
+        elif section.kind is SectionKind.FINDINGS:
+            lines.extend(
+                f"- **{finding.severity.value}** `{finding.rule}` {finding.message}"
+                for finding in section.findings
+            )
+        else:
+            lines.extend(f"- {line}" for line in section.lines)
+    return "\n".join(lines).rstrip("\n") + "\n"
+
+
 RENDERERS: dict[str, Callable[[Report], str]] = {
     "text": to_text,
+    "markdown": to_markdown,
     "json": to_json,
     "csv": to_csv,
     "junit": to_junit,
@@ -232,5 +285,6 @@ __all__ = [
     "to_csv",
     "to_json",
     "to_junit",
+    "to_markdown",
     "to_text",
 ]
