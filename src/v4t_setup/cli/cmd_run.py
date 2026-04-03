@@ -35,6 +35,7 @@ from v4t_setup.preflight.checks import PreflightContext
 from v4t_setup.preflight.runner import run_preflight
 from v4t_setup.report.builders.terminal import (
     apply_report,
+    attestation_report,
     drift_report,
     history_report,
     plan_diff_report,
@@ -46,6 +47,7 @@ from v4t_setup.target.base import TargetSystem
 from v4t_setup.target.memory import MemoryTarget
 from v4t_setup.target.windows import IS_WINDOWS, WindowsTarget
 from v4t_setup.templates.pack import read_template_set
+from v4t_setup.verify.attest import attest, check_attestation, read_attestation
 from v4t_setup.verify.history import find_unfinished, read_history
 from v4t_setup.verify.reconcile import reconcile
 from v4t_setup.verify.snapshot import capture, read_snapshot
@@ -181,6 +183,9 @@ def apply(
     templates: Path = typer.Option(
         None, "--templates", help="The template set, so its fonts are checked too."
     ),
+    attestation: Path = typer.Option(
+        None, "--attest", help="Write a commissioning attestation here when the run finishes."
+    ),
     dry: bool = typer.Option(False, "--dry-run", help="Apply to a scratch machine instead."),
     skip_preflight: bool = typer.Option(
         False, "--skip-preflight", help="Do not run preflight first. Say why in the ticket."
@@ -226,7 +231,54 @@ def apply(
             rollback_on_failure=shared.settings.rollback_on_failure,
         )
         outcome = executor.run(result.plan, shared.run_id)
+
+    if attestation is not None:
+        # Reconciled straight away, because an attestation with nothing behind
+        # it says "never reconciled" and that is what an auditor asks about
+        # first. It costs one pass over the plan and answers the question.
+        record = attest(result.plan, outcome, reconcile(result.plan, target, staged))
+        record.write(attestation)
+        typer.echo(f"attestation {record.digest()} written to {attestation}", err=True)
     raise typer.Exit(emit(apply_report(outcome, result.plan), fmt, output))
+
+
+@app.command("audit")
+@handle_errors
+def audit(
+    ctx: typer.Context,
+    attestation_path: Path = typer.Argument(..., help="An attestation written by apply."),
+    manifest_path: Path = typer.Option(
+        None, "--manifest", help="The bundle it should be for, to check the plan digest."
+    ),
+    profile_path: Path = typer.Option(None, "--profile", "-p", help="The terminal profile."),
+    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
+    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
+    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+) -> None:
+    """Read a commissioning attestation and say whether it stands up.
+
+    With ``--manifest`` and ``--profile`` it also rebuilds the plan and checks
+    that this attestation is for that one. Without them it checks everything
+    the document can answer on its own.
+    """
+    get_context(ctx)
+    require_file(attestation_path, "attestation")
+    record = read_attestation(attestation_path)
+
+    plan = None
+    if manifest_path is not None:
+        if profile_path is None:
+            fail("--manifest needs --profile as well, a plan is built from both")
+        require_file(manifest_path, "manifest")
+        plan = build_plan(
+            read_manifest(manifest_path),
+            _load_profile(profile_path, terminal),
+            _load_directories(aip),
+            stamp=False,
+        ).plan
+    findings = check_attestation(record, plan)
+    raise typer.Exit(emit(attestation_report(record, findings), fmt, output))
 
 
 @app.command("verify")

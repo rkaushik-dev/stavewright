@@ -822,3 +822,110 @@ def test_a_label_kind_that_is_not_one(runner, bench):
 
 def test_the_rules_command_lists_the_label_rule(runner, bench):
     assert "gs1 label: label" in run(runner, "rules").output
+
+
+def test_apply_writes_an_attestation(runner, bench, staged_bundle, profile_file):
+    out = bench / "attestation.json"
+    result = run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run", "--attest", str(out),
+    )
+    assert result.exit_code == EXIT_OK, result.output
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["terminal"] == "LINE-PC-04"
+    assert payload["outcome"] == "complete"
+    assert payload["digest"]
+
+
+def test_the_attestation_records_the_reconcile(runner, bench, staged_bundle, profile_file):
+    out = bench / "attestation.json"
+    run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run", "--attest", str(out),
+    )
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    # A dry run applies to a scratch machine and then reconciles against it,
+    # so it comes back verified rather than "never reconciled".
+    assert payload["verified"] is True
+
+
+def test_apply_says_where_it_put_the_attestation(runner, bench, staged_bundle, profile_file):
+    out = bench / "attestation.json"
+    result = run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run", "--attest", str(out),
+    )
+    assert "attestation sha" in result.output
+
+
+def test_apply_without_the_flag_writes_none(runner, bench, staged_bundle, profile_file):
+    result = run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run",
+    )
+    assert result.exit_code == EXIT_OK
+    assert not (bench / "attestation.json").exists()
+
+
+@pytest.fixture
+def attestation(runner, bench, staged_bundle, profile_file):
+    out = bench / "attestation.json"
+    result = runner.invoke(
+        app,
+        [
+            "-q", "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+            "--aip", str(AIP), "--dry-run", "--attest", str(out),
+        ],
+    )
+    assert result.exit_code == EXIT_OK, result.output
+    return out
+
+
+def test_auditing_a_sound_attestation(runner, bench, attestation):
+    result = run(runner, "run", "audit", str(attestation))
+    assert result.exit_code == EXIT_OK, result.output
+    assert "Commissioning attestation" in result.output
+    assert "reconciled afterwards and matched" in result.output
+
+
+def test_the_audit_shows_the_digest(runner, bench, attestation):
+    result = run(runner, "run", "audit", str(attestation), "--format", "json")
+    stated = json.loads(attestation.read_text(encoding="utf-8"))["digest"]
+    assert json_output(result)["facts"]["digest"] == stated
+
+
+def test_auditing_a_tampered_attestation(runner, bench, attestation):
+    payload = json.loads(attestation.read_text(encoding="utf-8"))
+    payload["steps_applied"] = 99
+    attestation.write_text(json.dumps(payload), encoding="utf-8")
+    result = run(runner, "run", "audit", str(attestation))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "does not match its own digest" in result.output
+
+
+def test_auditing_something_that_is_not_an_attestation(runner, bench):
+    result = run(runner, "run", "audit", str(AIP))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "not valid JSON" in result.output
+
+
+def test_auditing_a_file_that_is_not_there(runner, bench):
+    result = run(runner, "run", "audit", "gone.json")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "attestation does not exist" in result.output
+
+
+def test_auditing_against_the_bundle_it_came_from(
+    runner, bench, attestation, manifest_file, profile_file
+):
+    result = run(
+        runner, "run", "audit", str(attestation), "--manifest", str(manifest_file),
+        "--profile", str(profile_file), "--aip", str(AIP),
+    )
+    assert result.exit_code == EXIT_OK, result.output
+
+
+def test_a_manifest_without_a_profile_is_refused(runner, bench, attestation, manifest_file):
+    result = run(runner, "run", "audit", str(attestation), "--manifest", str(manifest_file))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "needs --profile" in result.output

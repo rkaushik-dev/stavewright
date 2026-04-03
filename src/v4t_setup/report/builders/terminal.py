@@ -19,6 +19,7 @@ from v4t_setup.report.document import (
 )
 from v4t_setup.report.shared import truncate
 from v4t_setup.stage.stager import StagingReport
+from v4t_setup.verify.attest import Attestation
 from v4t_setup.verify.drift import DriftReport
 from v4t_setup.verify.history import History
 
@@ -159,6 +160,58 @@ def apply_report(result: ApplyResult, plan: Plan) -> Report:
     report.outcome = (
         Outcome.PASS if result.outcome is ApplyOutcome.COMPLETE else Outcome.FAIL
     )
+    return report
+
+
+def attestation_report(
+    attestation: Attestation,
+    findings: list[Finding] | None = None,
+) -> Report:
+    """One terminal's commissioning record, as a document.
+
+    The digest is a fact rather than a section, because the whole point of the
+    document is that somebody can compare it against the copy in the audit file
+    and this is the line they compare.
+    """
+    report = Report(
+        title="Commissioning attestation",
+        subtitle=attestation.describe(),
+        facts={
+            "terminal": attestation.terminal,
+            "run": attestation.run_id,
+            "plan": attestation.plan_digest,
+            "outcome": attestation.outcome,
+            "digest": str(attestation.digest()),
+            "toolkit": attestation.toolkit_version,
+        },
+    )
+    report.add(
+        lines_section(
+            "Record",
+            [
+                f"{attestation.steps_applied} steps changed the terminal",
+                f"{attestation.steps_skipped} steps were already in place",
+                f"started {attestation.started_at.isoformat(sep=' ')}"
+                if attestation.started_at
+                else "start time not recorded",
+                f"finished {attestation.finished_at.isoformat(sep=' ')}"
+                if attestation.finished_at
+                else "finish time not recorded",
+                {
+                    True: "reconciled afterwards and matched",
+                    False: f"reconciled afterwards and had {attestation.drift_records} problems",
+                    None: "never reconciled afterwards",
+                }[attestation.verified],
+            ],
+            note=attestation.notes,
+        )
+    )
+    if attestation.changed_steps:
+        report.add(
+            table_section("Changed", ["step"], [[name] for name in attestation.changed_steps])
+        )
+    report.add_if(findings_section("Findings", findings or []))
+    report.derive_outcome()
     return report
 
 
@@ -310,6 +363,7 @@ def history_report(found: History, terminal: str | None = None) -> Report:
 
 __all__ = [
     "apply_report",
+    "attestation_report",
     "drift_report",
     "history_report",
     "plan_diff_report",

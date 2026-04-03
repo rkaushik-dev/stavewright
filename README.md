@@ -36,6 +36,7 @@ against fixtures.
     run verify        bundle + terminal    -> what has drifted since
     run diff          two manifests        -> what a re-commission would do
     run history       the journals         -> what has been done to a terminal
+    run audit         an attestation       -> whether it stands up as evidence
     bundle msi        a built .msi         -> what is inside it
     bundle match      an .msi + setup.aip  -> whether one built the other
     fleet status      roster + journals    -> where the plant actually stands
