@@ -17,8 +17,8 @@ from pathlib import Path
 
 import typer
 
+from v4t_setup.cli import options
 from v4t_setup.cli.common import (
-    DEFAULT_FORMAT,
     AppContext,
     echo_lines,
     emit,
@@ -66,12 +66,10 @@ def _load(roster_path: Path, profiles: Path | None) -> Roster:
 def list_terminals(
     ctx: typer.Context,
     roster_path: Path = typer.Argument(..., help="The plant roster."),
-    profiles: Path = typer.Option(
-        None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
-    ),
+    profiles: Path = options.PROFILE_DIR,
     line: str = typer.Option(None, "--line", "-l", help="Only this production line."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Show every terminal in a plant, least disruptive first."""
     get_context(ctx)
@@ -102,15 +100,13 @@ def _pending(shared: AppContext, roster: Roster, journals: Path | None) -> list[
 def status(
     ctx: typer.Context,
     roster_path: Path = typer.Argument(..., help="The plant roster."),
-    profiles: Path = typer.Option(
-        None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
-    ),
-    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
+    profiles: Path = options.PROFILE_DIR,
+    journals: Path = options.JOURNALS,
     stale_days: int = typer.Option(
         365, "--stale-days", help="How old a finished run may be and still count."
     ),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Read the roster against the journals and say where the plant stands.
 
@@ -132,21 +128,15 @@ def status(
 def plan(
     ctx: typer.Context,
     roster_path: Path = typer.Argument(..., help="The plant roster."),
-    profiles: Path = typer.Option(
-        None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
-    ),
+    profiles: Path = options.PROFILE_DIR,
     only: list[str] = typer.Option(
         None, "--only", help="Terminal to include. Repeat it. Order is ignored."
     ),
-    pending: bool = typer.Option(
-        False, "--pending", help="Only machines the journals say still need doing."
-    ),
-    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
-    batch: int = typer.Option(
-        None, "--batch", "-b", help="Never put more than this many machines in one wave."
-    ),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    pending: bool = options.PENDING,
+    journals: Path = options.JOURNALS,
+    batch: int = options.BATCH,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Work out the wave order for a plant."""
     shared = get_context(ctx)
@@ -170,22 +160,16 @@ def schedule(
     ctx: typer.Context,
     roster_path: Path = typer.Argument(..., help="The plant roster."),
     calendar: Path = typer.Argument(..., help="The maintenance calendar."),
-    profiles: Path = typer.Option(
-        None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
-    ),
+    profiles: Path = options.PROFILE_DIR,
     engineers: int = typer.Option(1, "--engineers", "-e", help="People on the job."),
     minutes: int = typer.Option(
         None, "--minutes", help="Minutes per machine. Defaults to the bench figure."
     ),
-    pending: bool = typer.Option(
-        False, "--pending", help="Only machines the journals say still need doing."
-    ),
-    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
-    batch: int = typer.Option(
-        None, "--batch", "-b", help="Never put more than this many machines in one wave."
-    ),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    pending: bool = options.PENDING,
+    journals: Path = options.JOURNALS,
+    batch: int = options.BATCH,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Put the waves into the windows the plant has offered.
 
@@ -218,13 +202,9 @@ def schedule(
 def next_wave(
     ctx: typer.Context,
     roster_path: Path = typer.Argument(..., help="The plant roster."),
-    profiles: Path = typer.Option(
-        None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
-    ),
-    journals: Path = typer.Option(None, "--journals", help="Where the run journals are."),
-    batch: int = typer.Option(
-        None, "--batch", "-b", help="Never put more than this many machines in one wave."
-    ),
+    profiles: Path = options.PROFILE_DIR,
+    journals: Path = options.JOURNALS,
+    batch: int = options.BATCH,
 ) -> None:
     """Print the terminals in the next wave, one per line.
 
@@ -246,9 +226,7 @@ def upstream(
     ctx: typer.Context,
     roster_path: Path = typer.Argument(..., help="The plant roster."),
     terminal: str = typer.Argument(..., help="Which terminal."),
-    profiles: Path = typer.Option(
-        None, "--profiles", "-p", help="Where the terminal profiles are. Defaults beside it."
-    ),
+    profiles: Path = options.PROFILE_DIR,
 ) -> None:
     """Print what feeds a terminal, nearest first."""
     get_context(ctx)

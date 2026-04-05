@@ -13,8 +13,8 @@ from pathlib import Path
 import typer
 
 from v4t_setup.apply.executor import Executor, dry_run
+from v4t_setup.cli import options
 from v4t_setup.cli.common import (
-    DEFAULT_FORMAT,
     AppContext,
     echo_lines,
     emit,
@@ -123,11 +123,11 @@ def _unfinished(shared: AppContext, terminal: str) -> str | None:
 def plan(
     ctx: typer.Context,
     manifest_path: Path = typer.Argument(..., help="The bundle manifest."),
-    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    profile_path: Path = options.PROFILE,
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Work out what would be done to a terminal. Writes nothing."""
     get_context(ctx)
@@ -145,15 +145,13 @@ def plan(
 def preflight(
     ctx: typer.Context,
     manifest_path: Path = typer.Argument(..., help="The bundle manifest."),
-    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
-    templates: Path = typer.Option(
-        None, "--templates", help="The template set, so its fonts are checked too."
-    ),
-    offline: bool = typer.Option(False, "--offline", help="Check against an empty machine."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    profile_path: Path = options.PROFILE,
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
+    templates: Path = options.TEMPLATES,
+    offline: bool = options.OFFLINE,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Check a terminal is ready. Writes nothing."""
     shared = get_context(ctx)
@@ -177,12 +175,10 @@ def preflight(
 def apply(
     ctx: typer.Context,
     bundle: Path = typer.Argument(..., help="A staged bundle directory."),
-    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
-    templates: Path = typer.Option(
-        None, "--templates", help="The template set, so its fonts are checked too."
-    ),
+    profile_path: Path = options.PROFILE,
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
+    templates: Path = options.TEMPLATES,
     attestation: Path = typer.Option(
         None, "--attest", help="Write a commissioning attestation here when the run finishes."
     ),
@@ -190,8 +186,8 @@ def apply(
     skip_preflight: bool = typer.Option(
         False, "--skip-preflight", help="Do not run preflight first. Say why in the ticket."
     ),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Commission a terminal."""
     shared = get_context(ctx)
@@ -251,10 +247,10 @@ def audit(
         None, "--manifest", help="The bundle it should be for, to check the plan digest."
     ),
     profile_path: Path = typer.Option(None, "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Read a commissioning attestation and say whether it stands up.
 
@@ -286,12 +282,12 @@ def audit(
 def verify(
     ctx: typer.Context,
     bundle: Path = typer.Argument(..., help="A staged bundle directory."),
-    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
-    offline: bool = typer.Option(False, "--offline", help="Check against an empty machine."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    profile_path: Path = options.PROFILE,
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
+    offline: bool = options.OFFLINE,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Compare a terminal against the bundle it was commissioned from."""
     shared = get_context(ctx)
@@ -309,9 +305,9 @@ def capture_terminal(
     ctx: typer.Context,
     bundle: Path = typer.Argument(..., help="A staged bundle directory."),
     out: Path = typer.Option(..., "--out", "-o", help="Where to write the snapshot."),
-    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
+    profile_path: Path = options.PROFILE,
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
 ) -> None:
     """Read this terminal's state into a file somebody else can look at."""
     shared = get_context(ctx)
@@ -331,11 +327,11 @@ def offline_verify(
     ctx: typer.Context,
     snapshot_path: Path = typer.Argument(..., help="A snapshot taken on a terminal."),
     bundle: Path = typer.Argument(..., help="The staged bundle it should match."),
-    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    profile_path: Path = options.PROFILE,
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Reconcile a snapshot against a bundle, away from the terminal."""
     get_context(ctx)
@@ -363,11 +359,11 @@ def diff(
     ctx: typer.Context,
     old: Path = typer.Argument(..., help="The manifest a terminal is running now."),
     new: Path = typer.Argument(..., help="The manifest it would move to."),
-    profile_path: Path = typer.Option(..., "--profile", "-p", help="The terminal profile."),
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Which terminal in the file."),
-    aip: Path = typer.Option(None, "--aip", help="The project file, for the directory table."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    profile_path: Path = options.PROFILE,
+    terminal: str = options.TERMINAL,
+    aip: Path = options.AIP,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Say what moving a terminal from one bundle to another would do."""
     get_context(ctx)
@@ -387,10 +383,10 @@ def diff(
 @handle_errors
 def history(
     ctx: typer.Context,
-    terminal: str = typer.Option(None, "--terminal", "-t", help="Only this terminal."),
-    journals: Path = typer.Option(None, "--journals", help="Where the journals are."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    terminal: str = options.TERMINAL_FILTER,
+    journals: Path = options.JOURNALS,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """What has been done to a terminal, out of the journals."""
     shared = get_context(ctx)

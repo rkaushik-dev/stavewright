@@ -14,8 +14,8 @@ import typer
 from v4t_setup.aip.builder import build_manifest
 from v4t_setup.aip.normalize import normalise
 from v4t_setup.aip.reader import read_aip
+from v4t_setup.cli import options
 from v4t_setup.cli.common import (
-    DEFAULT_FORMAT,
     echo_lines,
     emit,
     fail,
@@ -55,7 +55,7 @@ app = typer.Typer(no_args_is_help=True, add_completion=False)
 def inspect(
     ctx: typer.Context,
     aip: Path = typer.Argument(..., help="An Advanced Installer project file."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    fmt: str = options.FORMAT,
 ) -> None:
     """Read a project file and say what is in it."""
     get_context(ctx)
@@ -100,8 +100,8 @@ def inspect(
 def msi(
     ctx: typer.Context,
     path: Path = typer.Argument(..., help="A built .msi."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Read a built installer, and check it makes sense on its own terms.
 
@@ -124,8 +124,8 @@ def match(
     ctx: typer.Context,
     path: Path = typer.Argument(..., help="A built .msi."),
     aip: Path = typer.Argument(..., help="The project file it should have come from."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Say whether an installer was built from a project file.
 
@@ -223,8 +223,8 @@ def stage(
     manifest_path: Path = typer.Argument(..., help="The manifest to stage."),
     source: Path = typer.Option(None, "--source", "-s", help="Where the payload is."),
     staging: Path = typer.Option(None, "--staging", help="Where to stage it."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Gather a bundle's payload onto this machine."""
     shared = get_context(ctx)

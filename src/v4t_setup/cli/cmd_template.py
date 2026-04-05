@@ -10,8 +10,8 @@ from pathlib import Path
 
 import typer
 
+from v4t_setup.cli import options
 from v4t_setup.cli.common import (
-    DEFAULT_FORMAT,
     emit,
     get_context,
     handle_errors,
@@ -35,7 +35,7 @@ app = typer.Typer(no_args_is_help=True, add_completion=False)
 def show(
     ctx: typer.Context,
     path: Path = typer.Argument(..., help="A .spf template."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    fmt: str = options.FORMAT,
 ) -> None:
     """Show what is inside a template."""
     get_context(ctx)
@@ -70,8 +70,8 @@ def lint(
     with_dataset: bool = typer.Option(
         False, "--with-dataset", help="Check field bindings against the standard columns."
     ),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Check a template before it goes onto a terminal."""
     get_context(ctx)
@@ -95,8 +95,8 @@ def lint_set(
     profile_path: Path = typer.Option(
         None, "--profile", "-p", help="A terminal profile, so the head swath is checked too."
     ),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Check every template in a directory against the data file beside them.
 

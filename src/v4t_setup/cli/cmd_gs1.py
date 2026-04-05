@@ -10,8 +10,8 @@ from pathlib import Path
 
 import typer
 
+from v4t_setup.cli import options
 from v4t_setup.cli.common import (
-    DEFAULT_FORMAT,
     AppContext,
     echo_lines,
     emit,
@@ -69,8 +69,8 @@ def list_label_rules(ctx: typer.Context) -> None:
 def check_dataset(
     ctx: typer.Context,
     path: Path = typer.Argument(..., help="A GS1 data file, such as GS1-1.txt."),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
-    output: Path = typer.Option(None, "--output", "-o", help="Write the report here."),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
 ) -> None:
     """Validate a whole data file."""
     shared = get_context(ctx)
@@ -94,7 +94,7 @@ def parse_element_string(
     require: list[str] = typer.Option(
         None, "--require", help="An AI this customer insists on. Repeat it."
     ),
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    fmt: str = options.FORMAT,
 ) -> None:
     """Parse one element string and check it.
 
@@ -134,7 +134,7 @@ def parse_element_string(
 @handle_errors
 def list_identifiers(
     ctx: typer.Context,
-    fmt: str = typer.Option(DEFAULT_FORMAT, "--format", "-f", help="text, json, csv or junit."),
+    fmt: str = options.FORMAT,
 ) -> None:
     """List the application identifiers this build knows."""
     get_context(ctx)
