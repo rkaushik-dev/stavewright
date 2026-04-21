@@ -929,3 +929,45 @@ def test_a_manifest_without_a_profile_is_refused(runner, bench, attestation, man
     result = run(runner, "run", "audit", str(attestation), "--manifest", str(manifest_file))
     assert result.exit_code == EXIT_TOOLKIT
     assert "needs --profile" in result.output
+
+
+def test_journals_says_what_it_would_remove(runner, bench, attestation):
+    result = run(runner, "run", "journals", "--format", "json")
+    assert result.exit_code == EXIT_OK, result.output
+    facts = json_output(result)["facts"]
+    assert facts["journals"] == "1"
+    assert facts["removing"] == "0"
+    assert facts["latest"] == "1"
+
+
+def test_journals_keeps_the_only_run_however_short_the_window(runner, bench, attestation):
+    result = run(
+        runner, "run", "journals", "--keep-days", "0", "--keep-runs", "0", "--format", "json"
+    )
+    assert json_output(result)["facts"]["removing"] == "0"
+
+
+def test_journals_removes_nothing_without_the_flag(runner, bench, attestation):
+    before = list((bench / "_journal").iterdir())
+    run(runner, "run", "journals", "--keep-days", "0", "--keep-runs", "0")
+    assert list((bench / "_journal").iterdir()) == before
+
+
+def test_journals_says_how_many_it_removed(runner, bench, attestation):
+    result = run(runner, "run", "journals", "--remove")
+    assert result.exit_code == EXIT_OK
+    assert "removed 0 journals" in result.output
+
+
+def test_journals_of_a_directory_that_is_not_there(runner, bench):
+    result = run(runner, "run", "journals", "--journals", "nowhere")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "journal directory does not exist" in result.output
+
+
+def test_journals_of_an_empty_directory(runner, bench):
+    empty = bench / "_journal"
+    empty.mkdir(exist_ok=True)
+    result = run(runner, "run", "journals", "--format", "json")
+    assert result.exit_code == EXIT_OK
+    assert json_output(result)["facts"]["journals"] == "0"

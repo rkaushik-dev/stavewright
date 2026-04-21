@@ -22,6 +22,7 @@ from v4t_setup.stage.stager import StagingReport
 from v4t_setup.verify.attest import Attestation
 from v4t_setup.verify.drift import DriftReport
 from v4t_setup.verify.history import History
+from v4t_setup.verify.retention import RetentionPlan
 
 
 def plan_report(result: PlanReport) -> Report:
@@ -215,6 +216,53 @@ def attestation_report(
     return report
 
 
+def retention_report(plan: RetentionPlan, *, applied: bool = False) -> Report:
+    """What a journal clear out would remove, or did.
+
+    Always passes. Deciding to keep an old journal is not a finding about
+    anything, and a command that exits 1 because there is nothing to delete is
+    a command somebody stops running.
+    """
+    counts = plan.counts()
+    report = Report(
+        title="Journal retention",
+        subtitle="removed" if applied else "nothing removed yet",
+        facts={
+            "journals": str(len(plan)),
+            "keeping": str(len(plan.kept)),
+            "removing": str(len(plan.expired)),
+            **{name: str(count) for name, count in counts.items()},
+        },
+    )
+    report.add(
+        table_section(
+            "Journals",
+            ["journal", "terminal", "started", "fate", "why"],
+            [
+                [
+                    decision.path.name,
+                    decision.run.terminal,
+                    decision.run.started_at.isoformat(sep=" ")
+                    if decision.run.started_at
+                    else "",
+                    "keep" if decision.is_kept else "delete",
+                    decision.keep.value,
+                ]
+                for decision in plan
+            ],
+        )
+    )
+    if plan.expired:
+        report.add(
+            lines_section(
+                "Would be removed" if not applied else "Removed",
+                [str(path) for path in plan.paths],
+            )
+        )
+    report.outcome = Outcome.PASS
+    return report
+
+
 def drift_report(result: DriftReport) -> Report:
     """A reconcile run, as a document."""
     report = Report(
@@ -369,5 +417,6 @@ __all__ = [
     "plan_diff_report",
     "plan_report",
     "preflight_report",
+    "retention_report",
     "stage_report",
 ]

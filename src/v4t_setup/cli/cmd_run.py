@@ -41,6 +41,7 @@ from v4t_setup.report.builders.terminal import (
     plan_diff_report,
     plan_report,
     preflight_report,
+    retention_report,
 )
 from v4t_setup.stage.stager import open_bundle
 from v4t_setup.target.base import TargetSystem
@@ -50,6 +51,12 @@ from v4t_setup.templates.pack import read_template_set
 from v4t_setup.verify.attest import attest, check_attestation, read_attestation
 from v4t_setup.verify.history import find_unfinished, read_history
 from v4t_setup.verify.reconcile import reconcile
+from v4t_setup.verify.retention import (
+    DEFAULT_KEEP_DAYS,
+    DEFAULT_KEEP_RUNS,
+    apply_retention,
+    plan_retention,
+)
 from v4t_setup.verify.snapshot import capture, read_snapshot
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
@@ -394,6 +401,38 @@ def history(
     require_directory(root, "journal directory")
     found = read_history(root)
     raise typer.Exit(emit(history_report(found, terminal), fmt, output))
+
+
+@app.command("journals")
+@handle_errors
+def journals_command(
+    ctx: typer.Context,
+    journals: Path = options.JOURNALS,
+    keep_days: int = typer.Option(
+        DEFAULT_KEEP_DAYS, "--keep-days", help="How long an ordinary finished run is kept."
+    ),
+    keep_runs: int = typer.Option(
+        DEFAULT_KEEP_RUNS, "--keep-runs", help="Runs per terminal kept whatever their age."
+    ),
+    remove: bool = typer.Option(
+        False, "--remove", help="Actually delete them. Without this it only says what it would."
+    ),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+) -> None:
+    """Say which journals could be cleared out, and clear them out on request.
+
+    The default is to say and do nothing. These are the only record that a
+    terminal was ever commissioned, so deleting one takes a flag.
+    """
+    shared = get_context(ctx)
+    root = journals or shared.settings.journal_root
+    require_directory(root, "journal directory")
+    plan = plan_retention(read_history(root), keep_days=keep_days, keep_runs=keep_runs)
+    if remove:
+        removed = apply_retention(plan, dry_run=False)
+        typer.echo(f"removed {len(removed)} journals from {root}", err=True)
+    raise typer.Exit(emit(retention_report(plan, applied=remove), fmt, output))
 
 
 @app.command("profiles")
