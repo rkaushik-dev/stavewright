@@ -8,7 +8,8 @@ from v4t_setup.apply.journal import read_journal, replay
 from v4t_setup.errors import ApplyError, RollbackError
 from v4t_setup.model.registry import RegistryRoot, RegistryValueType
 from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.target.memory import MemoryTarget, normalise_path
+from v4t_setup.target.memory import MemoryTarget
+from v4t_setup.util.winpath import fold_path
 
 APPDIR = r"C:\Sellenis\S-jet600"
 
@@ -431,7 +432,7 @@ def test_a_redistributable_exit_code_reaches_the_result(profile, target, payload
             )
         ],
     )
-    target.installer_exit_codes[normalise_path(r"C:\stage\vcredist.exe")] = 1603
+    target.installer_exit_codes[fold_path(r"C:\stage\vcredist.exe")] = 1603
     result = Executor(target, payload, journal_path).run(plan, "run0001")
     assert result.failed_step == "vcredist"
     assert "1603" in result.failure

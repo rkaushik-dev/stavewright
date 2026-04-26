@@ -12,11 +12,10 @@ from v4t_setup.target.base import (
 from v4t_setup.target.memory import (
     MemoryTarget,
     dword_value,
-    normalise_key,
-    normalise_path,
     string_value,
 )
 from v4t_setup.util.digest import digest_bytes
+from v4t_setup.util.winpath import fold_key, fold_path
 
 APPDIR = r"C:\Sellenis\S-jet600"
 EXE = rf"{APPDIR}\V4T.exe"
@@ -45,7 +44,7 @@ def test_the_memory_target_satisfies_the_protocol(target):
     ],
 )
 def test_path_normalisation(given, expected):
-    assert normalise_path(given) == expected
+    assert fold_path(given) == expected
 
 
 @pytest.mark.parametrize(
@@ -57,7 +56,7 @@ def test_path_normalisation(given, expected):
     ],
 )
 def test_key_normalisation(given, expected):
-    assert normalise_key(given) == expected
+    assert fold_key(given) == expected
 
 
 def test_writing_a_file_creates_its_parents(target):
@@ -346,7 +345,7 @@ def test_running_an_installer(target):
 
 def test_an_installer_can_be_made_to_fail(target):
     target.write_file(r"C:\stage\vcredist_x86.exe", b"MZ")
-    target.installer_exit_codes[normalise_path(r"C:\stage\vcredist_x86.exe")] = 1603
+    target.installer_exit_codes[fold_path(r"C:\stage\vcredist_x86.exe")] = 1603
     assert target.run_installer(r"C:\stage\vcredist_x86.exe", []) == 1603
 
 

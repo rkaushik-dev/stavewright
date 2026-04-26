@@ -426,7 +426,7 @@ def test_a_redistributable_with_a_marker_can_be_detected(target, payload):
 
 
 def test_a_reboot_required_exit_code_is_accepted(target, payload):
-    from v4t_setup.target.memory import normalise_path
+    from v4t_setup.util.winpath import fold_path
 
     action = RunRedistributableAction()
     s = step(
@@ -434,12 +434,12 @@ def test_a_reboot_required_exit_code_is_accepted(target, payload):
         target=r"C:\stage\vcredist.exe",
         source="payload/vcredist.exe",
     )
-    target.installer_exit_codes[normalise_path(r"C:\stage\vcredist.exe")] = 3010
+    target.installer_exit_codes[fold_path(r"C:\stage\vcredist.exe")] = 3010
     assert action.apply(target, s, payload)
 
 
 def test_an_unexpected_exit_code_is_an_error(target, payload):
-    from v4t_setup.target.memory import normalise_path
+    from v4t_setup.util.winpath import fold_path
 
     action = RunRedistributableAction()
     s = step(
@@ -447,7 +447,7 @@ def test_an_unexpected_exit_code_is_an_error(target, payload):
         target=r"C:\stage\vcredist.exe",
         source="payload/vcredist.exe",
     )
-    target.installer_exit_codes[normalise_path(r"C:\stage\vcredist.exe")] = 1603
+    target.installer_exit_codes[fold_path(r"C:\stage\vcredist.exe")] = 1603
     with pytest.raises(ApplyError, match="unexpected exit code") as excinfo:
         action.apply(target, s, payload)
     assert excinfo.value.context["exit_code"] == 1603

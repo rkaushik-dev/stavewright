@@ -38,6 +38,7 @@ from v4t_setup.target.base import (
 )
 from v4t_setup.util.digest import Digest
 from v4t_setup.util.fsops import atomic_write_text
+from v4t_setup.util.winpath import fold_path, registry_path, shortcut_key
 
 SNAPSHOT_SCHEMA_VERSION = 1
 SNAPSHOT_SUFFIX = ".v4tsnap.json"
@@ -120,14 +121,14 @@ class Snapshot:
         )
 
     def path_exists(self, path: str) -> bool:
-        key = _fold(path)
-        return key in self.files or key in {_fold(p) for p in self.directories}
+        key = fold_path(path)
+        return key in self.files or key in {fold_path(p) for p in self.directories}
 
     def is_directory(self, path: str) -> bool:
-        return _fold(path) in {_fold(p) for p in self.directories}
+        return fold_path(path) in {fold_path(p) for p in self.directories}
 
     def file_digest(self, path: str) -> Digest | None:
-        value = self.files.get(_fold(path))
+        value = self.files.get(fold_path(path))
         return Digest.parse(value) if value else None
 
     def read_file(self, path: str) -> bytes:
@@ -136,10 +137,10 @@ class Snapshot:
         )
 
     def list_directory(self, path: str) -> list[str]:
-        prefix = _fold(path) + "/"
+        prefix = fold_path(path) + "/"
         names = {
             name[len(prefix) :].split("/")[0]
-            for name in [*self.files, *(_fold(p) for p in self.directories)]
+            for name in [*self.files, *(fold_path(p) for p in self.directories)]
             if name.startswith(prefix)
         }
         return sorted(names)
@@ -149,7 +150,7 @@ class Snapshot:
         return any(name.lower().startswith(prefix) for name in self.registry)
 
     def read_value(self, root: RegistryRoot, key: str, name: str | None) -> DecodedValue | None:
-        stored = self.registry.get(_registry_key(root, key, name))
+        stored = self.registry.get(registry_path(root, key, name))
         if stored is None:
             return None
         kind, rendered = stored
@@ -164,7 +165,7 @@ class Snapshot:
         )
 
     def is_com_registered(self, path: str) -> bool:
-        return _fold(path) in {_fold(p) for p in self.com_servers}
+        return fold_path(path) in {fold_path(p) for p in self.com_servers}
 
     def has_assembly(self, identity: AssemblyIdentity) -> bool:
         return str(identity) in self.assemblies
@@ -179,7 +180,7 @@ class Snapshot:
         return name.lower() in {font.lower() for font in self.fonts}
 
     def has_shortcut(self, spec: ShortcutSpec) -> bool:
-        return _shortcut_key(spec) in self.shortcuts
+        return shortcut_key(spec) in self.shortcuts
 
     def controller_revision(self) -> str | None:
         return self.controller_revision_value
@@ -300,18 +301,6 @@ class Snapshot:
         )
 
 
-def _fold(path: str) -> str:
-    return path.replace("\\", "/").rstrip("/").lower()
-
-
-def _shortcut_key(spec: ShortcutSpec) -> str:
-    return f"{_fold(spec.directory)}/{spec.name.lower()}"
-
-
-def _registry_key(root: RegistryRoot, key: str, name: str | None) -> str:
-    return f"{root.hive_name}\\{key}\\{name or '(Default)'}"
-
-
 def _decode(kind: str, rendered: str) -> DecodedValue:
     value_type = RegistryValueType(kind)
     if value_type is RegistryValueType.DWORD:
@@ -346,7 +335,7 @@ def capture(plan: Plan, target: TargetSystem) -> Snapshot:
             else:
                 digest = target.file_digest(step.target)
                 if digest is not None:
-                    snapshot.files[_fold(step.target)] = str(digest)
+                    snapshot.files[fold_path(step.target)] = str(digest)
 
         match step.kind:
             case StepKind.REGISTER_COM:
@@ -371,7 +360,7 @@ def capture(plan: Plan, target: TargetSystem) -> Snapshot:
             case StepKind.CREATE_SHORTCUT:
                 spec = _shortcut_of(step)
                 if spec is not None and target.has_shortcut(spec):
-                    snapshot.shortcuts.append(_shortcut_key(spec))
+                    snapshot.shortcuts.append(shortcut_key(spec))
             case StepKind.WRITE_REGISTRY:
                 _capture_registry(step, target, snapshot)
             case StepKind.INSTALL_TEMPLATE_SET:
@@ -401,7 +390,7 @@ def _capture_registry(step: object, target: TargetSystem, snapshot: Snapshot) ->
     name = detail.get("name")
     value = target.read_value(root, key, str(name) if name is not None else None)
     if value is not None:
-        snapshot.registry[_registry_key(root, key, name)] = (
+        snapshot.registry[registry_path(root, key, name)] = (
             value.type.value,
             str(value),
         )
@@ -419,7 +408,7 @@ def _capture_templates(step: object, target: TargetSystem, snapshot: Snapshot) -
         path = str(parent / str(name))
         digest = target.file_digest(path)
         if digest is not None:
-            snapshot.files[_fold(path)] = str(digest)
+            snapshot.files[fold_path(path)] = str(digest)
 
 
 def loads(text: str, *, source: Path | None = None) -> Snapshot:

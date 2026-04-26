@@ -23,23 +23,9 @@ from dataclasses import dataclass, field
 from v4t_setup.model.registry import DecodedValue, RegistryRoot, RegistryValueType
 from v4t_setup.target.base import AssemblyIdentity, ShortcutSpec, SystemFacts, TargetError
 from v4t_setup.util.digest import Digest, digest_bytes
+from v4t_setup.util.winpath import fold_key, fold_path, fold_value_name, shortcut_key
 
 DEFAULT_FREE_BYTES = 40 * 1024 * 1024 * 1024
-
-
-def normalise_path(path: str) -> str:
-    """Fold a Windows path the way the filesystem compares them.
-
-    Backslashes become forward slashes, the case is lowered, and a trailing
-    separator is dropped. A drive letter keeps its colon.
-    """
-    folded = path.replace("\\", "/").rstrip("/").lower()
-    return folded or "/"
-
-
-def normalise_key(key: str) -> str:
-    """Fold a registry key path. Same rules, minus the drive letter."""
-    return key.replace("/", "\\").strip("\\").lower()
 
 
 @dataclass
@@ -83,18 +69,18 @@ class MemoryTarget:
         self.calls.append(f"{operation} {subject}")
 
     def _ancestors(self, path: str) -> list[str]:
-        parts = normalise_path(path).split("/")
+        parts = fold_path(path).split("/")
         return ["/".join(parts[:index]) for index in range(1, len(parts))]
 
     def path_exists(self, path: str) -> bool:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         return folded in self.files or folded in self.directories
 
     def is_directory(self, path: str) -> bool:
-        return normalise_path(path) in self.directories
+        return fold_path(path) in self.directories
 
     def make_directory(self, path: str) -> bool:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         if folded in self.files:
             raise TargetError(f"a file already exists at {path}")
         created = folded not in self.directories
@@ -106,7 +92,7 @@ class MemoryTarget:
         return created
 
     def remove_directory(self, path: str) -> bool:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         prefix = f"{folded}/"
         removed = folded in self.directories
         for name in [n for n in self.files if n == folded or n.startswith(prefix)]:
@@ -119,13 +105,13 @@ class MemoryTarget:
         return removed
 
     def read_file(self, path: str) -> bytes:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         if folded not in self.files:
             raise TargetError(f"no such file: {path}")
         return self.files[folded]
 
     def write_file(self, path: str, data: bytes) -> bool:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         if folded in self.directories:
             raise TargetError(f"a directory already exists at {path}")
         for ancestor in self._ancestors(path):
@@ -141,20 +127,20 @@ class MemoryTarget:
         return changed
 
     def remove_file(self, path: str) -> bool:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         removed = self.files.pop(folded, None) is not None
         if removed:
             self._record("delete", folded)
         return removed
 
     def file_digest(self, path: str) -> Digest | None:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         if folded not in self.files:
             return None
         return digest_bytes(self.files[folded])
 
     def list_directory(self, path: str) -> list[str]:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         prefix = f"{folded}/"
         names: set[str] = set()
         for name in [*self.files, *self.directories]:
@@ -165,7 +151,7 @@ class MemoryTarget:
     # Registry
 
     def _slot(self, root: RegistryRoot, key: str) -> tuple[int, str]:
-        return (int(root), normalise_key(key))
+        return (int(root), fold_key(key))
 
     def key_exists(self, root: RegistryRoot, key: str) -> bool:
         return self._slot(root, key) in self.registry
@@ -199,7 +185,7 @@ class MemoryTarget:
         values = self.registry.get(self._slot(root, key))
         if values is None:
             return None
-        return values.get((name or "").lower())
+        return values.get(fold_value_name(name))
 
     def write_value(
         self,
@@ -210,7 +196,7 @@ class MemoryTarget:
     ) -> bool:
         self.create_key(root, key)
         values = self.registry[self._slot(root, key)]
-        folded = (name or "").lower()
+        folded = fold_value_name(name)
         changed = values.get(folded) != value
         values[folded] = value
         if changed:
@@ -221,7 +207,7 @@ class MemoryTarget:
         values = self.registry.get(self._slot(root, key))
         if values is None:
             return False
-        removed = values.pop((name or "").lower(), None) is not None
+        removed = values.pop(fold_value_name(name), None) is not None
         if removed:
             self._record("delvalue", f"{root.hive_name}\\{key}\\{name or '(Default)'}")
         return removed
@@ -232,10 +218,10 @@ class MemoryTarget:
     # COM
 
     def is_com_registered(self, path: str) -> bool:
-        return normalise_path(path) in self.com_servers
+        return fold_path(path) in self.com_servers
 
     def register_com(self, path: str) -> bool:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         if folded not in self.files:
             raise TargetError(f"cannot register a server that is not there: {path}")
         added = folded not in self.com_servers
@@ -245,7 +231,7 @@ class MemoryTarget:
         return added
 
     def unregister_com(self, path: str) -> bool:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         removed = folded in self.com_servers
         self.com_servers.discard(folded)
         if removed:
@@ -336,14 +322,11 @@ class MemoryTarget:
 
     # Shortcuts
 
-    def _shortcut_key(self, spec: ShortcutSpec) -> str:
-        return f"{normalise_path(spec.directory)}/{spec.name.lower()}"
-
     def has_shortcut(self, spec: ShortcutSpec) -> bool:
-        return self._shortcut_key(spec) in self.shortcuts
+        return shortcut_key(spec) in self.shortcuts
 
     def create_shortcut(self, spec: ShortcutSpec) -> bool:
-        key = self._shortcut_key(spec)
+        key = shortcut_key(spec)
         added = key not in self.shortcuts
         self.shortcuts.add(key)
         if added:
@@ -351,7 +334,7 @@ class MemoryTarget:
         return added
 
     def remove_shortcut(self, spec: ShortcutSpec) -> bool:
-        key = self._shortcut_key(spec)
+        key = shortcut_key(spec)
         removed = key in self.shortcuts
         self.shortcuts.discard(key)
         return removed
@@ -359,7 +342,7 @@ class MemoryTarget:
     # Processes
 
     def run_installer(self, path: str, arguments: list[str]) -> int:
-        folded = normalise_path(path)
+        folded = fold_path(path)
         if folded not in self.files:
             raise TargetError(f"cannot run an installer that is not there: {path}")
         self._record("run", folded)
@@ -405,7 +388,5 @@ __all__ = [
     "DEFAULT_FREE_BYTES",
     "MemoryTarget",
     "dword_value",
-    "normalise_key",
-    "normalise_path",
     "string_value",
 ]
