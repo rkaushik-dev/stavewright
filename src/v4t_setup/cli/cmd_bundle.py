@@ -44,7 +44,8 @@ from v4t_setup.signing import (
     sign_manifest,
     signature_path_for,
 )
-from v4t_setup.stage.stager import Stager
+from v4t_setup.stage.archive import archive_manifest_digest, is_signed, pack, unpack
+from v4t_setup.stage.stager import Stager, open_bundle
 from v4t_setup.util.fsops import atomic_write_bytes
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
@@ -292,6 +293,46 @@ def build(
     report.manifest.write(out)
     echo_lines(report.lines())
     typer.echo(f"wrote {out}")
+
+
+@app.command("pack")
+@handle_errors
+def pack_bundle(
+    ctx: typer.Context,
+    bundle: Path = typer.Argument(..., help="A staged bundle directory."),
+    out: Path = typer.Option(..., "--out", "-o", help="Where to write the archive."),
+) -> None:
+    """Put a staged bundle into one file, for carrying to a plant."""
+    get_context(ctx)
+    require_directory(bundle, "staged bundle")
+    report = pack(open_bundle(bundle), out)
+    typer.echo(report.describe())
+    typer.echo(f"manifest {archive_manifest_digest(out)}")
+    if not is_signed(out):
+        typer.echo("warning: this bundle is not signed", err=True)
+
+
+@app.command("unpack")
+@handle_errors
+def unpack_bundle(
+    ctx: typer.Context,
+    archive: Path = typer.Argument(..., help="An archive written by pack."),
+    into: Path = typer.Option(..., "--into", help="An empty directory to unpack into."),
+    no_verify: bool = typer.Option(
+        False, "--no-verify", help="Skip re-hashing. Say why in the ticket."
+    ),
+) -> None:
+    """Read an archive back into a staged bundle, checking every object.
+
+    Verification is on unless it is turned off, because an archive that came
+    in on a memory stick is the least trusted thing this toolkit handles.
+    """
+    get_context(ctx)
+    require_file(archive, "archive")
+    report = unpack(archive, into, verify=not no_verify)
+    typer.echo(report.describe())
+    if no_verify:
+        typer.echo("warning: nothing was re-hashed", err=True)
 
 
 @app.command("new")

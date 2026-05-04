@@ -971,3 +971,80 @@ def test_journals_of_an_empty_directory(runner, bench):
     result = run(runner, "run", "journals", "--format", "json")
     assert result.exit_code == EXIT_OK
     assert json_output(result)["facts"]["journals"] == "0"
+
+
+def test_bundle_pack_writes_an_archive(runner, bench, staged_bundle):
+    out = bench / "bundle.v4tbundle"
+    result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    assert result.exit_code == EXIT_OK, result.output
+    assert out.is_file()
+    assert "digests checked" in result.output
+
+
+def test_bundle_pack_prints_the_manifest_digest(runner, bench, staged_bundle):
+    out = bench / "bundle.v4tbundle"
+    result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    assert "manifest sha256:" in result.output
+
+
+def test_bundle_pack_warns_that_it_is_unsigned(runner, bench, staged_bundle):
+    out = bench / "bundle.v4tbundle"
+    result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    assert "not signed" in result.output
+
+
+def test_bundle_pack_of_something_that_is_not_a_bundle(runner, bench):
+    result = run(runner, "bundle", "pack", str(bench), "--out", str(bench / "x.v4tbundle"))
+    assert result.exit_code == EXIT_TOOLKIT
+
+
+def test_bundle_pack_refuses_to_overwrite(runner, bench, staged_bundle):
+    out = bench / "bundle.v4tbundle"
+    run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "refusing to overwrite" in result.output
+
+
+def test_bundle_unpack_reads_it_back(runner, bench, staged_bundle):
+    out = bench / "bundle.v4tbundle"
+    run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    back = bench / "unpacked"
+    result = run(runner, "bundle", "unpack", str(out), "--into", str(back))
+    assert result.exit_code == EXIT_OK, result.output
+    assert (back / "manifest.json").is_file()
+    assert "digests checked" in result.output
+
+
+def test_bundle_unpack_can_skip_verification(runner, bench, staged_bundle):
+    out = bench / "bundle.v4tbundle"
+    run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    result = run(
+        runner, "bundle", "unpack", str(out), "--into", str(bench / "unpacked"), "--no-verify"
+    )
+    assert result.exit_code == EXIT_OK
+    assert "nothing was re-hashed" in result.output
+
+
+def test_bundle_unpack_of_something_that_is_not_an_archive(runner, bench):
+    result = run(runner, "bundle", "unpack", str(AIP), "--into", str(bench / "unpacked"))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "not a zip archive" in result.output
+
+
+def test_bundle_unpack_of_a_file_that_is_not_there(runner, bench):
+    result = run(runner, "bundle", "unpack", "gone.v4tbundle", "--into", str(bench / "x"))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "archive does not exist" in result.output
+
+
+def test_a_round_trip_through_the_cli_can_be_applied(runner, bench, staged_bundle, profile_file):
+    out = bench / "bundle.v4tbundle"
+    run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
+    back = bench / "unpacked"
+    run(runner, "bundle", "unpack", str(out), "--into", str(back))
+    result = run(
+        runner, "run", "apply", str(back), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run",
+    )
+    assert result.exit_code == EXIT_OK, result.output
