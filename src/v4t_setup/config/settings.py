@@ -74,6 +74,14 @@ class Settings(BaseModel):
     rollback_on_failure: bool = True
     """Whether a failed apply undoes what it has done so far."""
 
+    operator: str = ""
+    """Who is doing the work. Goes on the record and the customer asks.
+
+    A setting rather than a flag because it is a property of the laptop, not of
+    the run, and an engineer typing their own name on every command is an
+    engineer who eventually types somebody else's.
+    """
+
     @field_validator("log_level")
     @classmethod
     def _known_level(cls, value: str) -> str:

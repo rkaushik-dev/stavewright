@@ -1048,3 +1048,79 @@ def test_a_round_trip_through_the_cli_can_be_applied(runner, bench, staged_bundl
         "--aip", str(AIP), "--dry-run",
     )
     assert result.exit_code == EXIT_OK, result.output
+
+
+def test_bench_with_nothing_configured(runner, bench):
+    result = run(runner, "run", "bench")
+    assert result.exit_code == EXIT_OK, result.output
+    assert "Bench check" in result.output
+    # No operator in the settings file, so somebody has to be named.
+    assert "nobody is named" in result.output
+
+
+def test_bench_takes_an_operator_on_the_command_line(runner, bench):
+    result = run(runner, "run", "bench", "--operator", "R Hughes")
+    assert "nobody is named" not in result.output
+
+
+def test_bench_takes_the_operator_from_the_settings_file(runner, bench):
+    path = bench / "v4t-setup.toml"
+    path.write_text(path.read_text(encoding="utf-8") + 'operator = "R Hughes"\n', encoding="utf-8")
+    result = run(runner, "run", "bench")
+    assert "nobody is named" not in result.output
+
+
+def test_bench_looks_at_a_bundle_when_given_one(runner, bench, staged_bundle):
+    result = run(runner, "run", "bench", str(staged_bundle), "--operator", "R Hughes")
+    assert result.exit_code == EXIT_OK, result.output
+    assert "no signature" in result.output
+
+
+def test_bench_of_a_directory_that_is_not_a_bundle(runner, bench):
+    result = run(runner, "run", "bench", str(bench / "nowhere"))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "staged bundle does not exist" in result.output
+
+
+def test_bench_checks_the_clock_against_a_reference(runner, bench):
+    result = run(
+        runner, "run", "bench", "--operator", "R Hughes",
+        "--reference-time", "1999-06-21T07:00:00+00:00",
+    )
+    assert result.exit_code == EXIT_FINDINGS
+    assert "laptop clock is far enough out" in result.output
+
+
+def test_a_reference_time_that_is_not_a_time(runner, bench):
+    result = run(runner, "run", "bench", "--reference-time", "yesterday")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "not an ISO 8601 time" in result.output
+
+
+def test_a_reference_time_with_no_offset(runner, bench):
+    result = run(runner, "run", "bench", "--reference-time", "2025-06-03T01:30:00")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "needs an offset" in result.output
+
+
+def test_a_clean_bench_says_so(runner, bench):
+    from v4t_setup.clock import now
+
+    (bench / "_journal").mkdir()
+    result = run(
+        runner, "run", "bench", "--operator", "R Hughes",
+        "--reference-time", now().isoformat(),
+    )
+    assert result.exit_code == EXIT_OK
+    assert "the bench is ready" in result.output
+
+
+def test_a_bench_with_no_journal_directory_yet_says_it_will_make_one(runner, bench):
+    from v4t_setup.clock import now
+
+    result = run(
+        runner, "run", "bench", "--operator", "R Hughes",
+        "--reference-time", now().isoformat(),
+    )
+    assert result.exit_code == EXIT_OK
+    assert "will be created" in result.output

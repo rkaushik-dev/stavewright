@@ -9,6 +9,7 @@ from v4t_setup.plan.cost import estimate_plan
 from v4t_setup.plan.diff import Change, PlanDiff
 from v4t_setup.plan.planner import PlanReport
 from v4t_setup.plan.steps import Plan
+from v4t_setup.preflight.bench import DEFAULT_BENCH_CHECKS
 from v4t_setup.preflight.runner import PreflightReport
 from v4t_setup.report.document import (
     Outcome,
@@ -216,6 +217,25 @@ def attestation_report(
     return report
 
 
+def bench_report(findings: list[Finding]) -> Report:
+    """The bench checks, as a document.
+
+    Its own builder rather than the preflight one because the two answer
+    different questions, and a report headed Preflight that says nothing about
+    a terminal is a report somebody misreads.
+    """
+    report = Report(
+        title="Bench check",
+        subtitle="the laptop and the visit, not the terminal",
+        facts={"checks": str(len(DEFAULT_BENCH_CHECKS))},
+    )
+    report.add_if(findings_section("Findings", findings))
+    if not findings:
+        report.add(lines_section("Findings", ["the bench is ready"]))
+    report.derive_outcome()
+    return report
+
+
 def retention_report(plan: RetentionPlan, *, applied: bool = False) -> Report:
     """What a journal clear out would remove, or did.
 
@@ -412,6 +432,7 @@ def history_report(found: History, terminal: str | None = None) -> Report:
 __all__ = [
     "apply_report",
     "attestation_report",
+    "bench_report",
     "drift_report",
     "history_report",
     "plan_diff_report",

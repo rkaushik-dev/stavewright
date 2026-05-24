@@ -8,6 +8,8 @@ been run or has found something.
 
 from __future__ import annotations
 
+import shutil
+from datetime import datetime
 from pathlib import Path
 
 import typer
@@ -31,11 +33,13 @@ from v4t_setup.model.manifest import read_manifest
 from v4t_setup.model.profile import TerminalProfile
 from v4t_setup.plan.diff import crossed_irreversible, diff_plans
 from v4t_setup.plan.planner import build_plan
+from v4t_setup.preflight.bench import BenchContext, check_bench
 from v4t_setup.preflight.checks import PreflightContext
 from v4t_setup.preflight.runner import run_preflight
 from v4t_setup.report.builders.terminal import (
     apply_report,
     attestation_report,
+    bench_report,
     drift_report,
     history_report,
     plan_diff_report,
@@ -43,7 +47,7 @@ from v4t_setup.report.builders.terminal import (
     preflight_report,
     retention_report,
 )
-from v4t_setup.stage.stager import open_bundle
+from v4t_setup.stage.stager import SIGNATURE_NAME, open_bundle
 from v4t_setup.target.base import TargetSystem
 from v4t_setup.target.memory import MemoryTarget
 from v4t_setup.target.windows import IS_WINDOWS, WindowsTarget
@@ -401,6 +405,75 @@ def history(
     require_directory(root, "journal directory")
     found = read_history(root)
     raise typer.Exit(emit(history_report(found, terminal), fmt, output))
+
+
+@app.command("bench")
+@handle_errors
+def bench(
+    ctx: typer.Context,
+    bundle: Path = typer.Argument(None, help="A staged bundle, when there is one yet."),
+    operator: str = typer.Option(None, "--operator", help="Who is doing the work."),
+    reference: str = typer.Option(
+        None, "--reference-time", help="An ISO time from something that is not this laptop."
+    ),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+) -> None:
+    """Check the laptop and the visit before anybody drives anywhere.
+
+    Nothing here touches a terminal. Run it in the office, where a missing
+    signing key is a five minute problem rather than a wasted day.
+    """
+    shared = get_context(ctx)
+    manifest = None
+    signature_present = False
+    if bundle is not None:
+        require_directory(bundle, "staged bundle")
+        staged = open_bundle(bundle)
+        manifest = staged.manifest
+        signature_present = (bundle / SIGNATURE_NAME).is_file()
+
+    context = BenchContext(
+        manifest=manifest,
+        bundle_root=bundle,
+        signature_present=signature_present,
+        trusted_keys=shared.settings.trusted_keys,
+        journal_root=shared.settings.journal_root,
+        laptop_free_bytes=_free_bytes(shared.settings.staging_root),
+        reference_clock=_reference_time(reference),
+        operator=operator or shared.settings.operator,
+    )
+    raise typer.Exit(emit(bench_report(check_bench(context)), fmt, output))
+
+
+def _free_bytes(root: Path) -> int | None:
+    """Free space where the bundles go, or None when nobody can tell.
+
+    The staging root may not exist yet on a laptop that has never staged
+    anything, so this walks up to the first directory that does.
+    """
+    current = root.resolve()
+    for candidate in [current, *current.parents]:
+        if candidate.is_dir():
+            return shutil.disk_usage(candidate).free
+    return None
+
+
+def _reference_time(text: str | None) -> datetime | None:
+    """Parse ``--reference-time``, or stop with a message.
+
+    :raises typer.Exit: when it is not a time. Guessing at it would be worse
+        than not checking the clock, because the check would then pass.
+    """
+    if text is None:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        fail(f"--reference-time is not an ISO 8601 time: {text}")
+    if parsed.tzinfo is None:
+        fail("--reference-time needs an offset, otherwise it means nothing")
+    return parsed
 
 
 @app.command("journals")

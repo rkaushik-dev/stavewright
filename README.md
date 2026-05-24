@@ -32,6 +32,7 @@ against fixtures.
     bundle stage      manifest + payload   -> a staged bundle on the laptop
     bundle pack       a staged bundle      -> one file to carry to a plant
     bundle unpack     that file            -> the bundle back, every object hashed
+    run bench         the laptop           -> whether the visit is worth making
     run plan          bundle + profile     -> an ordered list of steps
     run preflight     plan + terminal      -> whether it is safe to start
     run apply         bundle + terminal    -> a commissioned terminal, journalled
