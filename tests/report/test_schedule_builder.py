@@ -52,23 +52,23 @@ def test_the_report_names_the_plant():
 
 
 def test_the_facts_count_the_bookings():
-    facts = schedule_report(full()).facts
+    facts = schedule_report(full()).fact_lines()
     assert facts["booked"] == "3"
     assert facts["unplaced"] == "0"
 
 
 def test_the_facts_carry_the_finish_time():
     schedule = full()
-    assert schedule_report(schedule).facts["finishes"] == schedule.finishes_at.isoformat(sep=" ")
+    assert schedule_report(schedule).fact_lines()["finishes"] == schedule.finishes_at.isoformat(sep=" ")
 
 
 def test_a_schedule_with_nothing_in_it_has_no_finish_time():
     empty = schedule_rollout(Rollout(plant="W"), [NIGHT])
-    assert schedule_report(empty).facts["finishes"] == ""
+    assert schedule_report(empty).fact_lines()["finishes"] == ""
 
 
 def test_the_working_time_is_in_hours():
-    assert schedule_report(full()).facts["working_time"] == "1.8"
+    assert schedule_report(full()).fact_lines()["working_time"] == "1.8"
 
 
 def test_the_bookings_table_has_a_row_per_wave():
@@ -164,4 +164,4 @@ def test_the_csv_carries_only_the_unplaced_waves():
 
 def test_a_longer_per_machine_time_shows_up_in_the_working_time():
     slow = schedule_rollout(plan_rollout(PLANT), [NIGHT], per_machine=timedelta(hours=1))
-    assert schedule_report(slow).facts["working_time"] == "3.5"
+    assert schedule_report(slow).fact_lines()["working_time"] == "3.5"

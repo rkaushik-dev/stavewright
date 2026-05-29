@@ -34,8 +34,8 @@ def plan_report(result: PlanReport) -> Report:
         title="Commissioning plan",
         subtitle=plan.profile.describe(),
         facts={
-            "plan": str(plan.digest()),
-            "steps": str(len(plan)),
+            "plan": plan.digest(),
+            "steps": len(plan),
             "terminal": plan.profile.terminal_id,
             "minutes": f"{estimate.minutes:.0f}",
             "estimate": estimate.describe(),
@@ -120,7 +120,7 @@ def apply_report(result: ApplyResult, plan: Plan) -> Report:
         subtitle=plan.profile.describe(),
         facts={
             "run": result.run_id,
-            "plan": str(plan.digest()),
+            "plan": plan.digest(),
             "outcome": result.outcome.value,
             "journal": str(result.journal_path) if result.journal_path else "",
         },
@@ -183,7 +183,7 @@ def attestation_report(
             "run": attestation.run_id,
             "plan": attestation.plan_digest,
             "outcome": attestation.outcome,
-            "digest": str(attestation.digest()),
+            "digest": attestation.digest(),
             "toolkit": attestation.toolkit_version,
         },
     )
@@ -248,9 +248,9 @@ def retention_report(plan: RetentionPlan, *, applied: bool = False) -> Report:
         title="Journal retention",
         subtitle="removed" if applied else "nothing removed yet",
         facts={
-            "journals": str(len(plan)),
-            "keeping": str(len(plan.kept)),
-            "removing": str(len(plan.expired)),
+            "journals": len(plan),
+            "keeping": len(plan.kept),
+            "removing": len(plan.expired),
             **{name: str(count) for name, count in counts.items()},
         },
     )
@@ -305,9 +305,9 @@ def stage_report(result: StagingReport) -> Report:
         title="Staging",
         subtitle=bundle.describe(),
         facts={
-            "root": str(bundle.root),
-            "items": str(result.item_count),
-            "bytes": str(bundle.total_bytes()),
+            "root": bundle.root,
+            "items": result.item_count,
+            "bytes": bundle.total_bytes(),
         },
     )
     rows = [

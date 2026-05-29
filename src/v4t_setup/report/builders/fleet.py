@@ -30,8 +30,8 @@ def status_report(status: PlantStatus) -> Report:
         title="Plant standing",
         subtitle=status.plant,
         facts={
-            "terminals": str(len(status)),
-            "outstanding": str(len(status.outstanding)),
+            "terminals": len(status),
+            "outstanding": len(status.outstanding),
             **{name: str(count) for name, count in counts.items()},
         },
     )
@@ -126,9 +126,9 @@ def rollout_report(rollout: Rollout, problems: list[str] | None = None) -> Repor
         title="Rollout plan",
         subtitle=rollout.plant,
         facts={
-            "waves": str(len(rollout)),
-            "terminals": str(len(machines)),
-            "stoppages": str(rollout.stoppages),
+            "waves": len(rollout),
+            "terminals": len(machines),
+            "stoppages": rollout.stoppages,
         },
     )
     report.add(
@@ -167,8 +167,8 @@ def schedule_report(schedule: Schedule, windows: list[Window] | None = None) -> 
         title="Rollout schedule",
         subtitle=schedule.plant,
         facts={
-            "booked": str(len(schedule)),
-            "unplaced": str(len(schedule.unplaced)),
+            "booked": len(schedule),
+            "unplaced": len(schedule.unplaced),
             "working_time": _hours(schedule.working_time),
             "finishes": schedule.finishes_at.isoformat(sep=" ") if schedule.finishes_at else "",
         },

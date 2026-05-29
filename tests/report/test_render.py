@@ -381,3 +381,40 @@ def test_markdown_has_a_heading_per_section():
     text = to_markdown(sample())
     for heading in ("## Plan", "## Steps", "## GS1"):
         assert heading in text
+
+
+def test_a_fact_that_is_a_number_renders_as_one():
+    report = Report(title="x", facts={"steps": 12})
+    assert "steps: 12" in to_text(report)
+
+
+def test_a_fact_that_is_none_renders_as_blank():
+    # Not the word None. A fact nobody could establish reads as blank and
+    # reads as a bug the other way.
+    report = Report(title="x", facts={"finished": None})
+    assert "finished: \n" in to_text(report) or "finished:" in to_text(report)
+    assert "None" not in to_text(report)
+
+
+def test_a_fact_that_is_a_datetime_is_written_for_a_person():
+    from v4t_setup.clock import utc
+
+    report = Report(title="x", facts={"saved": utc(2025, 6, 3, 1, 30)})
+    assert "saved: 2025-06-03 01:30:00+00:00" in to_text(report)
+    assert "T01:30" not in to_text(report)
+
+
+def test_the_json_form_stringifies_every_fact():
+    report = Report(title="x", facts={"steps": 12, "finished": None})
+    payload = json.loads(to_json(report))
+    assert payload["facts"] == {"finished": "", "steps": "12"}
+
+
+def test_the_markdown_form_stringifies_too():
+    report = Report(title="x", facts={"steps": 12})
+    assert "- **steps:** 12" in to_markdown(report)
+
+
+def test_fact_lines_are_sorted():
+    report = Report(title="x", facts={"zebra": 1, "apple": 2})
+    assert list(report.fact_lines()) == ["apple", "zebra"]

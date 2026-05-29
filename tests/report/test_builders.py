@@ -268,8 +268,8 @@ def test_a_gs1_report_of_the_shipped_file(request):
     findings = lint_dataset(dataset, MarkingContext(reference_year=2016))
     report = gs1_report(dataset, findings)
     assert report.outcome is Outcome.FAIL
-    assert report.facts["rows"] == "130"
-    assert report.facts["ragged"] == "32"
+    assert report.fact_lines()["rows"] == "130"
+    assert report.fact_lines()["ragged"] == "32"
 
 
 def test_a_template_report(request):

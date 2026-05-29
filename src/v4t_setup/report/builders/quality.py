@@ -20,8 +20,8 @@ def gs1_report(dataset: Dataset, findings: list[Finding]) -> Report:
         title="GS1 data",
         subtitle=dataset.describe(),
         facts={
-            "rows": str(len(dataset)),
-            "ragged": str(len(dataset.ragged_rows)),
+            "rows": len(dataset),
+            "ragged": len(dataset.ragged_rows),
         },
     )
     report.add_if(findings_section("Findings", findings))
@@ -65,7 +65,7 @@ def template_set_report(templates: TemplateSet, findings: list[Finding]) -> Repo
         title="Template set",
         subtitle=templates.describe(),
         facts={
-            "templates": str(len(templates)),
+            "templates": len(templates),
             "data_file": templates.data_path.name if templates.data_path else "",
             "rows": str(len(templates.dataset)) if templates.dataset else "0",
             "longest_element_string": str(longest) if longest is not None else "",

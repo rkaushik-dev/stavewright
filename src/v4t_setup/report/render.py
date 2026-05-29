@@ -111,8 +111,7 @@ def to_text(report: Report, *, width: int = DEFAULT_WIDTH) -> str:
     if report.subtitle:
         lines.append(report.subtitle)
     lines.append(_rule(width, "="))
-    for key in sorted(report.facts):
-        lines.append(f"{key}: {report.facts[key]}")
+    lines.extend(f"{key}: {value}" for key, value in report.fact_lines().items())
     counts = report.counts()
     if counts:
         lines.append(", ".join(f"{count} {name}" for name, count in counts.items()))
@@ -228,7 +227,7 @@ def to_markdown(report: Report) -> str:
 
     if report.facts:
         lines.append("")
-        lines.extend(f"- **{key}:** {report.facts[key]}" for key in sorted(report.facts))
+        lines.extend(f"- **{key}:** {value}" for key, value in report.fact_lines().items())
 
     for section in report.sections:
         lines.append("")

@@ -29,19 +29,19 @@ def test_the_report_describes_the_set(templates):
 
 
 def test_the_facts_carry_the_data_file(templates):
-    facts = template_set_report(templates, []).facts
+    facts = template_set_report(templates, []).fact_lines()
     assert facts["data_file"] == "GS1-1.txt"
     assert facts["templates"] == "1"
     assert int(facts["rows"]) > 0
 
 
 def test_the_facts_carry_the_longest_element_string(templates):
-    assert template_set_report(templates, []).facts["longest_element_string"] == "28"
+    assert template_set_report(templates, []).fact_lines()["longest_element_string"] == "28"
 
 
 def test_a_set_with_no_data_file_leaves_those_facts_blank(templates):
     bare = TemplateSet(root=templates.root, entries=templates.entries)
-    facts = template_set_report(bare, []).facts
+    facts = template_set_report(bare, []).fact_lines()
     assert facts["data_file"] == ""
     assert facts["rows"] == "0"
     assert facts["longest_element_string"] == ""

@@ -53,7 +53,7 @@ def test_the_roster_report_names_the_plant():
 
 
 def test_the_roster_report_counts_terminals_and_lines():
-    facts = roster_report(PLANT).facts
+    facts = roster_report(PLANT).fact_lines()
     assert facts["terminals"] == "4"
     assert facts["lines"] == "3"
 
@@ -111,13 +111,13 @@ def test_the_rollout_report_names_the_plant():
 
 def test_the_rollout_report_counts_the_waves():
     plan = plan_rollout(PLANT)
-    facts = rollout_report(plan).facts
+    facts = rollout_report(plan).fact_lines()
     assert facts["waves"] == str(len(plan))
     assert facts["terminals"] == "4"
 
 
 def test_the_rollout_report_counts_the_stoppages():
-    assert rollout_report(plan_rollout(PLANT)).facts["stoppages"] == "2"
+    assert rollout_report(plan_rollout(PLANT)).fact_lines()["stoppages"] == "2"
 
 
 def test_the_wave_table_has_a_row_per_wave():
@@ -171,5 +171,5 @@ def test_the_rollout_report_renders_as_json():
 def test_an_empty_plant_still_makes_a_report():
     empty = Roster(plant="Nowhere")
     report = rollout_report(plan_rollout(empty))
-    assert report.facts["waves"] == "0"
+    assert report.fact_lines()["waves"] == "0"
     assert section(report, "Waves").rows == []

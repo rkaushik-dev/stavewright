@@ -19,19 +19,19 @@ def msi_report(
     findings: list[Finding] | None = None,
 ) -> Report:
     """What is inside an installer, as a document."""
-    facts = {
+    facts: dict[str, object] = {
         "product": database.property("ProductName") or "",
         "version": database.property("ProductVersion") or "",
         "upgrade_code": database.property("UpgradeCode") or "",
         "manufacturer": database.property("Manufacturer") or "",
-        "codepage": str(database.pool.codepage),
+        "codepage": database.pool.codepage,
     }
     if summary is not None:
         facts["package_code"] = summary.package_code or ""
         facts["platform"] = summary.platform or ""
-        facts["schema"] = str(summary.schema_version or "")
+        facts["schema"] = summary.schema_version or ""
         facts["built_by"] = summary.creating_application or ""
-        facts["saved"] = summary.saved_at.isoformat(sep=" ") if summary.saved_at else ""
+        facts["saved"] = summary.saved_at
     report = Report(
         title="Installer database",
         subtitle=database.describe(),

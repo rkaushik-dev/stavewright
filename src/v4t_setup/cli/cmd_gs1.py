@@ -111,8 +111,8 @@ def parse_element_string(
         title="GS1 element string",
         subtitle=parsed.bracketed(),
         facts={
-            "elements": str(len(parsed)),
-            "encoded_length": str(parsed.encoded_length()),
+            "elements": len(parsed),
+            "encoded_length": parsed.encoded_length(),
             **({"label": label} if label is not None else {}),
         },
     )

@@ -110,6 +110,21 @@ def findings_section(heading: str, findings: list[Finding], note: str = "") -> S
     )
 
 
+def fact_text(value: object) -> str:
+    """One fact as text.
+
+    None becomes the empty string rather than the word None, because a fact
+    nobody could establish reads as blank and reads as a bug the other way.
+    A datetime is written with a space rather than a T, because these lines go
+    in front of people.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, datetime):
+        return value.isoformat(sep=" ")
+    return str(value)
+
+
 @dataclass
 class Report:
     """A whole report."""
@@ -118,7 +133,18 @@ class Report:
     subtitle: str = ""
     outcome: Outcome = Outcome.PASS
     generated_at: datetime | None = None
-    facts: dict[str, str] = field(default_factory=dict)
+    facts: dict[str, object] = field(default_factory=dict)
+    """What was looked at. Values are whatever the builder had.
+
+    They were strings, and every builder wrapped every value in ``str()``.
+    Thirty of those, all identical, all noise, and one of them wrapped an
+    ``MsiVersion`` where the string was not what a reader wanted.
+
+    Rendering is where a value becomes text, because that is where the format
+    is known. A None renders as the empty string, which is what a fact nobody
+    could establish should look like.
+    """
+
     sections: list[Section] = field(default_factory=list)
 
     def add(self, section: Section) -> Report:
@@ -162,6 +188,10 @@ class Report:
         """Findings by severity across the whole report."""
         return count_by_severity(self.all_findings)
 
+    def fact_lines(self) -> dict[str, str]:
+        """The facts as text, sorted, which is what every renderer wants."""
+        return {key: fact_text(self.facts[key]) for key in sorted(self.facts)}
+
     def stamp(self) -> Report:
         """Set ``generated_at`` to now. Returns self."""
         self.generated_at = clock.now()
@@ -179,7 +209,7 @@ class Report:
         if self.generated_at is not None:
             payload["generated_at"] = self.generated_at.isoformat()
         if self.facts:
-            payload["facts"] = dict(self.facts)
+            payload["facts"] = self.fact_lines()
         counts = self.counts()
         if counts:
             payload["counts"] = counts
@@ -191,6 +221,7 @@ __all__ = [
     "Report",
     "Section",
     "SectionKind",
+    "fact_text",
     "findings_section",
     "lines_section",
     "table_section",
