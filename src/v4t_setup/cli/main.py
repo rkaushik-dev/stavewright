@@ -13,7 +13,7 @@ from pathlib import Path
 import typer
 
 from v4t_setup.__about__ import PRODUCT_NAME, __version__
-from v4t_setup.cli import cmd_bundle, cmd_fleet, cmd_gs1, cmd_run, cmd_template
+from v4t_setup.cli import cmd_bundle, cmd_fleet, cmd_gs1, cmd_run, cmd_template, options
 from v4t_setup.cli.common import EXIT_TOOLKIT, AppContext, echo_lines
 from v4t_setup.errors import V4TError
 
@@ -76,6 +76,46 @@ def list_formats() -> None:
     from v4t_setup.report.render import RENDERERS
 
     echo_lines(sorted(RENDERERS))
+
+
+@app.command("doctor")
+def doctor(
+    ctx: typer.Context,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+) -> None:
+    """Say what this installation is and whether it will work.
+
+    The first question on a support call is which version of what is on the
+    laptop. Exits 1 when something here would stop a command halfway through.
+    """
+    from v4t_setup.cli.common import emit, get_context
+    from v4t_setup.environment import check_environment, collect
+    from v4t_setup.report.document import Report, findings_section, lines_section
+
+    shared = get_context(ctx)
+    environment = collect(config_file=shared.settings_file)
+    findings = check_environment(environment)
+
+    report = Report(
+        title="Toolkit",
+        subtitle=environment.describe(),
+        facts=environment.as_facts(),
+    )
+    report.add(
+        lines_section(
+            "Where things go",
+            [
+                f"staging: {shared.settings.staging_root}",
+                f"journals: {shared.settings.journal_root}",
+                f"reports: {shared.settings.report_root}",
+                f"trusted keys: {shared.settings.trusted_keys or 'none'}",
+            ],
+        )
+    )
+    report.add_if(findings_section("Findings", findings))
+    report.derive_outcome()
+    raise typer.Exit(emit(report, fmt, output))
 
 
 @app.command("rules")

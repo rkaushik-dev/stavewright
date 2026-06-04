@@ -44,6 +44,13 @@ class AppContext:
     settings: Settings
     run_id: str
     quiet: bool = False
+    settings_file: Path | None = None
+    """Which file the settings came from, or None when none was found.
+
+    Worth keeping because "it is not reading my settings" is a support call,
+    and the answer is nearly always that the file is one directory up from
+    where somebody thought it was.
+    """
 
     @classmethod
     def build(
@@ -70,7 +77,12 @@ class AppContext:
             log_file=settings.log_file,
             console=not quiet,
         )
-        return cls(settings=settings, run_id=new_run_id(), quiet=quiet)
+        return cls(
+            settings=settings,
+            run_id=new_run_id(),
+            quiet=quiet,
+            settings_file=files[0] if files else None,
+        )
 
 
 def get_context(ctx: typer.Context) -> AppContext:

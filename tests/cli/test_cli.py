@@ -1124,3 +1124,35 @@ def test_a_bench_with_no_journal_directory_yet_says_it_will_make_one(runner, ben
     )
     assert result.exit_code == EXIT_OK
     assert "will be created" in result.output
+
+
+def test_doctor_says_what_this_is(runner, bench):
+    result = run(runner, "doctor")
+    assert result.exit_code == EXIT_OK, result.output
+    assert "Toolkit" in result.output
+    assert f"toolkit: {__version__}" in result.output
+
+
+def test_doctor_lists_the_dependency_versions(runner, bench):
+    result = run(runner, "doctor", "--format", "json")
+    facts = json_output(result)["facts"]
+    for name in ("typer", "pydantic", "cryptography"):
+        assert facts[f"package.{name}"]
+
+
+def test_doctor_says_where_things_go(runner, bench):
+    result = run(runner, "doctor")
+    assert "staging: _staging" in result.output
+    assert "journals: _journal" in result.output
+
+
+def test_doctor_names_the_settings_file_it_found(runner, bench):
+    result = run(runner, "doctor", "--format", "json")
+    assert json_output(result)["facts"]["settings"].endswith("v4t-setup.toml")
+    assert "no settings file was found" not in result.output
+
+
+def test_doctor_says_when_it_found_no_settings_file(runner, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = run(runner, "doctor")
+    assert "no settings file was found" in result.output
