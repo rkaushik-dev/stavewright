@@ -186,6 +186,20 @@ These are real and they are why some of the tests look the way they do.
   `..\Release`. A bundle is carried to a factory, so nothing in it can point
   outside itself, and `bundle build` flattens them under `payload/`.
 
+## Why the executor applies one step at a time
+
+It would be faster not to. `run plan` prints the critical path and the number
+next to it is what the serial executor costs: most of a plan is independent,
+so a parallel one would finish in the length of the longest chain rather than
+the sum of everything.
+
+The reason it does not is that a half applied terminal has to be something a
+person can reason about at two in the morning. With one step at a time the
+journal is a line, the rollback is that line in reverse, and the answer to
+"where did it stop" is one step id. None of that survives four workers.
+
+The number is in the report so that trade is visible rather than assumed.
+
 ## Design notes worth knowing before changing anything
 
 **Nothing talks to a machine except `v4t_setup.target`.** There are two

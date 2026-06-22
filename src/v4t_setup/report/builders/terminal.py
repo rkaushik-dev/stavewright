@@ -6,6 +6,7 @@ from v4t_setup.apply.executor import ApplyResult
 from v4t_setup.apply.executor import Outcome as ApplyOutcome
 from v4t_setup.finding import Finding, Severity
 from v4t_setup.plan.cost import estimate_plan
+from v4t_setup.plan.critical import bottlenecks, critical_path
 from v4t_setup.plan.diff import Change, PlanDiff
 from v4t_setup.plan.planner import PlanReport
 from v4t_setup.plan.steps import Plan
@@ -80,6 +81,27 @@ def plan_report(result: PlanReport) -> Report:
             note="Before the verify pass, which adds about a quarter.",
         )
     )
+    path = critical_path(plan)
+    if len(path):
+        report.facts["critical_minutes"] = f"{path.span.total_seconds() / 60:.0f}"
+        report.add(
+            table_section(
+                "The critical path",
+                ["step", "seconds", "slack"],
+                [
+                    [
+                        timing.step_id,
+                        f"{timing.duration.total_seconds():.0f}",
+                        f"{timing.slack.total_seconds():.0f}",
+                    ]
+                    for timing in bottlenecks(path, limit=10)
+                ],
+                note=(
+                    f"{path.describe()}. Steps off this path could take longer "
+                    "and change nothing."
+                ),
+            )
+        )
     irreversible = plan.irreversible_steps
     if irreversible:
         report.add(

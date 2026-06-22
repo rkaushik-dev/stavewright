@@ -308,3 +308,82 @@ def test_a_finding_built_by_hand_still_renders():
     )
     assert report.outcome is Outcome.WARN
     assert "hand made" in render(report, "text")
+
+
+def section_of(report, heading):
+    return next(part for part in report.sections if part.heading == heading)
+
+
+def test_a_plan_report_shows_the_critical_path(bundle_manifest, profile, directory_table):
+    report = plan_report(build_plan(bundle_manifest, profile, directory_table, stamp=False))
+    section = section_of(report, "The critical path")
+    assert section.columns == ["step", "seconds", "slack"]
+    assert section.rows
+
+
+def test_the_critical_path_note_says_what_it_means(bundle_manifest, profile, directory_table):
+    report = plan_report(build_plan(bundle_manifest, profile, directory_table, stamp=False))
+    note = section_of(report, "The critical path").note
+    assert "steps on the critical path" in note
+    assert "change nothing" in note
+
+
+def test_the_critical_minutes_are_a_fact(bundle_manifest, profile, directory_table):
+    report = plan_report(build_plan(bundle_manifest, profile, directory_table, stamp=False))
+    facts = report.fact_lines()
+    assert "critical_minutes" in facts
+    assert float(facts["critical_minutes"]) <= float(facts["minutes"])
+
+
+def test_the_critical_path_is_capped_at_ten_rows(bundle_manifest, profile, directory_table):
+    report = plan_report(build_plan(bundle_manifest, profile, directory_table, stamp=False))
+    assert len(section_of(report, "The critical path").rows) <= 10
+
+
+def test_a_plan_with_no_steps_has_no_critical_path_section(profile):
+    from v4t_setup.plan.planner import PlanReport
+
+    empty = PlanReport(
+        plan=Plan(profile=profile, steps=[]), skipped={}, missing_requirements={}
+    )
+    assert "The critical path" not in headings(plan_report(empty))
+
+
+def test_the_critical_path_rows_are_longest_first(bundle_manifest, profile, directory_table):
+    report = plan_report(build_plan(bundle_manifest, profile, directory_table, stamp=False))
+    seconds = [float(row[1]) for row in section_of(report, "The critical path").rows]
+    assert seconds == sorted(seconds, reverse=True)
+
+
+def test_every_row_on_the_critical_path_has_no_slack(
+    bundle_manifest, profile, directory_table
+):
+    report = plan_report(build_plan(bundle_manifest, profile, directory_table, stamp=False))
+    assert all(float(row[2]) == 0 for row in section_of(report, "The critical path").rows)
+
+
+def test_every_step_named_on_the_path_is_in_the_plan(
+    bundle_manifest, profile, directory_table
+):
+    result = build_plan(bundle_manifest, profile, directory_table, stamp=False)
+    rows = section_of(plan_report(result), "The critical path").rows
+    assert all(row[0] in result.plan for row in rows)
+
+
+def test_the_critical_path_survives_every_renderer(
+    bundle_manifest, profile, directory_table
+):
+    report = plan_report(build_plan(bundle_manifest, profile, directory_table, stamp=False))
+    for name in ("text", "markdown", "json"):
+        assert "critical path" in render(report, name).lower()
+
+
+def test_the_span_is_never_longer_than_the_total(
+    bundle_manifest, profile, directory_table
+):
+    from v4t_setup.plan.cost import estimate_plan
+    from v4t_setup.plan.critical import critical_path
+
+    result = build_plan(bundle_manifest, profile, directory_table, stamp=False)
+    path = critical_path(result.plan)
+    assert path.span <= estimate_plan(result.plan, with_verify=False).expected
