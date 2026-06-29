@@ -27,10 +27,16 @@ from v4t_setup.cli.common import (
 from v4t_setup.model.manifest import Manifest, read_manifest, utc_now
 from v4t_setup.msi.cfb import read_compound_file
 from v4t_setup.msi.compare import compare_project, compare_tables
+from v4t_setup.msi.difference import NOISY_TABLES, compare_databases
+from v4t_setup.msi.export import export
 from v4t_setup.msi.lint import lint_msi
 from v4t_setup.msi.summary import read_summary
 from v4t_setup.msi.tables import read_database, read_msi
-from v4t_setup.report.builders.installer import msi_compare_report, msi_report
+from v4t_setup.report.builders.installer import (
+    msi_compare_report,
+    msi_difference_report,
+    msi_report,
+)
 from v4t_setup.report.builders.terminal import stage_report
 from v4t_setup.report.document import Report, table_section
 from v4t_setup.signing import (
@@ -145,6 +151,58 @@ def match(
         compare_project(project, database),
     )
     raise typer.Exit(emit(report, fmt, output))
+
+
+@app.command("msi-diff")
+@handle_errors
+def msi_diff(
+    ctx: typer.Context,
+    first: Path = typer.Argument(..., help="The installer that shipped."),
+    second: Path = typer.Argument(..., help="The one that is about to."),
+    all_tables: bool = typer.Option(
+        False, "--all-tables", help="Include the schema and the file hashes too."
+    ),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+) -> None:
+    """Say what changed between two builds of an installer.
+
+    Always exits 0. A difference between two builds is what was asked for, not
+    a finding, and a command that fails a pipeline because a release changed
+    something is a command nobody keeps.
+    """
+    get_context(ctx)
+    require_file(first, "first installer")
+    require_file(second, "second installer")
+    difference = compare_databases(
+        read_msi(first),
+        read_msi(second),
+        skip=frozenset() if all_tables else NOISY_TABLES,
+    )
+    report = msi_difference_report(difference, first.name, second.name)
+    raise typer.Exit(emit(report, fmt, output))
+
+
+@app.command("msi-export")
+@handle_errors
+def msi_export(
+    ctx: typer.Context,
+    path: Path = typer.Argument(..., help="A built .msi."),
+    into: Path = typer.Option(..., "--into", help="A directory to write the tables into."),
+    tables: list[str] = typer.Option(
+        None, "--table", help="One table to write. Repeat it. Everything by default."
+    ),
+) -> None:
+    """Write an installer's tables out as idt files, the way Orca does.
+
+    Naming a table that is not there is an error rather than an empty
+    directory, because somebody asking for the Registry table and quietly
+    getting nothing is the worst outcome available.
+    """
+    get_context(ctx)
+    require_file(path, "installer")
+    report = export(read_msi(path), into, only=list(tables) if tables else None)
+    typer.echo(report.describe())
 
 
 @app.command("sign")

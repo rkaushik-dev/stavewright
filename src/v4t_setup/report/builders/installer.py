@@ -4,11 +4,14 @@ from __future__ import annotations
 
 from v4t_setup.finding import Finding
 from v4t_setup.msi.compare import SetDifference
+from v4t_setup.msi.difference import DatabaseDifference, summarise
 from v4t_setup.msi.summary import SummaryInformation
 from v4t_setup.msi.tables import MsiDatabase
 from v4t_setup.report.document import (
+    Outcome,
     Report,
     findings_section,
+    lines_section,
     table_section,
 )
 
@@ -57,6 +60,62 @@ def msi_report(
     return report
 
 
+def msi_difference_report(
+    difference: DatabaseDifference,
+    before: str = "",
+    after: str = "",
+) -> Report:
+    """Two installers held up against each other, as a document.
+
+    It always passes. A difference between two builds is what was asked for,
+    not a finding, and a command that exits 1 because a release changed
+    something is a command nobody puts in a pipeline.
+    """
+    report = Report(
+        title="Installer difference",
+        subtitle=f"{before} against {after}" if before or after else "",
+        facts={
+            "changed_tables": len(difference.changed_tables),
+            "changed_rows": len(difference),
+            "identical": "yes" if difference.is_identical else "no",
+        },
+    )
+    if difference.is_identical:
+        report.add(lines_section("Difference", ["these two hold the same tables"]))
+    else:
+        report.add(
+            table_section(
+                "Tables",
+                ["table", "added", "removed", "changed"],
+                [
+                    [
+                        table.name,
+                        str(len(table.added)),
+                        str(len(table.removed)),
+                        str(len(table.changed)),
+                    ]
+                    for table in difference
+                ],
+            )
+        )
+        report.add(lines_section("What changed", summarise(difference)))
+
+    if difference.expected_properties:
+        report.add(
+            table_section(
+                "Expected to differ",
+                ["property", "before", "after"],
+                [
+                    [name, values[0], values[1]]
+                    for name, values in sorted(difference.expected_properties.items())
+                ],
+                note="These change on every build, which is what they are for.",
+            )
+        )
+    report.outcome = Outcome.PASS
+    return report
+
+
 def msi_compare_report(
     database: MsiDatabase,
     differences: list[SetDifference],
@@ -95,5 +154,6 @@ def msi_compare_report(
 
 __all__ = [
     "msi_compare_report",
+    "msi_difference_report",
     "msi_report",
 ]

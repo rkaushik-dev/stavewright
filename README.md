@@ -42,6 +42,8 @@ against fixtures.
     run audit         an attestation       -> whether it stands up as evidence
     bundle msi        a built .msi         -> what is inside it
     bundle match      an .msi + setup.aip  -> whether one built the other
+    bundle msi-diff   two .msi files       -> what changed between two builds
+    bundle msi-export an .msi              -> its tables as idt, for a diff
     fleet status      roster + journals    -> where the plant actually stands
     fleet plan        roster + profiles    -> the order to work the plant in
     fleet next        roster + profiles    -> the terminals to do tonight

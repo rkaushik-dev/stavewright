@@ -1156,3 +1156,81 @@ def test_doctor_says_when_it_found_no_settings_file(runner, tmp_path, monkeypatc
     monkeypatch.chdir(tmp_path)
     result = run(runner, "doctor")
     assert "no settings file was found" in result.output
+
+
+def test_msi_diff_of_an_installer_with_itself(runner, bench):
+    result = run(runner, "bundle", "msi-diff", str(MSI), str(MSI), "--format", "json")
+    assert result.exit_code == EXIT_OK, result.output
+    facts = json_output(result)["facts"]
+    assert facts["identical"] == "yes"
+    assert facts["changed_rows"] == "0"
+
+
+def test_msi_diff_says_so_in_words(runner, bench):
+    result = run(runner, "bundle", "msi-diff", str(MSI), str(MSI))
+    assert "hold the same tables" in result.output
+
+
+def test_msi_diff_names_both_files(runner, bench):
+    result = run(runner, "bundle", "msi-diff", str(MSI), str(MSI))
+    assert "msi-Jet600.msi against msi-Jet600.msi" in result.output
+
+
+def test_msi_diff_of_a_file_that_is_not_there(runner, bench):
+    result = run(runner, "bundle", "msi-diff", "gone.msi", str(MSI))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "first installer does not exist" in result.output
+
+
+def test_msi_diff_of_something_that_is_not_an_installer(runner, bench):
+    result = run(runner, "bundle", "msi-diff", str(MSI), str(AIP))
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "signature" in result.output
+
+
+def test_msi_export_writes_every_table(runner, bench):
+    into = bench / "tables"
+    result = run(runner, "bundle", "msi-export", str(MSI), "--into", str(into))
+    assert result.exit_code == EXIT_OK, result.output
+    assert (into / "Directory.idt").is_file()
+    assert len(list(into.glob("*.idt"))) == 32
+
+
+def test_msi_export_writes_only_what_was_asked_for(runner, bench):
+    into = bench / "tables"
+    result = run(
+        runner, "bundle", "msi-export", str(MSI), "--into", str(into),
+        "--table", "Registry", "--table", "Directory",
+    )
+    assert result.exit_code == EXIT_OK
+    assert sorted(path.name for path in into.glob("*.idt")) == [
+        "Directory.idt",
+        "Registry.idt",
+    ]
+
+
+def test_msi_export_of_a_table_that_is_not_there(runner, bench):
+    result = run(
+        runner, "bundle", "msi-export", str(MSI), "--into", str(bench / "tables"),
+        "--table", "Nonsense",
+    )
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "no such table" in result.output
+
+
+def test_msi_export_says_what_it_wrote(runner, bench):
+    result = run(
+        runner, "bundle", "msi-export", str(MSI), "--into", str(bench / "tables"),
+        "--table", "Upgrade",
+    )
+    assert "1 tables, 1 rows" in result.output
+
+
+def test_an_exported_table_reads_back(runner, bench):
+    from v4t_setup.msi.export import ENCODING, parse_idt
+
+    into = bench / "tables"
+    run(runner, "bundle", "msi-export", str(MSI), "--into", str(into), "--table", "Feature")
+    table = parse_idt((into / "Feature.idt").read_bytes().decode(ENCODING))
+    assert table.name == "Feature"
+    assert len(table) == 1
