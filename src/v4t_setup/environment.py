@@ -19,9 +19,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from v4t_setup.__about__ import __version__
-from v4t_setup.finding import Finding, Severity
+from v4t_setup.finding import Finding, Severity, reporter
 
 RULE = "environment"
+_finding = reporter(RULE)
 
 MINIMUM_PYTHON = (3, 11)
 """What the code needs. StrEnum, the match statement and PEP 604 unions."""
@@ -95,16 +96,6 @@ def collect(config_file: Path | None = None) -> Environment:
         missing_packages=tuple(missing),
         temp_free_bytes=free,
         config_file=config_file,
-    )
-
-
-def _finding(severity: Severity, message: str, subject: str, **context: object) -> Finding:
-    return Finding(
-        rule=RULE,
-        severity=severity,
-        message=message,
-        subject=subject,
-        context=dict(context),
     )
 
 

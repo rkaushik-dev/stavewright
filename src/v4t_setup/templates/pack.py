@@ -23,7 +23,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from v4t_setup.errors import TemplateError
-from v4t_setup.finding import Finding, Severity
+from v4t_setup.finding import Finding, Severity, reporter
 from v4t_setup.gs1.dataset import Dataset, read_dataset
 from v4t_setup.model.profile import TerminalProfile
 from v4t_setup.templates.fieldspec import FieldSpec, find_field_specs
@@ -34,6 +34,7 @@ TEMPLATE_SUFFIX = ".spf"
 DATA_SUFFIXES = (".txt", ".csv")
 
 SET_RULE = "template-set"
+_finding = reporter(SET_RULE)
 
 
 @dataclass(frozen=True, slots=True)
@@ -226,11 +227,10 @@ def _set_findings(templates: TemplateSet) -> list[Finding]:
 
     if templates.dataset is None:
         findings.append(
-            Finding(
-                rule=SET_RULE,
-                severity=Severity.WARNING,
-                message="no data file beside these templates, so nothing checked the bindings",
-                subject=templates.root.name,
+            _finding(
+                Severity.WARNING,
+                "no data file beside these templates, so nothing checked the bindings",
+                templates.root.name,
             )
         )
 
@@ -239,12 +239,11 @@ def _set_findings(templates: TemplateSet) -> list[Finding]:
         key = entry.name.lower()
         if key in lowered:
             findings.append(
-                Finding(
-                    rule=SET_RULE,
-                    severity=Severity.ERROR,
-                    message="two templates differ only in case, which Windows cannot keep apart",
-                    subject=entry.name,
-                    context={"other": lowered[key]},
+                _finding(
+                    Severity.ERROR,
+                    "two templates differ only in case, which Windows cannot keep apart",
+                    entry.name,
+                    other=lowered[key],
                 )
             )
         else:
@@ -255,12 +254,11 @@ def _set_findings(templates: TemplateSet) -> list[Finding]:
     ) if templates.entries else frozenset()
     if unused and templates.dataset is not None:
         findings.append(
-            Finding(
-                rule=SET_RULE,
-                severity=Severity.INFO,
-                message="the data file carries columns no template prints",
-                subject=templates.root.name,
-                context={"columns": sorted(unused)},
+            _finding(
+                Severity.INFO,
+                "the data file carries columns no template prints",
+                templates.root.name,
+                columns=sorted(unused),
             )
         )
     return findings

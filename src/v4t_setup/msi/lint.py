@@ -20,12 +20,13 @@ from __future__ import annotations
 
 import re
 
-from v4t_setup.finding import Finding, Severity
+from v4t_setup.finding import Finding, Severity, reporter
 from v4t_setup.msi.summary import SummaryInformation
 from v4t_setup.msi.tables import MsiDatabase
 from v4t_setup.util.msiver import MsiVersion
 
 RULE = "msi"
+_finding = reporter(RULE)
 
 GUID = re.compile(r"^\{[0-9A-Fa-f]{8}-(?:[0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}\}$")
 
@@ -48,16 +49,6 @@ REFERENCES = (
 )
 
 SAMPLE_SIZE = 5
-
-
-def _finding(severity: Severity, message: str, subject: str = "", **context: object) -> Finding:
-    return Finding(
-        rule=RULE,
-        severity=severity,
-        message=message,
-        subject=subject,
-        context=dict(context),
-    )
 
 
 def _values(database: MsiDatabase, table: str, column: str) -> set[str]:

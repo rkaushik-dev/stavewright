@@ -36,7 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-from v4t_setup.finding import Finding, Severity
+from v4t_setup.finding import Finding, Severity, reporter
 from v4t_setup.gs1.ai import resolve
 from v4t_setup.gs1.checkdigit import mod10_check_digit
 from v4t_setup.gs1.parse import ElementString
@@ -162,13 +162,14 @@ def _sentence(text: str) -> str:
 
 
 def _finding(severity: Severity, message: str, spec: LabelSpec, **context: object) -> Finding:
-    return Finding(
-        rule=RULE,
-        severity=severity,
-        message=message,
-        subject=spec.reference or spec.kind.value,
-        context={"label": spec.kind.value, **context},
-    )
+    """A finding about one label.
+
+    Not :func:`~v4t_setup.finding.reporter` directly, because the subject and
+    one context key both come off the spec and every call site has one. This
+    is that shared helper with the spec unpacked.
+    """
+    make = reporter(RULE, label=spec.kind.value)
+    return make(severity, message, spec.reference or spec.kind.value, **context)
 
 
 def check_sscc(value: str) -> str | None:

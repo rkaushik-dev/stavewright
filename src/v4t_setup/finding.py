@@ -8,6 +8,11 @@ flavour.
 A finding is a rule name, a severity, a sentence, and enough structured context
 to locate it. Where a subsystem needs a field the others do not, it goes in
 ``context`` rather than into the class.
+
+Anything built on :class:`~v4t_setup.ruleset.Rule` gets its helpers from there.
+Everything else was writing a five line private ``_finding`` of its own, and
+there were four of them by the time anybody counted, so :func:`reporter` is
+here: it takes the rule name once and hands back the maker.
 """
 
 from __future__ import annotations
@@ -15,7 +20,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
+from typing import Any, Protocol
 
 
 class Severity(StrEnum):
@@ -133,14 +138,58 @@ def only(findings: Iterable[Finding], severity: Severity) -> list[Finding]:
     return [finding for finding in findings if finding.severity is severity]
 
 
+class Reporter(Protocol):
+    """What :func:`reporter` hands back."""
+
+    def __call__(
+        self,
+        severity: Severity,
+        message: str,
+        subject: str | None = None,
+        **context: Any,
+    ) -> Finding: ...
+
+
+def reporter(rule: str, **always: Any) -> Reporter:
+    """A maker of findings that all carry the same rule name.
+
+    :param rule: goes on every finding this makes.
+    :param always: context every finding carries, merged under whatever the
+        call site passes. A module that reports about one label kind or one
+        installer puts that here rather than on twenty calls.
+
+    Subject is third because that is what a module level rule has instead of an
+    AI or a line number, and the two rule engines that wanted those positions
+    have their own helpers on :class:`~v4t_setup.ruleset.Rule`.
+    """
+
+    def make(
+        severity: Severity,
+        message: str,
+        subject: str | None = None,
+        **context: Any,
+    ) -> Finding:
+        return Finding(
+            rule=rule,
+            severity=severity,
+            message=message,
+            subject=subject,
+            context={**always, **context},
+        )
+
+    return make
+
+
 __all__ = [
     "SEVERITY_ORDER",
     "Finding",
+    "Reporter",
     "Severity",
     "count_by_rule",
     "count_by_severity",
     "has_errors",
     "only",
+    "reporter",
     "sort_findings",
     "worst_severity",
 ]
