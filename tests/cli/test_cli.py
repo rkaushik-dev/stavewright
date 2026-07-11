@@ -1234,3 +1234,55 @@ def test_an_exported_table_reads_back(runner, bench):
     table = parse_idt((into / "Feature.idt").read_bytes().decode(ENCODING))
     assert table.name == "Feature"
     assert len(table) == 1
+
+
+def test_apply_can_resume_a_run_that_stopped(runner, bench, staged_bundle, profile_file):
+    from v4t_setup.apply.journal import Journal, RecordKind
+    from v4t_setup.model.manifest import read_manifest
+    from v4t_setup.plan.planner import build_plan
+
+    manifest = read_manifest(staged_bundle / "manifest.json")
+    from v4t_setup.aip.normalize import normalise
+    from v4t_setup.aip.reader import read_aip
+    from v4t_setup.config.profiles import read_profile
+
+    plan = build_plan(
+        manifest, read_profile(profile_file), normalise(read_aip(AIP)).directories
+    ).plan
+    stopped = bench / "_journal" / "run-stopped.jsonl"
+    stopped.parent.mkdir(exist_ok=True)
+    with Journal(stopped) as journal:
+        journal.begin(str(plan.digest()), "LINE-PC-04", "run-stopped")
+        journal.append(RecordKind.STEP_START, step_id=plan[0].step_id)
+        journal.append(RecordKind.STEP_OK, step_id=plan[0].step_id, changed=True)
+
+    result = run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run", "--resume", str(stopped),
+    )
+    assert result.exit_code == EXIT_OK, result.output
+    assert "resuming run run-stopped: 1 steps done" in result.output
+
+
+def test_apply_refuses_a_journal_that_is_not_there(runner, bench, staged_bundle, profile_file):
+    result = run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run", "--resume", "gone.jsonl",
+    )
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "journal to resume does not exist" in result.output
+
+
+def test_apply_refuses_a_finished_journal(runner, bench, staged_bundle, profile_file):
+    first = run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run",
+    )
+    assert first.exit_code == EXIT_OK, first.output
+    journal = next((bench / "_journal").glob("*.jsonl"))
+    result = run(
+        runner, "run", "apply", str(staged_bundle), "--profile", str(profile_file),
+        "--aip", str(AIP), "--dry-run", "--resume", str(journal),
+    )
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "cannot be resumed" in result.output

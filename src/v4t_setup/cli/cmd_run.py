@@ -15,6 +15,7 @@ from pathlib import Path
 import typer
 
 from v4t_setup.apply.executor import Executor, dry_run
+from v4t_setup.apply.resume import check_resume, read_resume_state, remaining
 from v4t_setup.cli import options
 from v4t_setup.cli.common import (
     AppContext,
@@ -193,6 +194,9 @@ def apply(
     attestation: Path = typer.Option(
         None, "--attest", help="Write a commissioning attestation here when the run finishes."
     ),
+    resume: Path = typer.Option(
+        None, "--resume", help="A journal from a run that stopped. Picks it up."
+    ),
     dry: bool = typer.Option(False, "--dry-run", help="Apply to a scratch machine instead."),
     skip_preflight: bool = typer.Option(
         False, "--skip-preflight", help="Do not run preflight first. Say why in the ticket."
@@ -207,14 +211,40 @@ def apply(
     staged = open_bundle(bundle)
     result = build_plan(staged.manifest, profile, _load_directories(aip))
 
+    resumed: set[str] = set()
+    if resume is not None:
+        require_file(resume, "journal to resume")
+        state = read_resume_state(resume)
+        check_resume(state, result.plan)
+        resumed = set(state.completed)
+        left = remaining(state, result.plan)
+        typer.echo(
+            f"resuming run {state.run_id}: {len(resumed)} steps done, {len(left)} to go",
+            err=True,
+        )
+
     target = _open_target(shared, dry)
     if not skip_preflight:
+        # An unfinished journal blocks a run, and resuming is the answer to it.
+        # Reporting the journal being resumed as the reason not to resume it is
+        # the sort of thing that gets --skip-preflight typed at two in the
+        # morning, so the one being picked up does not count.
+        unfinished = _unfinished(shared, profile.terminal_id)
+        # Resolved on both sides. The journal root is normally a relative path
+        # in the settings file and --resume is normally typed absolute, and
+        # comparing those two as strings never matches.
+        if (
+            resume is not None
+            and unfinished
+            and Path(unfinished).resolve() == resume.resolve()
+        ):
+            unfinished = None
         context = PreflightContext(
             plan=result.plan,
             profile=profile,
             facts=target.facts(),
             payload_bytes=staged.total_bytes(),
-            unfinished_journal=_unfinished(shared, profile.terminal_id),
+            unfinished_journal=unfinished,
             required_fonts=_required_fonts(templates),
         )
         checks = run_preflight(context, target, waive=shared.settings.waived_checks)
@@ -237,7 +267,7 @@ def apply(
             journal,
             rollback_on_failure=shared.settings.rollback_on_failure,
         )
-        outcome = executor.run(result.plan, shared.run_id)
+        outcome = executor.run(result.plan, shared.run_id, start_after=resumed)
 
     if attestation is not None:
         # Reconciled straight away, because an attestation with nothing behind
