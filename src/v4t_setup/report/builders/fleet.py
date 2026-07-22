@@ -8,6 +8,7 @@ from v4t_setup.finding import Finding, Severity
 from v4t_setup.fleet.roster import Roster
 from v4t_setup.fleet.schedule import Schedule, Window
 from v4t_setup.fleet.status import PlantStatus, Standing
+from v4t_setup.fleet.sweep import Sweep
 from v4t_setup.fleet.waves import Rollout
 from v4t_setup.report.document import (
     Report,
@@ -15,6 +16,54 @@ from v4t_setup.report.document import (
     lines_section,
     table_section,
 )
+
+
+def sweep_report(result: Sweep) -> Report:
+    """A whole plant reconciled from snapshots, as a document.
+
+    The unseen count is a fact rather than only a section, because it is the
+    number that makes the other two mean anything. Three clean out of thirty
+    reads very differently once you know twenty seven were never opened.
+    """
+    counts = result.counts()
+    report = Report(
+        title="Plant sweep",
+        subtitle=result.plant,
+        facts={
+            "terminals": len(result),
+            **counts,
+            "snapshots_unmatched": len(result.unmatched),
+        },
+    )
+    report.add(
+        table_section(
+            "Terminals",
+            ["terminal", "line", "state", "differences", "snapshot"],
+            [
+                [
+                    item.terminal_id,
+                    item.entry.line,
+                    "clean"
+                    if item.is_clean
+                    else ("drifted" if item.was_looked_at else "not looked at"),
+                    str(len(item.drift)) if item.drift else "",
+                    item.snapshot_path.name if item.snapshot_path else "",
+                ]
+                for item in result
+            ],
+        )
+    )
+    report.add_if(findings_section("Findings", result.findings()))
+    if result.unseen:
+        report.add(
+            lines_section(
+                "Nobody has looked at these",
+                [item.terminal_id for item in result.unseen],
+                note="A sweep says nothing about a terminal it has no snapshot of.",
+            )
+        )
+    report.derive_outcome()
+    return report
 
 
 def status_report(status: PlantStatus) -> Report:
@@ -230,4 +279,5 @@ __all__ = [
     "roster_report",
     "schedule_report",
     "status_report",
+    "sweep_report",
 ]

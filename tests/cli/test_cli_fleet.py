@@ -482,3 +482,75 @@ def test_pending_falls_back_to_the_roster_with_no_journals(runner, plant, tmp_pa
     rows = json_output(result)["sections"][0]["rows"]
     covered = {name for row in rows for name in row[2].split(", ")}
     assert covered == {"BENCH-01", "SAMPLE-01", "EXPORT-02"}
+
+
+@pytest.fixture
+def plant_snapshots(runner, bench, plant, manifest_file, profile_file):
+    """A snapshot of EXPORT-01, taken off a scratch machine by run capture."""
+    root = bench / "snapshots"
+    root.mkdir()
+    from v4t_setup.cli.main import app as cli
+
+    staged = runner.invoke(
+        cli,
+        ["-q", "bundle", "stage", str(manifest_file), "--source", str(bench / "build")],
+    )
+    assert staged.exit_code == EXIT_OK, staged.output
+    bundle = next((bench / "_staging").iterdir())
+    result = runner.invoke(
+        cli,
+        [
+            "-q", "run", "capture", str(bundle), "--out", str(root / "EXPORT-01.json"),
+            "--profile", str(bench / "profiles.toml"), "--terminal", "EXPORT-01",
+            "--aip", str(AIP),
+        ],
+    )
+    assert result.exit_code == EXIT_OK, result.output
+    return root
+
+
+def test_sweeping_a_plant(runner, bench, plant, plant_snapshots, manifest_file):
+    result = run(
+        runner, "fleet", "sweep", str(plant), str(plant_snapshots),
+        "--manifest", str(manifest_file), "--aip", str(AIP), "--format", "json",
+    )
+    facts = json_output(result)["facts"]
+    assert facts["terminals"] == "4"
+    assert facts["unseen"] == "3"
+
+
+def test_a_sweep_says_who_nobody_looked_at(runner, bench, plant, plant_snapshots, manifest_file):
+    result = run(
+        runner, "fleet", "sweep", str(plant), str(plant_snapshots),
+        "--manifest", str(manifest_file), "--aip", str(AIP),
+    )
+    assert "Nobody has looked at these" in result.output
+    assert "BENCH-01" in result.output
+
+
+def test_a_sweep_needs_a_project_file(runner, bench, plant, plant_snapshots, manifest_file):
+    result = run(
+        runner, "fleet", "sweep", str(plant), str(plant_snapshots),
+        "--manifest", str(manifest_file),
+    )
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "no project file" in result.output
+
+
+def test_a_sweep_of_a_snapshot_directory_that_is_not_there(runner, bench, plant, manifest_file):
+    result = run(
+        runner, "fleet", "sweep", str(plant), str(bench / "nowhere"),
+        "--manifest", str(manifest_file), "--aip", str(AIP),
+    )
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "snapshot directory does not exist" in result.output
+
+
+def test_a_sweep_with_no_snapshots_at_all(runner, bench, plant, manifest_file):
+    empty = bench / "snapshots"
+    empty.mkdir()
+    result = run(
+        runner, "fleet", "sweep", str(plant), str(empty),
+        "--manifest", str(manifest_file), "--aip", str(AIP), "--format", "json",
+    )
+    assert json_output(result)["facts"]["unseen"] == "4"

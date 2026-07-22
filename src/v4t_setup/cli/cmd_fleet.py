@@ -32,12 +32,15 @@ from v4t_setup.config.profiles import load_directory
 from v4t_setup.fleet.roster import Roster, read_roster
 from v4t_setup.fleet.schedule import DEFAULT_PER_MACHINE, read_windows, schedule_rollout
 from v4t_setup.fleet.status import plant_status
+from v4t_setup.fleet.sweep import find_snapshots, sweep
 from v4t_setup.fleet.waves import check_rollout, plan_rollout
+from v4t_setup.model.manifest import read_manifest
 from v4t_setup.report.builders.fleet import (
     rollout_report,
     roster_report,
     schedule_report,
     status_report,
+    sweep_report,
 )
 from v4t_setup.verify.history import History, read_history
 
@@ -121,6 +124,45 @@ def status(
     history = read_history(root) if root is not None and root.is_dir() else History()
     standing = plant_status(roster, history, stale_after=timedelta(days=stale_days))
     raise typer.Exit(emit(status_report(standing), fmt, output))
+
+
+@app.command("sweep")
+@handle_errors
+def sweep_command(
+    ctx: typer.Context,
+    roster_path: Path = typer.Argument(..., help="The plant roster."),
+    snapshots: Path = typer.Argument(..., help="A directory of snapshots off the terminals."),
+    manifest_path: Path = typer.Option(
+        ..., "--manifest", "-m", help="The bundle they should all match."
+    ),
+    profiles: Path = options.PROFILE_DIR,
+    aip: Path = options.AIP,
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+) -> None:
+    """Reconcile a whole plant from snapshots, without visiting any of it.
+
+    Exits 1 when a terminal has drifted. A terminal nobody has a snapshot of
+    is a warning, because a sweep says nothing about a machine it never saw.
+    """
+    get_context(ctx)
+    require_file(manifest_path, "manifest")
+    require_directory(snapshots, "snapshot directory")
+    roster = _load(roster_path, profiles)
+
+    from v4t_setup.aip.normalize import normalise
+    from v4t_setup.aip.reader import read_aip
+
+    if aip is None:
+        fail("no project file, pass --aip so directories can be resolved")
+    require_file(aip, "project file")
+    result = sweep(
+        roster,
+        read_manifest(manifest_path),
+        normalise(read_aip(aip)).directories,
+        find_snapshots(snapshots),
+    )
+    raise typer.Exit(emit(sweep_report(result), fmt, output))
 
 
 @app.command("plan")
