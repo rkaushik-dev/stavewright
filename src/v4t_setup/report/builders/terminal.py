@@ -12,6 +12,7 @@ from v4t_setup.plan.planner import PlanReport
 from v4t_setup.plan.steps import Plan
 from v4t_setup.preflight.bench import DEFAULT_BENCH_CHECKS
 from v4t_setup.preflight.runner import PreflightReport
+from v4t_setup.report import format as fmt
 from v4t_setup.report.document import (
     Outcome,
     Report,
@@ -73,7 +74,7 @@ def plan_report(result: PlanReport) -> Report:
             "Where the time goes",
             ["kind", "minutes"],
             [
-                [kind, f"{span.total_seconds() / 60:.1f}"]
+                [kind, fmt.minutes(span)]
                 for kind, span in sorted(
                     estimate.by_kind.items(), key=lambda pair: -pair[1].total_seconds()
                 )
@@ -83,7 +84,7 @@ def plan_report(result: PlanReport) -> Report:
     )
     path = critical_path(plan)
     if len(path):
-        report.facts["critical_minutes"] = f"{path.span.total_seconds() / 60:.0f}"
+        report.facts["critical_minutes"] = fmt.minutes(path.span, places=0)
         report.add(
             table_section(
                 "The critical path",
@@ -284,9 +285,7 @@ def retention_report(plan: RetentionPlan, *, applied: bool = False) -> Report:
                 [
                     decision.path.name,
                     decision.run.terminal,
-                    decision.run.started_at.isoformat(sep=" ")
-                    if decision.run.started_at
-                    else "",
+                    fmt.moment(decision.run.started_at),
                     "keep" if decision.is_kept else "delete",
                     decision.keep.value,
                 ]
@@ -415,7 +414,7 @@ def history_report(found: History, terminal: str | None = None) -> Report:
             ["started", "terminal", "run", "outcome", "steps"],
             [
                 [
-                    run.started_at.isoformat(sep=" ") if run.started_at else "",
+                    fmt.moment(run.started_at),
                     run.terminal,
                     run.run_id,
                     run.outcome or ("unreadable" if not run.is_readable else "never finished"),

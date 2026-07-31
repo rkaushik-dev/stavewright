@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
-
 from v4t_setup.finding import Finding, Severity
 from v4t_setup.fleet.roster import Roster
 from v4t_setup.fleet.schedule import Schedule, Window
 from v4t_setup.fleet.status import PlantStatus, Standing
 from v4t_setup.fleet.sweep import Sweep
 from v4t_setup.fleet.waves import Rollout
+from v4t_setup.report import format as fmt
 from v4t_setup.report.document import (
     Report,
     findings_section,
@@ -93,7 +92,7 @@ def status_report(status: PlantStatus) -> Report:
                     item.terminal_id,
                     item.entry.line,
                     item.standing.value,
-                    item.last_run_at.isoformat(sep=" ") if item.last_run_at else "",
+                    fmt.moment(item.last_run_at),
                     item.note,
                 ]
                 for item in status
@@ -218,8 +217,8 @@ def schedule_report(schedule: Schedule, windows: list[Window] | None = None) -> 
         facts={
             "booked": len(schedule),
             "unplaced": len(schedule.unplaced),
-            "working_time": _hours(schedule.working_time),
-            "finishes": schedule.finishes_at.isoformat(sep=" ") if schedule.finishes_at else "",
+            "working_time": fmt.hours(schedule.working_time),
+            "finishes": fmt.moment(schedule.finishes_at),
         },
     )
     if windows:
@@ -230,9 +229,9 @@ def schedule_report(schedule: Schedule, windows: list[Window] | None = None) -> 
                 [
                     [
                         window.label or "(unnamed)",
-                        window.start.isoformat(sep=" "),
-                        window.end.isoformat(sep=" "),
-                        _hours(window.duration),
+                        fmt.moment(window.start),
+                        fmt.moment(window.end),
+                        fmt.hours(window.duration),
                         str(len(schedule.in_window(window.label))),
                     ]
                     for window in windows
@@ -246,8 +245,8 @@ def schedule_report(schedule: Schedule, windows: list[Window] | None = None) -> 
             [
                 [
                     str(booking.wave.number),
-                    booking.start.isoformat(sep=" "),
-                    booking.end.isoformat(sep=" "),
+                    fmt.moment(booking.start),
+                    fmt.moment(booking.end),
                     booking.window.label or "(unnamed)",
                     ", ".join(booking.wave.terminal_ids),
                 ]
@@ -268,10 +267,6 @@ def schedule_report(schedule: Schedule, windows: list[Window] | None = None) -> 
     report.add_if(findings_section("Findings", findings))
     report.derive_outcome()
     return report
-
-
-def _hours(span: timedelta) -> str:
-    return f"{span.total_seconds() / 3600:.1f}"
 
 
 __all__ = [
