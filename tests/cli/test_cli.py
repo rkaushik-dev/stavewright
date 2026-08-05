@@ -1286,3 +1286,54 @@ def test_apply_refuses_a_finished_journal(runner, bench, staged_bundle, profile_
     )
     assert result.exit_code == EXIT_TOOLKIT
     assert "cannot be resumed" in result.output
+
+
+def test_gs1_check_can_also_check_the_rows_as_labels(runner, bench):
+    result = run(runner, "gs1", "check", str(GS1_DATA), "--label", "item", "--format", "json")
+    rules = {
+        finding["rule"]
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+    }
+    # The shipped rows are sound item marks, so the label rule says nothing
+    # even though the element string rules have plenty to say.
+    assert "label" not in rules
+    assert "gtin-column" in rules
+
+
+def test_gs1_check_as_pallet_labels_reports_every_row(runner, bench):
+    result = run(
+        runner, "gs1", "check", str(GS1_DATA), "--label", "pallet", "--label-rows", "2"
+    )
+    assert result.exit_code == EXIT_FINDINGS
+    assert "has to carry an SSCC" in result.output
+    assert "stopped after 2 rows" in result.output
+
+
+def test_the_label_row_limit_can_be_lifted(runner, bench):
+    result = run(
+        runner, "gs1", "check", str(GS1_DATA), "--label", "pallet", "--label-rows", "0",
+        "--format", "json",
+    )
+    findings = [
+        finding
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+        if finding["rule"] == "label"
+    ]
+    assert len(findings) > 100
+    assert not any("stopped after" in finding["message"] for finding in findings)
+
+
+def test_a_label_kind_that_is_not_one_on_check(runner, bench):
+    result = run(runner, "gs1", "check", str(GS1_DATA), "--label", "crate")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "expected one of item, case, pallet" in result.output
+
+
+def test_a_customer_requirement_reaches_the_data_file(runner, bench):
+    result = run(
+        runner, "gs1", "check", str(GS1_DATA), "--label", "item", "--require", "17",
+        "--label-rows", "1",
+    )
+    assert "USE BY OR EXPIRY" in result.output

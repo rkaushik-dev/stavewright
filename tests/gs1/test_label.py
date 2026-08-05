@@ -232,3 +232,96 @@ def test_two_primary_identifiers_that_are_not_that_pair_are_still_refused():
 
     findings = validate(parse("(01)01001000173250(02)01001000173250"))
     assert any("more than one primary identifier" in f.message for f in findings)
+
+
+def row(item: str, *, case: str = "", index: int = 1) -> str:
+    """One data file row: NDX, SERIAL, BATCH, LOTCODE, GTIN, ADX, GS1 DATA, GS1, EAN13."""
+    return ",".join(
+        [str(index), "0001", "AD47-001", "AB:47", "01001000173250", "A", item, case, ""]
+    )
+
+
+def dataset_of(*rows: str):
+    from v4t_setup.gs1.dataset import EXPECTED_COLUMNS, parse_dataset
+
+    header = ",".join(EXPECTED_COLUMNS)
+    return parse_dataset("\n".join([header, *rows]) + "\n")
+
+
+def test_a_data_file_whose_rows_are_good_item_marks():
+    from v4t_setup.gs1.label import check_dataset
+
+    data = dataset_of(row("(01)01001000173250(21)0001"))
+    assert check_dataset(data) == []
+
+
+def test_a_data_file_whose_rows_have_no_serial():
+    from v4t_setup.gs1.label import check_dataset
+
+    data = dataset_of(row("(01)01001000173250"))
+    findings = check_dataset(data)
+    assert findings
+    assert "to tell one from another" in findings[0].message
+    assert findings[0].subject == "line 2"
+
+
+def test_the_row_check_stops_after_the_limit():
+    from v4t_setup.gs1.label import check_dataset
+
+    rows = [row("(01)01001000173250", index=n) for n in range(20)]
+    findings = check_dataset(dataset_of(*rows), limit=3)
+    stop = next(f for f in findings if "stopped after" in f.message)
+    assert stop.context["rows_checked"] == 3
+
+
+def test_no_limit_checks_every_row():
+    from v4t_setup.gs1.label import check_dataset
+
+    rows = [row("(01)01001000173250", index=n) for n in range(8)]
+    findings = check_dataset(dataset_of(*rows), limit=0)
+    assert len(findings) == 8
+    assert not any("stopped after" in f.message for f in findings)
+
+
+def test_a_row_that_will_not_parse_is_left_to_the_dataset_rules():
+    # Saying it twice in one report helps nobody, and the dataset rules
+    # already report it with the column name.
+    from v4t_setup.gs1.label import check_dataset
+
+    data = dataset_of(row("not an element string"))
+    assert check_dataset(data) == []
+
+
+def test_a_row_with_no_element_string_is_skipped():
+    from v4t_setup.gs1.label import check_dataset
+
+    assert check_dataset(dataset_of(row(""))) == []
+
+
+def test_the_case_column_is_read_for_a_case_label():
+    from v4t_setup.gs1.label import LabelKind, check_dataset
+
+    data = dataset_of(row("", case="(01)01001000173250(10)AD47(30)12"))
+    assert check_dataset(data, LabelKind.CASE) == []
+
+
+def test_a_customer_requirement_reaches_every_row():
+    from v4t_setup.gs1.label import check_dataset
+
+    data = dataset_of(row("(01)01001000173250(21)0001"))
+    findings = check_dataset(data, extra_required=("17",))
+    assert "USE BY OR EXPIRY" in findings[0].message
+
+
+def test_the_shipped_file_reads_as_sound_item_marks():
+    # Its GTIN check digit is wrong, which the element string rules report.
+    # As item marks the rows are the right shape, and that is a separate
+    # question with a separate answer.
+    from pathlib import Path
+
+    from v4t_setup.gs1.dataset import read_dataset
+    from v4t_setup.gs1.label import check_dataset
+
+    root = Path(__file__).resolve().parents[2]
+    data = read_dataset(root / "Matricode" / "Quattro" / "Templates" / "GS1-1.txt")
+    assert check_dataset(data) == []

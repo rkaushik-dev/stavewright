@@ -24,6 +24,7 @@ from v4t_setup.gs1.ai import all_identifiers
 from v4t_setup.gs1.dataset import read_dataset
 from v4t_setup.gs1.datasetlint import lint_dataset
 from v4t_setup.gs1.label import LabelKind, LabelSpec, check_label
+from v4t_setup.gs1.label import check_dataset as check_dataset_labels
 from v4t_setup.gs1.label import describe_rules as describe_label_rules
 from v4t_setup.gs1.parse import ElementString, parse
 from v4t_setup.gs1.validate import MarkingContext, validate
@@ -40,17 +41,21 @@ def _context(shared: AppContext, max_length: int | None) -> MarkingContext:
     )
 
 
-def _label_spec(kind: str, parsed: ElementString, require: list[str] | None) -> LabelSpec:
-    """Turn a ``--label`` value into a spec, or stop with the list of kinds."""
+def _label_kind(kind: str) -> LabelKind:
+    """One ``--label`` value, or stop with the list of kinds."""
     try:
-        chosen = LabelKind(kind)
+        return LabelKind(kind)
     except ValueError:
         fail(
             f"no label kind called {kind}, expected one of "
             f"{', '.join(member.value for member in LabelKind)}"
         )
+
+
+def _label_spec(kind: str, parsed: ElementString, require: list[str] | None) -> LabelSpec:
+    """Turn a ``--label`` value into a spec for one element string."""
     return LabelSpec(
-        kind=chosen,
+        kind=_label_kind(kind),
         string=parsed,
         extra_required=tuple(require or ()),
     )
@@ -69,14 +74,38 @@ def list_label_rules(ctx: typer.Context) -> None:
 def check_dataset(
     ctx: typer.Context,
     path: Path = typer.Argument(..., help="A GS1 data file, such as GS1-1.txt."),
+    label: str = typer.Option(
+        None, "--label", help="Also check every row as an item, case or pallet label."
+    ),
+    require: list[str] = typer.Option(
+        None, "--require", help="An AI this customer insists on. Repeat it."
+    ),
+    label_rows: int = typer.Option(
+        5, "--label-rows", help="Stop the label check after this many bad rows. 0 for all."
+    ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
 ) -> None:
-    """Validate a whole data file."""
+    """Validate a whole data file.
+
+    With ``--label`` it also asks whether each row will print the right kind of
+    thing, which the element string rules cannot answer. That one stops after a
+    few bad rows by default: a file with the wrong AIs in it has them in every
+    row, and a hundred copies of one message is a report nobody finishes.
+    """
     shared = get_context(ctx)
     require_file(path, "data file")
     dataset = read_dataset(path)
     findings = lint_dataset(dataset, _context(shared, None))
+    if label is not None:
+        findings.extend(
+            check_dataset_labels(
+                dataset,
+                _label_kind(label),
+                extra_required=tuple(require or ()),
+                limit=label_rows,
+            )
+        )
     raise typer.Exit(emit(gs1_report(dataset, findings), fmt, output))
 
 

@@ -36,10 +36,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import StrEnum
 
+from v4t_setup.errors import Gs1Error
 from v4t_setup.finding import Finding, Severity, reporter
 from v4t_setup.gs1.ai import resolve
 from v4t_setup.gs1.checkdigit import mod10_check_digit
-from v4t_setup.gs1.parse import ElementString
+from v4t_setup.gs1.dataset import Dataset
+from v4t_setup.gs1.parse import ElementString, parse
 
 RULE = "label"
 
@@ -260,6 +262,61 @@ def check_labels(specs: list[LabelSpec]) -> list[Finding]:
     return [finding for spec in specs for finding in check_label(spec)]
 
 
+def check_dataset(
+    dataset: Dataset,
+    kind: LabelKind = LabelKind.ITEM,
+    *,
+    extra_required: tuple[str, ...] = (),
+    limit: int = 0,
+) -> list[Finding]:
+    """Check every element string in a data file as a label of *kind*.
+
+    The element string rules already run over a data file. This asks the other
+    question: whether what each row will print is the right kind of thing.
+
+    :param limit: stop after this many rows have produced findings. A data file
+        with the wrong AIs in it has the wrong AIs in every row, and a hundred
+        and thirty copies of one message is a report nobody reads to the end.
+        Zero means no limit.
+    """
+    findings: list[Finding] = []
+    seen = 0
+    for row in dataset:
+        text = row.item_element_string if kind is LabelKind.ITEM else row.case_element_string
+        if not text:
+            continue
+        try:
+            parsed = parse(text)
+        except Gs1Error:
+            # Not this module's finding to make. The dataset rules already
+            # report a row whose element string will not parse, and saying it
+            # twice in one report helps nobody.
+            continue
+        found = check_label(
+            LabelSpec(
+                kind=kind,
+                string=parsed,
+                reference=f"line {row.line}",
+                extra_required=extra_required,
+            )
+        )
+        if not found:
+            continue
+        findings.extend(found)
+        seen += 1
+        if limit and seen >= limit:
+            findings.append(
+                _finding(
+                    Severity.INFO,
+                    f"stopped after {limit} rows, the rest will say the same",
+                    LabelSpec(kind=kind, string=parsed, reference=f"line {row.line}"),
+                    rows_checked=seen,
+                )
+            )
+            break
+    return findings
+
+
 def describe_rules() -> list[str]:
     """One line per label kind, for a help screen."""
     lines: list[str] = []
@@ -290,6 +347,7 @@ __all__ = [
     "LabelKind",
     "LabelRules",
     "LabelSpec",
+    "check_dataset",
     "check_label",
     "check_labels",
     "check_sscc",
