@@ -115,6 +115,71 @@ def test_the_template_set_findings_keep_their_context(tmp_path):
     assert findings[0].subject == tmp_path.name
 
 
+def test_no_module_builds_a_finding_by_hand_where_a_reporter_would_do():
+    """A rule name written at a construction site is a rule name that drifts.
+
+    Not every Finding( in the source is wrong. The ones this catches are the
+    ones with a literal rule= beside them, which is exactly the shape the
+    shared helper replaces.
+    """
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent / "src" / "v4t_setup"
+    pattern = re.compile(r"Finding\(\s*\n\s+rule=\"", re.MULTILINE)
+    offenders = [
+        str(path.relative_to(root))
+        for path in sorted(root.rglob("*.py"))
+        if pattern.search(path.read_text(encoding="utf-8"))
+    ]
+    assert offenders == []
+
+
+def test_the_msi_comparison_findings_keep_their_context():
+    from pathlib import Path
+
+    from v4t_setup.aip.normalize import normalise
+    from v4t_setup.aip.reader import read_aip
+    from v4t_setup.msi.compare import compare_project
+    from v4t_setup.msi.tables import read_msi
+
+    root = Path(__file__).resolve().parent.parent
+    project = normalise(read_aip(root / "setup.aip"))
+    database = read_msi(root / "msi-quattro" / "msi-Jet600.msi")
+    findings = compare_project(project, database)
+    upgrade = next(f for f in findings if f.subject == "UpgradeCode")
+    assert upgrade.rule == "msi-vs-aip"
+    assert upgrade.context["project"] and upgrade.context["msi"]
+
+    missing = next(f for f in findings if "sample" in f.context)
+    assert isinstance(missing.context["sample"], list)
+
+
+def test_the_fleet_report_findings_keep_their_context():
+    from datetime import date
+
+    from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+    from v4t_setup.fleet.status import plant_status
+    from v4t_setup.model.profile import TerminalProfile
+    from v4t_setup.report.builders.fleet import status_report
+    from v4t_setup.verify.history import History
+
+    entry = RosterEntry(
+        terminal_id="A-01",
+        profile=TerminalProfile(terminal_id="A-01", fpga_revision="PCDC-1.4"),
+        line="one",
+        position=1,
+        criticality=Criticality.NORMAL,
+        shift_pattern=ShiftPattern.DAY,
+        commissioned=date(2024, 1, 1),
+    )
+    report = status_report(plant_status(Roster(plant="W", entries=(entry,)), History()))
+    findings = next(part for part in report.sections if part.heading == "Findings").findings
+    assert findings[0].rule == "standing"
+    assert findings[0].context["line"] == "one"
+    assert findings[0].context["standing"] == "disputed"
+
+
 def test_the_label_findings_keep_the_label_kind():
     from v4t_setup.gs1.label import LabelKind, LabelSpec, check_label
     from v4t_setup.gs1.parse import parse

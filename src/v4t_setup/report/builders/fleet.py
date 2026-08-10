@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from v4t_setup.finding import Finding, Severity
+from v4t_setup.finding import Severity, reporter
 from v4t_setup.fleet.roster import Roster
 from v4t_setup.fleet.schedule import Schedule, Window
 from v4t_setup.fleet.status import PlantStatus, Standing
@@ -99,15 +99,14 @@ def status_report(status: PlantStatus) -> Report:
             ],
         )
     )
+    standing_of = reporter("standing")
     findings = [
-        Finding(
-            rule="standing",
-            severity=(
-                Severity.ERROR if item.standing.blocks_others else Severity.WARNING
-            ),
-            message=item.note or f"this terminal is {item.standing.value}",
-            subject=item.terminal_id,
-            context={"standing": item.standing.value, "line": item.entry.line},
+        standing_of(
+            Severity.ERROR if item.standing.blocks_others else Severity.WARNING,
+            item.note or f"this terminal is {item.standing.value}",
+            item.terminal_id,
+            standing=item.standing.value,
+            line=item.entry.line,
         )
         for item in status
         if item.standing in (Standing.UNFINISHED, Standing.DISPUTED)
@@ -195,10 +194,8 @@ def rollout_report(rollout: Rollout, problems: list[str] | None = None) -> Repor
             ],
         )
     )
-    findings = [
-        Finding(rule="rollout", severity=Severity.ERROR, message=problem)
-        for problem in problems or []
-    ]
+    problem_of = reporter("rollout")
+    findings = [problem_of(Severity.ERROR, problem) for problem in problems or []]
     report.add_if(findings_section("Findings", findings))
     report.derive_outcome()
     return report
@@ -254,13 +251,14 @@ def schedule_report(schedule: Schedule, windows: list[Window] | None = None) -> 
             ],
         )
     )
+    unplaced = reporter("schedule/unplaced")
     findings = [
-        Finding(
-            rule="schedule/unplaced",
-            severity=Severity.ERROR,
-            message="this wave does not fit any offered window",
-            subject=", ".join(wave.terminal_ids),
-            context={"wave": wave.number, "machines": len(wave)},
+        unplaced(
+            Severity.ERROR,
+            "this wave does not fit any offered window",
+            ", ".join(wave.terminal_ids),
+            wave=wave.number,
+            machines=len(wave),
         )
         for wave in schedule.unplaced
     ]

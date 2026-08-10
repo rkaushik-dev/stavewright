@@ -22,10 +22,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from v4t_setup.aip.normalize import NormalisedProject
-from v4t_setup.finding import Finding, Severity
+from v4t_setup.finding import Finding, Severity, reporter
 from v4t_setup.msi.tables import MsiDatabase
 
 RULE = "msi-vs-aip"
+_finding = reporter(RULE)
 
 SAMPLE_SIZE = 5
 """How many names to name when a set does not match. Enough to recognise the
@@ -103,12 +104,12 @@ def compare_identity(project: NormalisedProject, database: MsiDatabase) -> list[
         if found == expected:
             continue
         findings.append(
-            Finding(
-                rule=RULE,
-                severity=Severity.ERROR if property_name == "UpgradeCode" else Severity.WARNING,
-                message=f"{property_name} does not match the project file",
-                subject=property_name,
-                context={"project": expected, "msi": found},
+            _finding(
+                Severity.ERROR if property_name == "UpgradeCode" else Severity.WARNING,
+                f"{property_name} does not match the project file",
+                property_name,
+                project=expected,
+                msi=found,
             )
         )
     return findings
@@ -162,32 +163,26 @@ def compare_project(project: NormalisedProject, database: MsiDatabase) -> list[F
     for difference in compare_tables(project, database):
         if difference.missing:
             findings.append(
-                Finding(
-                    rule=RULE,
-                    severity=Severity.ERROR,
-                    message="the MSI is missing rows the project file declares in "
+                _finding(
+                    Severity.ERROR,
+                    "the MSI is missing rows the project file declares in "
                     f"{difference.what}",
-                    subject=difference.what,
-                    context={
-                        "project": difference.in_project,
-                        "msi": difference.in_msi,
-                        "sample": list(difference.missing),
-                    },
+                    difference.what,
+                    project=difference.in_project,
+                    msi=difference.in_msi,
+                    sample=list(difference.missing),
                 )
             )
         if difference.extra:
             findings.append(
-                Finding(
-                    rule=RULE,
-                    severity=Severity.WARNING,
-                    message=f"the MSI carries rows the project file does not declare in "
+                _finding(
+                    Severity.WARNING,
+                    "the MSI carries rows the project file does not declare in "
                     f"{difference.what}",
-                    subject=difference.what,
-                    context={
-                        "project": difference.in_project,
-                        "msi": difference.in_msi,
-                        "sample": list(difference.extra),
-                    },
+                    difference.what,
+                    project=difference.in_project,
+                    msi=difference.in_msi,
+                    sample=list(difference.extra),
                 )
             )
     return findings

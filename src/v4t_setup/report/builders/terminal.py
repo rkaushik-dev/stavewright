@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from v4t_setup.apply.executor import ApplyResult
 from v4t_setup.apply.executor import Outcome as ApplyOutcome
-from v4t_setup.finding import Finding, Severity
+from v4t_setup.finding import Finding, Severity, reporter
 from v4t_setup.plan.cost import estimate_plan
 from v4t_setup.plan.critical import bottlenecks, critical_path
 from v4t_setup.plan.diff import Change, PlanDiff
@@ -424,25 +424,20 @@ def history_report(found: History, terminal: str | None = None) -> Report:
             ],
         )
     )
+    damaged = reporter("journal/damaged")
+    unfinished = reporter("journal/unfinished")
     findings: list[Finding] = []
     for run in runs:
         if not run.is_readable:
-            findings.append(
-                Finding(
-                    rule="journal/damaged",
-                    severity=Severity.ERROR,
-                    message=run.damaged,
-                    subject=run.path.name,
-                )
-            )
+            findings.append(damaged(Severity.ERROR, run.damaged, run.path.name))
         elif run.is_unfinished:
             findings.append(
-                Finding(
-                    rule="journal/unfinished",
-                    severity=Severity.WARNING,
-                    message="this run never wrote an end record",
-                    subject=run.run_id or run.path.name,
-                    context={"terminal": run.terminal, "completed": run.completed},
+                unfinished(
+                    Severity.WARNING,
+                    "this run never wrote an end record",
+                    run.run_id or run.path.name,
+                    terminal=run.terminal,
+                    completed=run.completed,
                 )
             )
     report.add_if(findings_section("Findings", findings))
