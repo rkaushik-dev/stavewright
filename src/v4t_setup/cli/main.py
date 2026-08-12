@@ -81,6 +81,9 @@ def list_formats() -> None:
 @app.command("doctor")
 def doctor(
     ctx: typer.Context,
+    strict: bool = typer.Option(
+        False, "--strict", help="Treat the warnings as failures too."
+    ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
 ) -> None:
@@ -88,10 +91,14 @@ def doctor(
 
     The first question on a support call is which version of what is on the
     laptop. Exits 1 when something here would stop a command halfway through.
+
+    ``--strict`` also fails on the warnings, which is what a build server
+    wants: a missing settings file is fine on a laptop and means somebody
+    forgot to check one in on CI.
     """
     from v4t_setup.cli.common import emit, get_context
     from v4t_setup.environment import check_environment, collect
-    from v4t_setup.report.document import Report, findings_section, lines_section
+    from v4t_setup.report.document import Outcome, Report, findings_section, lines_section
 
     shared = get_context(ctx)
     environment = collect(config_file=shared.settings_file)
@@ -115,7 +122,10 @@ def doctor(
     )
     report.add_if(findings_section("Findings", findings))
     report.derive_outcome()
-    raise typer.Exit(emit(report, fmt, output))
+    code = emit(report, fmt, output)
+    if strict and report.outcome is not Outcome.PASS:
+        code = 1
+    raise typer.Exit(code)
 
 
 @app.command("rules")
@@ -162,6 +172,13 @@ def list_rules() -> None:
 def run() -> None:
     """Console script entry point."""
     app()
+
+
+# Without this, python -m v4t_setup.cli.main imports the module, defines the
+# commands and exits 0 having done nothing at all. Five CI steps were invoking
+# it that way and passing because of it, which is the worst kind of green.
+if __name__ == "__main__":  # pragma: no cover
+    run()
 
 
 __all__ = ["app", "main", "run"]

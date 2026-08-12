@@ -1158,6 +1158,49 @@ def test_doctor_says_when_it_found_no_settings_file(runner, tmp_path, monkeypatc
     assert "no settings file was found" in result.output
 
 
+def test_doctor_without_strict_still_passes_on_a_warning(runner, tmp_path, monkeypatch):
+    """A missing settings file is a laptop being a laptop, not a broken toolkit."""
+    monkeypatch.chdir(tmp_path)
+    result = run(runner, "doctor")
+    assert result.exit_code == EXIT_OK, result.output
+
+
+def test_doctor_strict_fails_on_a_warning(runner, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = run(runner, "doctor", "--strict")
+    assert result.exit_code == EXIT_FINDINGS, result.output
+    assert "no settings file was found" in result.output
+
+
+def test_doctor_strict_is_quiet_when_there_is_nothing_to_say(runner, bench):
+    result = run(runner, "doctor", "--strict")
+    assert result.exit_code == EXIT_OK, result.output
+
+
+def test_doctor_strict_does_not_change_what_the_report_says(runner, tmp_path, monkeypatch):
+    """Only the exit code moves. A build server and a laptop see one report."""
+    monkeypatch.chdir(tmp_path)
+    plain = run(runner, "doctor", "--format", "json")
+    strict = run(runner, "doctor", "--strict", "--format", "json")
+    assert json.loads(plain.stdout)["sections"] == json.loads(strict.stdout)["sections"]
+    assert json.loads(strict.stdout)["outcome"] == "warn"
+
+
+def test_doctor_strict_writes_the_report_before_it_fails(runner, tmp_path, monkeypatch):
+    """The file has to be there even on the run that fails, or CI has nothing
+    to upload and somebody reruns the job to find out what went wrong."""
+    monkeypatch.chdir(tmp_path)
+    out = tmp_path / "doctor.json"
+    result = run(runner, "doctor", "--strict", "--format", "json", "--output", str(out))
+    assert result.exit_code == EXIT_FINDINGS
+    assert json.loads(out.read_text(encoding="utf-8"))["facts"]["toolkit"] == __version__
+
+
+def test_doctor_strict_is_in_the_help(runner):
+    result = run(runner, "doctor", "--help")
+    assert "--strict" in result.output
+
+
 def test_msi_diff_of_an_installer_with_itself(runner, bench):
     result = run(runner, "bundle", "msi-diff", str(MSI), str(MSI), "--format", "json")
     assert result.exit_code == EXIT_OK, result.output
