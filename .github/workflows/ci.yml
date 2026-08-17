@@ -184,6 +184,24 @@ jobs:
           python -m v4t_setup template lint
           "Matricode/Quattro/Templates/T1.spf"
 
+      # The shipped template has one warning, which is fine on a bench and is
+      # not fine here. This is also the control on --strict: the step above
+      # runs the same command and passes.
+      - name: the shipped template still has its one warning
+        run: |
+          set +e
+          python -m v4t_setup template lint \
+            "Matricode/Quattro/Templates/T1.spf" --strict --format json --output t1.json
+          code=$?
+          set -e
+          test "$code" -eq 1 || { echo "expected --strict to fail, got $code"; exit 1; }
+          python - <<'PY'
+          import json, sys
+          counts = json.loads(open("t1.json").read())["counts"]
+          if counts != {"warning": 1}:
+              sys.exit(f"the template findings moved: {counts}")
+          PY
+
       # The shipped GS1 data has known findings, so a clean exit here would mean
       # the linter had stopped working.
       - name: the shipped GS1 data still reports its known findings

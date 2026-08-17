@@ -22,6 +22,7 @@ from v4t_setup.cli.common import (
     echo_lines,
     emit,
     fail,
+    finish,
     get_context,
     handle_errors,
     require_directory,
@@ -140,6 +141,7 @@ def plan(
     aip: Path = options.AIP,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Work out what would be done to a terminal. Writes nothing."""
     get_context(ctx)
@@ -149,7 +151,7 @@ def plan(
         _load_profile(profile_path, terminal),
         _load_directories(aip),
     )
-    raise typer.Exit(emit(plan_report(result), fmt, output))
+    finish(plan_report(result), fmt, output, strict=strict)
 
 
 @app.command("preflight")
@@ -164,6 +166,7 @@ def preflight(
     offline: bool = options.OFFLINE,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Check a terminal is ready. Writes nothing."""
     shared = get_context(ctx)
@@ -179,7 +182,7 @@ def preflight(
         required_fonts=_required_fonts(templates),
     )
     report = run_preflight(context, target, waive=shared.settings.waived_checks)
-    raise typer.Exit(emit(preflight_report(report, profile.terminal_id), fmt, output))
+    finish(preflight_report(report, profile.terminal_id), fmt, output, strict=strict)
 
 
 @app.command("apply")
@@ -203,6 +206,7 @@ def apply(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Commission a terminal."""
     shared = get_context(ctx)
@@ -276,7 +280,7 @@ def apply(
         record = attest(result.plan, outcome, reconcile(result.plan, target, staged))
         record.write(attestation)
         typer.echo(f"attestation {record.digest()} written to {attestation}", err=True)
-    raise typer.Exit(emit(apply_report(outcome, result.plan), fmt, output))
+    finish(apply_report(outcome, result.plan), fmt, output, strict=strict)
 
 
 @app.command("audit")
@@ -292,6 +296,7 @@ def audit(
     aip: Path = options.AIP,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Read a commissioning attestation and say whether it stands up.
 
@@ -315,7 +320,7 @@ def audit(
             stamp=False,
         ).plan
     findings = check_attestation(record, plan)
-    raise typer.Exit(emit(attestation_report(record, findings), fmt, output))
+    finish(attestation_report(record, findings), fmt, output, strict=strict)
 
 
 @app.command("verify")
@@ -329,6 +334,7 @@ def verify(
     offline: bool = options.OFFLINE,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Compare a terminal against the bundle it was commissioned from."""
     shared = get_context(ctx)
@@ -337,7 +343,7 @@ def verify(
     staged = open_bundle(bundle)
     result = build_plan(staged.manifest, profile, _load_directories(aip))
     target = _open_target(shared, offline)
-    raise typer.Exit(emit(drift_report(reconcile(result.plan, target, staged)), fmt, output))
+    finish(drift_report(reconcile(result.plan, target, staged)), fmt, output, strict=strict)
 
 
 @app.command("capture")
@@ -373,6 +379,7 @@ def offline_verify(
     aip: Path = options.AIP,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Reconcile a snapshot against a bundle, away from the terminal."""
     get_context(ctx)
@@ -391,7 +398,7 @@ def offline_verify(
             f"({snapshot.plan_digest})",
             err=True,
         )
-    raise typer.Exit(emit(drift_report(reconcile(result.plan, snapshot, None)), fmt, output))
+    finish(drift_report(reconcile(result.plan, snapshot, None)), fmt, output, strict=strict)
 
 
 @app.command("diff")
@@ -405,6 +412,7 @@ def diff(
     aip: Path = options.AIP,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Say what moving a terminal from one bundle to another would do."""
     get_context(ctx)
@@ -415,8 +423,11 @@ def diff(
     before = build_plan(read_manifest(old), profile, directories, stamp=False).plan
     after = build_plan(read_manifest(new), profile, directories, stamp=False).plan
     result = diff_plans(before, after)
-    raise typer.Exit(
-        emit(plan_diff_report(result, crossed_irreversible(before, after, result)), fmt, output)
+    finish(
+        plan_diff_report(result, crossed_irreversible(before, after, result)),
+        fmt,
+        output,
+        strict=strict,
     )
 
 
@@ -428,13 +439,14 @@ def history(
     journals: Path = options.JOURNALS,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """What has been done to a terminal, out of the journals."""
     shared = get_context(ctx)
     root = journals or shared.settings.journal_root
     require_directory(root, "journal directory")
     found = read_history(root)
-    raise typer.Exit(emit(history_report(found, terminal), fmt, output))
+    finish(history_report(found, terminal), fmt, output, strict=strict)
 
 
 @app.command("bench")
@@ -448,6 +460,7 @@ def bench(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Check the laptop and the visit before anybody drives anywhere.
 
@@ -473,7 +486,7 @@ def bench(
         reference_clock=_reference_time(reference),
         operator=operator or shared.settings.operator,
     )
-    raise typer.Exit(emit(bench_report(check_bench(context)), fmt, output))
+    finish(bench_report(check_bench(context)), fmt, output, strict=strict)
 
 
 def _free_bytes(root: Path) -> int | None:
@@ -522,6 +535,7 @@ def journals_command(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Say which journals could be cleared out, and clear them out on request.
 
@@ -535,7 +549,7 @@ def journals_command(
     if remove:
         removed = apply_retention(plan, dry_run=False)
         typer.echo(f"removed {len(removed)} journals from {root}", err=True)
-    raise typer.Exit(emit(retention_report(plan, applied=remove), fmt, output))
+    finish(retention_report(plan, applied=remove), fmt, output, strict=strict)
 
 
 @app.command("profiles")

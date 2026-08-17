@@ -81,11 +81,9 @@ def list_formats() -> None:
 @app.command("doctor")
 def doctor(
     ctx: typer.Context,
-    strict: bool = typer.Option(
-        False, "--strict", help="Treat the warnings as failures too."
-    ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Say what this installation is and whether it will work.
 
@@ -96,9 +94,9 @@ def doctor(
     wants: a missing settings file is fine on a laptop and means somebody
     forgot to check one in on CI.
     """
-    from v4t_setup.cli.common import emit, get_context
+    from v4t_setup.cli.common import finish, get_context
     from v4t_setup.environment import check_environment, collect
-    from v4t_setup.report.document import Outcome, Report, findings_section, lines_section
+    from v4t_setup.report.document import Report, findings_section, lines_section
 
     shared = get_context(ctx)
     environment = collect(config_file=shared.settings_file)
@@ -122,10 +120,7 @@ def doctor(
     )
     report.add_if(findings_section("Findings", findings))
     report.derive_outcome()
-    code = emit(report, fmt, output)
-    if strict and report.outcome is not Outcome.PASS:
-        code = 1
-    raise typer.Exit(code)
+    finish(report, fmt, output, strict=strict)
 
 
 @app.command("rules")

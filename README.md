@@ -162,6 +162,15 @@ runs is the terminal and not what somebody remembered to type.
 A build server that tells 1 and 2 apart can retry the second and page somebody
 for the first.
 
+Warnings pass because somebody is standing at the machine and can look at one.
+Nobody is standing at a build server, so every command that writes a report
+takes `--strict`, which makes a warning a 1. It only moves in that direction,
+and it does not change the report, so the file a strict run writes and the file
+a lenient one writes are the same bytes.
+
+    v4t-setup template lint Matricode/Quattro/Templates/T1.spf           # 0
+    v4t-setup template lint Matricode/Quattro/Templates/T1.spf --strict  # 1
+
 ## The MSI in this repository was not built from the project file in it
 
     v4t-setup bundle match msi-quattro/msi-Jet600.msi setup.aip

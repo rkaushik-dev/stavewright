@@ -14,8 +14,8 @@ from v4t_setup.cli import options
 from v4t_setup.cli.common import (
     AppContext,
     echo_lines,
-    emit,
     fail,
+    finish,
     get_context,
     handle_errors,
     require_file,
@@ -85,6 +85,7 @@ def check_dataset(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Validate a whole data file.
 
@@ -106,7 +107,7 @@ def check_dataset(
                 limit=label_rows,
             )
         )
-    raise typer.Exit(emit(gs1_report(dataset, findings), fmt, output))
+    finish(gs1_report(dataset, findings), fmt, output, strict=strict)
 
 
 @app.command("parse")
@@ -124,6 +125,8 @@ def parse_element_string(
         None, "--require", help="An AI this customer insists on. Repeat it."
     ),
     fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Parse one element string and check it.
 
@@ -156,7 +159,7 @@ def parse_element_string(
     )
     report.add_if(findings_section("Findings", findings))
     report.derive_outcome()
-    raise typer.Exit(emit(report, fmt))
+    finish(report, fmt, output, strict=strict)
 
 
 @app.command("identifiers")
@@ -164,6 +167,8 @@ def parse_element_string(
 def list_identifiers(
     ctx: typer.Context,
     fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """List the application identifiers this build knows."""
     get_context(ctx)
@@ -187,7 +192,7 @@ def list_identifiers(
             ],
         )
     )
-    raise typer.Exit(emit(report, fmt))
+    finish(report, fmt, output, strict=strict)
 
 
 __all__ = ["app"]

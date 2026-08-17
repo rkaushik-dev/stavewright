@@ -24,7 +24,7 @@ import typer
 from v4t_setup.config.settings import Settings, find_config_file, load_settings
 from v4t_setup.errors import V4TError
 from v4t_setup.logging import configure, new_run_id
-from v4t_setup.report.document import Report
+from v4t_setup.report.document import Outcome, Report
 from v4t_setup.report.render import RENDERERS, render
 from v4t_setup.util.fsops import atomic_write_text
 
@@ -127,6 +127,32 @@ def emit(report: Report, fmt: str = DEFAULT_FORMAT, output: Path | None = None) 
     return report.outcome.exit_code
 
 
+def finish(
+    report: Report,
+    fmt: str = DEFAULT_FORMAT,
+    output: Path | None = None,
+    *,
+    strict: bool = False,
+) -> NoReturn:
+    """Write a report out and stop with the code it earned.
+
+    Every reporting command ended with the same line, and adding ``--strict``
+    to one of them made that line different in one place, which is how a flag
+    ends up meaning two things. So the last line of a command is this call and
+    the strictness lives here.
+
+    Strict promotes a warning to a failure and nothing else. It cannot turn a
+    failure into a pass, and it does not touch the report, so the file written
+    on a strict run and a lenient one are byte for byte the same.
+
+    :raises typer.Exit: always, which is what makes it the last line.
+    """
+    code = emit(report, fmt, output)
+    if strict and code == EXIT_OK and report.outcome is not Outcome.PASS:
+        code = EXIT_FINDINGS
+    raise typer.Exit(code)
+
+
 def fail(message: str, code: int = EXIT_TOOLKIT) -> NoReturn:
     """Print an error and stop.
 
@@ -197,6 +223,7 @@ __all__ = [
     "echo_lines",
     "emit",
     "fail",
+    "finish",
     "get_context",
     "handle_errors",
     "require_directory",

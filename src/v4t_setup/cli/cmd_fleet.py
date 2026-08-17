@@ -21,8 +21,8 @@ from v4t_setup.cli import options
 from v4t_setup.cli.common import (
     AppContext,
     echo_lines,
-    emit,
     fail,
+    finish,
     get_context,
     handle_errors,
     require_directory,
@@ -73,6 +73,7 @@ def list_terminals(
     line: str = typer.Option(None, "--line", "-l", help="Only this production line."),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Show every terminal in a plant, least disruptive first."""
     get_context(ctx)
@@ -81,7 +82,7 @@ def list_terminals(
         if line not in roster.lines:
             fail(f"no line called {line}, the roster has {', '.join(roster.lines)}")
         roster = Roster(plant=roster.plant, entries=tuple(roster.on_line(line)))
-    raise typer.Exit(emit(roster_report(roster), fmt, output))
+    finish(roster_report(roster), fmt, output, strict=strict)
 
 
 def _pending(shared: AppContext, roster: Roster, journals: Path | None) -> list[str]:
@@ -110,6 +111,7 @@ def status(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Read the roster against the journals and say where the plant stands.
 
@@ -123,7 +125,7 @@ def status(
     root = journals or shared.settings.journal_root
     history = read_history(root) if root is not None and root.is_dir() else History()
     standing = plant_status(roster, history, stale_after=timedelta(days=stale_days))
-    raise typer.Exit(emit(status_report(standing), fmt, output))
+    finish(status_report(standing), fmt, output, strict=strict)
 
 
 @app.command("sweep")
@@ -139,6 +141,7 @@ def sweep_command(
     aip: Path = options.AIP,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Reconcile a whole plant from snapshots, without visiting any of it.
 
@@ -162,7 +165,7 @@ def sweep_command(
         normalise(read_aip(aip)).directories,
         find_snapshots(snapshots),
     )
-    raise typer.Exit(emit(sweep_report(result), fmt, output))
+    finish(sweep_report(result), fmt, output, strict=strict)
 
 
 @app.command("plan")
@@ -179,6 +182,7 @@ def plan(
     batch: int = options.BATCH,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Work out the wave order for a plant."""
     shared = get_context(ctx)
@@ -193,7 +197,7 @@ def plan(
 
     rollout = plan_rollout(roster, only=wanted or None, batch_limit=batch)
     problems = check_rollout(roster, rollout, whole_plant=not wanted)
-    raise typer.Exit(emit(rollout_report(rollout, problems), fmt, output))
+    finish(rollout_report(rollout, problems), fmt, output, strict=strict)
 
 
 @app.command("schedule")
@@ -212,6 +216,7 @@ def schedule(
     batch: int = options.BATCH,
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Put the waves into the windows the plant has offered.
 
@@ -236,7 +241,7 @@ def schedule(
         engineers=engineers,
         per_machine=timedelta(minutes=minutes) if minutes else DEFAULT_PER_MACHINE,
     )
-    raise typer.Exit(emit(schedule_report(placed, windows), fmt, output))
+    finish(schedule_report(placed, windows), fmt, output, strict=strict)
 
 
 @app.command("next")

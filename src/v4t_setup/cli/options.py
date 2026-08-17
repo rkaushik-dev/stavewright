@@ -25,6 +25,14 @@ FORMAT = typer.Option(
 
 OUTPUT = typer.Option(None, "--output", "-o", help="Write the report here.")
 
+STRICT = typer.Option(False, "--strict", help="Fail on the warnings too.")
+"""What a build server wants and a bench laptop does not.
+
+A warning is something an engineer standing at the machine can look at and
+decide about. Nobody is standing at a build server, so there it has to be a
+failure or it is nothing. Only the exit code moves. The report is the same
+either way, which matters because the two are read side by side."""
+
 PROFILE = typer.Option(..., "--profile", "-p", help="The terminal profile.")
 
 OPTIONAL_PROFILE = typer.Option(
@@ -75,6 +83,7 @@ __all__ = [
     "PENDING",
     "PROFILE",
     "PROFILE_DIR",
+    "STRICT",
     "TEMPLATES",
     "TERMINAL",
     "TERMINAL_FILTER",

@@ -12,7 +12,7 @@ import typer
 
 from v4t_setup.cli import options
 from v4t_setup.cli.common import (
-    emit,
+    finish,
     get_context,
     handle_errors,
     require_directory,
@@ -36,6 +36,8 @@ def show(
     ctx: typer.Context,
     path: Path = typer.Argument(..., help="A .spf template."),
     fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Show what is inside a template."""
     get_context(ctx)
@@ -59,7 +61,7 @@ def show(
                 ],
             )
         )
-    raise typer.Exit(emit(report, fmt))
+    finish(report, fmt, output, strict=strict)
 
 
 @app.command("lint")
@@ -72,6 +74,7 @@ def lint(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Check a template before it goes onto a terminal."""
     get_context(ctx)
@@ -81,7 +84,7 @@ def lint(
         dataset_columns=frozenset(EXPECTED_COLUMNS) if with_dataset else frozenset()
     )
     findings = lint_template(template, context)
-    raise typer.Exit(emit(template_report(template, findings), fmt, output))
+    finish(template_report(template, findings), fmt, output, strict=strict)
 
 
 @app.command("lint-set")
@@ -97,6 +100,7 @@ def lint_set(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Check every template in a directory against the data file beside them.
 
@@ -115,7 +119,7 @@ def lint_set(
         profile = read_profile(profile_path)
     templates = read_template_set(directory, data_file=data_file)
     findings = lint_template_set(templates, profile)
-    raise typer.Exit(emit(template_set_report(templates, findings), fmt, output))
+    finish(template_set_report(templates, findings), fmt, output, strict=strict)
 
 
 __all__ = ["app"]

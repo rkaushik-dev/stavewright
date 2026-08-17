@@ -17,8 +17,8 @@ from v4t_setup.aip.reader import read_aip
 from v4t_setup.cli import options
 from v4t_setup.cli.common import (
     echo_lines,
-    emit,
     fail,
+    finish,
     get_context,
     handle_errors,
     require_directory,
@@ -63,6 +63,8 @@ def inspect(
     ctx: typer.Context,
     aip: Path = typer.Argument(..., help="An Advanced Installer project file."),
     fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Read a project file and say what is in it."""
     get_context(ctx)
@@ -99,7 +101,7 @@ def inspect(
                 [[name] for name in orphans],
             )
         )
-    raise typer.Exit(emit(report, fmt))
+    finish(report, fmt, output, strict=strict)
 
 
 @app.command("msi")
@@ -109,6 +111,7 @@ def msi(
     path: Path = typer.Argument(..., help="A built .msi."),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Read a built installer, and check it makes sense on its own terms.
 
@@ -122,7 +125,7 @@ def msi(
     database = read_database(source, path)
     summary = read_summary(source)
     report = msi_report(database, summary, lint_msi(database, summary))
-    raise typer.Exit(emit(report, fmt, output))
+    finish(report, fmt, output, strict=strict)
 
 
 @app.command("match")
@@ -133,6 +136,7 @@ def match(
     aip: Path = typer.Argument(..., help="The project file it should have come from."),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Say whether an installer was built from a project file.
 
@@ -150,7 +154,7 @@ def match(
         compare_tables(project, database),
         compare_project(project, database),
     )
-    raise typer.Exit(emit(report, fmt, output))
+    finish(report, fmt, output, strict=strict)
 
 
 @app.command("msi-diff")
@@ -164,6 +168,7 @@ def msi_diff(
     ),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Say what changed between two builds of an installer.
 
@@ -180,7 +185,7 @@ def msi_diff(
         skip=frozenset() if all_tables else NOISY_TABLES,
     )
     report = msi_difference_report(difference, first.name, second.name)
-    raise typer.Exit(emit(report, fmt, output))
+    finish(report, fmt, output, strict=strict)
 
 
 @app.command("msi-export")
@@ -284,6 +289,7 @@ def stage(
     staging: Path = typer.Option(None, "--staging", help="Where to stage it."),
     fmt: str = options.FORMAT,
     output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
 ) -> None:
     """Gather a bundle's payload onto this machine."""
     shared = get_context(ctx)
@@ -301,7 +307,7 @@ def stage(
 
     stager = Stager(staging or shared.settings.staging_root)
     result = stager.stage(manifest, source_root, signature=signature)
-    raise typer.Exit(emit(stage_report(result), fmt, output))
+    finish(stage_report(result), fmt, output, strict=strict)
 
 
 @app.command("build")
