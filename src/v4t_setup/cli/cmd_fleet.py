@@ -12,7 +12,7 @@ does.
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 import typer
@@ -29,6 +29,7 @@ from v4t_setup.cli.common import (
     require_file,
 )
 from v4t_setup.config.profiles import load_directory
+from v4t_setup.fleet.audit import audit_roster
 from v4t_setup.fleet.roster import Roster, read_roster
 from v4t_setup.fleet.schedule import DEFAULT_PER_MACHINE, read_windows, schedule_rollout
 from v4t_setup.fleet.status import plant_status
@@ -37,6 +38,7 @@ from v4t_setup.fleet.waves import check_rollout, plan_rollout
 from v4t_setup.model.manifest import read_manifest
 from v4t_setup.report.builders.fleet import (
     rollout_report,
+    roster_audit_report,
     roster_report,
     schedule_report,
     status_report,
@@ -97,6 +99,51 @@ def _pending(shared: AppContext, roster: Roster, journals: Path | None) -> list[
     if root is None or not root.is_dir():
         return [entry.terminal_id for entry in roster.uncommissioned()]
     return plant_status(roster, read_history(root)).outstanding
+
+
+@app.command("audit")
+@handle_errors
+def audit(
+    ctx: typer.Context,
+    roster_path: Path = typer.Argument(..., help="The plant roster."),
+    profiles: Path = options.PROFILE_DIR,
+    today: str = typer.Option(
+        None, "--today", help="Measure commissioning dates against this date."
+    ),
+    fmt: str = options.FORMAT,
+    output: Path = options.OUTPUT,
+    strict: bool = options.STRICT,
+) -> None:
+    """Check the roster against the profiles beside it.
+
+    Reading a roster only proves it is a roster. This asks the questions that
+    need a second document: a terminal on two lines, a gap in the positions, a
+    profile no line claims, a line mixing FPGA revisions.
+
+    Run it after a line is re-laid and before the planning meeting. Everything
+    it reports is cheap to fix on a Tuesday and expensive to find on a Sunday
+    with the line down.
+    """
+    get_context(ctx)
+    roster = _load(roster_path, profiles)
+    known = load_directory(profiles or roster_path.parent)
+    findings = audit_roster(roster, known, today=_today(today))
+    finish(roster_audit_report(roster, findings), fmt, output, strict=strict)
+
+
+def _today(text: str | None) -> date:
+    """The date to measure against, from a flag or from the clock.
+
+    A flag because the stale check is the only thing in this toolkit whose
+    answer changes on its own overnight, and somebody reproducing a report from
+    last month needs it to come out the same.
+    """
+    if text is None:
+        return date.today()
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        fail(f"--today is not a date: {text}")
 
 
 @app.command("status")

@@ -44,6 +44,7 @@ against fixtures.
     bundle match      an .msi + setup.aip  -> whether one built the other
     bundle msi-diff   two .msi files       -> what changed between two builds
     bundle msi-export an .msi              -> its tables as idt, for a diff
+    fleet audit       roster + profiles    -> what the roster gets wrong
     fleet status      roster + journals    -> where the plant actually stands
     fleet sweep       roster + snapshots   -> which terminals have drifted
     fleet plan        roster + profiles    -> the order to work the plant in
@@ -77,6 +78,19 @@ downstream, so position 1 feeds position 2.
 
     v4t-setup fleet plan roster.toml
     v4t-setup fleet next roster.toml --batch 2
+
+Reading a roster only proves it is a roster. What it gets wrong needs a second
+document to see, so that is its own command:
+
+    v4t-setup fleet audit roster.toml
+
+A terminal on two lines, a line whose positions run 1, 2, 5, a profile in the
+directory that no line claims, a line mixing FPGA revisions, a commissioning
+date in the future. Run it after a line is re-laid. All of it is cheap to fix
+on a Tuesday and expensive to find on a Sunday with the line down.
+
+`--today` pins the date the stale check measures against, so a report from last
+month comes out the same this month.
 
 The maintenance calendar is its own file, because it changes every month and
 the roster does not:

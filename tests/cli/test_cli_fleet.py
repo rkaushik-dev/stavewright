@@ -554,3 +554,112 @@ def test_a_sweep_with_no_snapshots_at_all(runner, bench, plant, manifest_file):
         "--manifest", str(manifest_file), "--aip", str(AIP), "--format", "json",
     )
     assert json_output(result)["facts"]["unseen"] == "4"
+
+
+BROKEN_ROSTER = """
+plant = "Wrexham"
+
+[line.export]
+criticality = "normal"
+
+[line.export.terminal.EXPORT-01]
+position = 1
+commissioned = 2044-11-03
+
+[line.export.terminal.EXPORT-02]
+position = 4
+"""
+
+
+@pytest.fixture
+def broken_plant(bench):
+    (bench / "profiles.toml").write_text(PROFILES, encoding="utf-8")
+    path = bench / "roster.toml"
+    path.write_text(BROKEN_ROSTER, encoding="utf-8")
+    return path
+
+
+def test_auditing_a_plant_that_is_in_order(runner, plant):
+    result = run(runner, "fleet", "audit", str(plant))
+    assert result.exit_code == EXIT_OK, result.output
+    assert "Roster audit" in result.output
+
+
+def test_the_audit_names_the_plant_when_nothing_is_wrong(runner, plant):
+    result = run(runner, "fleet", "audit", str(plant), "--format", "json")
+    facts = json_output(result)["facts"]
+    assert facts["plant"] == "Wrexham"
+    assert facts["terminals"] == "4"
+    assert facts["lines"] == "3"
+
+
+def test_the_audit_says_it_read_the_profiles(runner, plant):
+    """A clean audit that never opened the profile directory is a different
+    clean, and the report has to be able to tell somebody which it was."""
+    result = run(runner, "fleet", "audit", str(plant), "--format", "json")
+    assert json_output(result)["facts"]["profiles_checked"] == "yes"
+
+
+def test_the_audit_finds_the_future_date_and_the_gap(runner, broken_plant):
+    result = run(runner, "fleet", "audit", str(broken_plant), "--format", "json")
+    assert result.exit_code == EXIT_FINDINGS, result.output
+    findings = [
+        finding
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+    ]
+    messages = " ".join(finding["message"] for finding in findings)
+    assert "future" in messages
+    assert "gaps" in messages
+
+
+def test_the_audit_reports_the_profiles_no_line_claims(runner, broken_plant):
+    """The broken roster names two of the four terminals in the directory."""
+    result = run(runner, "fleet", "audit", str(broken_plant), "--format", "json")
+    findings = [
+        finding
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+    ]
+    unclaimed = [f["subject"] for f in findings if "no line claims" in f["message"]]
+    assert sorted(unclaimed) == ["BENCH-01", "SAMPLE-01"]
+
+
+def test_the_audit_subtitle_names_the_worst_line(runner, broken_plant):
+    result = run(runner, "fleet", "audit", str(broken_plant))
+    assert "worst line export" in result.output
+
+
+def test_the_audit_measures_dates_against_a_given_day(runner, broken_plant):
+    """2044 is the future today and will not be forever. The flag is what
+    makes a report from last month reproducible."""
+    result = run(runner, "fleet", "audit", str(broken_plant), "--today", "2050-01-01",
+                 "--format", "json")
+    findings = [
+        finding
+        for section in json_output(result)["sections"]
+        for finding in section.get("findings", [])
+    ]
+    assert not any("future" in finding["message"] for finding in findings)
+    assert any("two years" in finding["message"] for finding in findings)
+
+
+def test_a_today_that_is_not_a_date_is_refused(runner, plant):
+    result = run(runner, "fleet", "audit", str(plant), "--today", "last tuesday")
+    assert result.exit_code == EXIT_TOOLKIT
+    assert "--today is not a date" in result.output
+
+
+def test_the_audit_lists_every_line_with_its_finding_count(runner, broken_plant):
+    result = run(runner, "fleet", "audit", str(broken_plant))
+    assert "Lines" in result.output
+    assert "export" in result.output
+
+
+def test_the_audit_takes_strict_like_everything_else(runner, plant, bench):
+    """The clean plant has an INFO about the critical line needing two
+    windows, and INFO is not a warning, so strict changes nothing here."""
+    plain = run(runner, "fleet", "audit", str(plant))
+    strict = run(runner, "fleet", "audit", str(plant), "--strict")
+    assert plain.exit_code == EXIT_OK
+    assert strict.exit_code == EXIT_OK

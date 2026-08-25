@@ -3,10 +3,16 @@ from __future__ import annotations
 import json
 from datetime import date
 
+from v4t_setup.finding import Severity
+from v4t_setup.fleet.audit import audit_roster
 from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
 from v4t_setup.fleet.waves import check_rollout, plan_rollout
 from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.report.builders.fleet import rollout_report, roster_report
+from v4t_setup.report.builders.fleet import (
+    rollout_report,
+    roster_audit_report,
+    roster_report,
+)
 from v4t_setup.report.document import Outcome
 from v4t_setup.report.render import to_json, to_text
 
@@ -38,6 +44,16 @@ PLANT = Roster(
         entry("EXPORT-02", "export", 2, Criticality.CRITICAL, ShiftPattern.CONTINUOUS),
         entry("SAMPLE-01", "sample", 1),
         entry("BENCH-01", "bench", 1, Criticality.SPARE),
+    ),
+)
+
+
+BENT = Roster(
+    plant="Wrexham",
+    entries=(
+        entry("EXPORT-01", "export", 1, commissioned=date(2044, 1, 1)),
+        entry("EXPORT-03", "export", 3),
+        entry("SAMPLE-01", "sample", 1),
     ),
 )
 
@@ -173,3 +189,59 @@ def test_an_empty_plant_still_makes_a_report():
     report = rollout_report(plan_rollout(empty))
     assert report.fact_lines()["waves"] == "0"
     assert section(report, "Waves").rows == []
+
+
+def test_the_audit_report_names_the_plant_when_it_is_clean():
+    report = roster_audit_report(PLANT, [])
+    assert report.title == "Roster audit"
+    assert report.subtitle == "Wrexham"
+    assert report.outcome is Outcome.PASS
+
+
+def test_the_audit_report_names_the_worst_line_when_there_is_one():
+    findings = audit_roster(BENT, None, today=date(2025, 6, 1))
+    report = roster_audit_report(BENT, findings)
+    assert report.subtitle == "Wrexham, worst line export"
+
+
+def test_the_audit_report_lists_every_line():
+    rows = section(roster_audit_report(PLANT, []), "Lines").rows
+    assert [row[0] for row in rows] == ["bench", "export", "sample"]
+    assert [row[1] for row in rows] == ["1", "2", "1"]
+
+
+def test_the_audit_report_counts_findings_per_line():
+    findings = audit_roster(BENT, None, today=date(2025, 6, 1))
+    rows = section(roster_audit_report(BENT, findings), "Lines").rows
+    counted = {row[0]: row[4] for row in rows}
+    assert int(counted["export"]) >= 1
+
+
+def test_the_audit_report_says_whether_it_read_the_profiles():
+    checked = roster_audit_report(PLANT, [], profiles_checked=True)
+    skipped = roster_audit_report(PLANT, [], profiles_checked=False)
+    assert checked.fact_lines()["profiles_checked"] == "yes"
+    assert skipped.fact_lines()["profiles_checked"] == "no"
+
+
+def test_the_audit_report_says_out_loud_what_it_did_not_check():
+    report = roster_audit_report(PLANT, [], profiles_checked=False)
+    assert "Not checked" in [part.heading for part in report.sections]
+
+
+def test_a_checked_audit_does_not_carry_the_disclaimer():
+    report = roster_audit_report(PLANT, [], profiles_checked=True)
+    assert "Not checked" not in [part.heading for part in report.sections]
+
+
+def test_the_audit_report_fails_on_an_error():
+    findings = audit_roster(BENT, None, today=date(2025, 6, 1))
+    assert any(finding.severity is Severity.ERROR for finding in findings)
+    assert roster_audit_report(BENT, findings).outcome is Outcome.FAIL
+
+
+def test_the_audit_report_renders_as_text_and_json():
+    findings = audit_roster(BENT, None, today=date(2025, 6, 1))
+    report = roster_audit_report(BENT, findings)
+    assert "Roster audit" in to_text(report)
+    assert json.loads(to_json(report))["facts"]["plant"] == "Wrexham"

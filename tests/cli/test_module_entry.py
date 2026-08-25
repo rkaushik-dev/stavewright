@@ -32,8 +32,21 @@ def module_run(module: str, *args: str, cwd=None) -> subprocess.CompletedProcess
     is. Help output is drawn with box characters, and on a Windows bench the
     default is cp1252, which cannot decode them and fails the read rather than
     the command.
+
+    The child is run without coverage. pytest-cov hooks subprocesses through
+    these variables and a .pth file, and each of these children then writes its
+    own data file. Combining those with the parent's fails outright when the
+    two disagree about branch coverage, which took out the whole coverage run
+    and reported itself as an INTERNALERROR after the suite had passed. The
+    numbers were wrong before that anyway: a process that starts, prints and
+    exits inflates the CLI modules and says nothing about the tests.
     """
-    environment = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("COV_CORE_") and key != "COVERAGE_PROCESS_START"
+    }
+    environment["PYTHONIOENCODING"] = "utf-8"
     return subprocess.run(
         [sys.executable, "-m", module, *args],
         capture_output=True,

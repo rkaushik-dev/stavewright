@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from v4t_setup.finding import Severity, reporter
+from v4t_setup.finding import Finding, Severity, reporter
 from v4t_setup.fleet.roster import Roster
 from v4t_setup.fleet.schedule import Schedule, Window
 from v4t_setup.fleet.status import PlantStatus, Standing
@@ -155,6 +155,63 @@ def roster_report(roster: Roster) -> Report:
                 "Never commissioned",
                 [entry.terminal_id for entry in never],
                 note="These have no run in the history and nothing to compare against.",
+            )
+        )
+    report.derive_outcome()
+    return report
+
+
+def roster_audit_report(
+    roster: Roster,
+    findings: list[Finding],
+    *,
+    profiles_checked: bool = True,
+) -> Report:
+    """A roster audited against the profiles beside it, as a document.
+
+    The subtitle names the worst line rather than the plant, because the plant
+    is on the roster the reader already has open and the line is the thing they
+    are about to go and look at.
+
+    ``profiles_checked`` is in the facts on purpose. A clean audit that never
+    opened the profile directory is a different clean from one that did, and a
+    report that cannot tell you which is not evidence of anything.
+    """
+    from v4t_setup.fleet.audit import worst_line
+
+    bad = worst_line(roster, findings)
+    report = Report(
+        title="Roster audit",
+        subtitle=f"{roster.plant}, worst line {bad}" if bad else roster.plant,
+        facts={
+            "plant": roster.plant,
+            "terminals": str(len(roster)),
+            "lines": str(len(roster.lines)),
+            "profiles_checked": "yes" if profiles_checked else "no",
+        },
+    )
+    report.add(
+        table_section(
+            "Lines",
+            ["line", "machines", "criticality", "shift", "findings"],
+            [
+                [
+                    line,
+                    str(len(roster.on_line(line))),
+                    roster.on_line(line)[0].criticality.value,
+                    roster.on_line(line)[0].shift_pattern.value,
+                    str(sum(1 for finding in findings if finding.subject == line)),
+                ]
+                for line in roster.lines
+            ],
+        )
+    )
+    report.add_if(findings_section("Findings", findings))
+    if not profiles_checked:
+        report.add(
+            lines_section(
+                "Not checked",
+                ["profiles nobody claims, because no profile directory was read"],
             )
         )
     report.derive_outcome()
