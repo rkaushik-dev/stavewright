@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Finding, Severity, reporter
+from stavewright.finding import Finding, Severity, reporter
 
 
 def test_the_rule_goes_on_every_finding():
@@ -72,10 +72,10 @@ def test_a_finding_it_makes_is_an_ordinary_finding():
 @pytest.mark.parametrize(
     ("module", "name"),
     [
-        ("v4t_setup.environment", "environment"),
-        ("v4t_setup.msi.lint", "msi"),
-        ("v4t_setup.templates.pack", "template-set"),
-        ("v4t_setup.gs1.label", "label"),
+        ("stavewright.environment", "environment"),
+        ("stavewright.msi.lint", "msi"),
+        ("stavewright.templates.pack", "template-set"),
+        ("stavewright.gs1.label", "label"),
     ],
 )
 def test_every_module_on_the_shared_helper_still_names_its_rule(module, name):
@@ -89,7 +89,7 @@ def test_every_module_on_the_shared_helper_still_names_its_rule(module, name):
 def test_the_environment_findings_keep_their_context():
     from dataclasses import replace
 
-    from v4t_setup.environment import check_environment, collect
+    from stavewright.environment import check_environment, collect
 
     broken = replace(collect(), python_version="3.8.0")
     finding = next(f for f in check_environment(broken) if f.subject == "python")
@@ -98,8 +98,8 @@ def test_the_environment_findings_keep_their_context():
 
 
 def test_the_msi_lint_findings_keep_their_context():
-    from v4t_setup.msi.lint import check_properties
-    from v4t_setup.msi.tables import MsiDatabase, StringPool
+    from stavewright.msi.lint import check_properties
+    from stavewright.msi.tables import MsiDatabase, StringPool
 
     empty = MsiDatabase(pool=StringPool(codepage=1252, strings=("",), bytes_per_ref=2))
     findings = check_properties(empty)
@@ -108,7 +108,7 @@ def test_the_msi_lint_findings_keep_their_context():
 
 
 def test_the_template_set_findings_keep_their_context(tmp_path):
-    from v4t_setup.templates.pack import TemplateSet, lint_template_set
+    from stavewright.templates.pack import TemplateSet, lint_template_set
 
     findings = lint_template_set(TemplateSet(root=tmp_path))
     assert findings[0].rule == "template-set"
@@ -125,7 +125,7 @@ def test_no_module_builds_a_finding_by_hand_where_a_reporter_would_do():
     import re
     from pathlib import Path
 
-    root = Path(__file__).resolve().parent.parent / "src" / "v4t_setup"
+    root = Path(__file__).resolve().parent.parent / "src" / "stavewright"
     pattern = re.compile(r"Finding\(\s*\n\s+rule=\"", re.MULTILINE)
     offenders = [
         str(path.relative_to(root))
@@ -138,10 +138,10 @@ def test_no_module_builds_a_finding_by_hand_where_a_reporter_would_do():
 def test_the_msi_comparison_findings_keep_their_context():
     from pathlib import Path
 
-    from v4t_setup.aip.normalize import normalise
-    from v4t_setup.aip.reader import read_aip
-    from v4t_setup.msi.compare import compare_project
-    from v4t_setup.msi.tables import read_msi
+    from stavewright.aip.normalize import normalise
+    from stavewright.aip.reader import read_aip
+    from stavewright.msi.compare import compare_project
+    from stavewright.msi.tables import read_msi
 
     root = Path(__file__).resolve().parent.parent
     project = normalise(read_aip(root / "setup.aip"))
@@ -158,11 +158,11 @@ def test_the_msi_comparison_findings_keep_their_context():
 def test_the_fleet_report_findings_keep_their_context():
     from datetime import date
 
-    from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-    from v4t_setup.fleet.status import plant_status
-    from v4t_setup.model.profile import TerminalProfile
-    from v4t_setup.report.builders.fleet import status_report
-    from v4t_setup.verify.history import History
+    from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+    from stavewright.fleet.status import plant_status
+    from stavewright.model.profile import TerminalProfile
+    from stavewright.report.builders.fleet import status_report
+    from stavewright.verify.history import History
 
     entry = RosterEntry(
         terminal_id="A-01",
@@ -181,8 +181,8 @@ def test_the_fleet_report_findings_keep_their_context():
 
 
 def test_the_label_findings_keep_the_label_kind():
-    from v4t_setup.gs1.label import LabelKind, LabelSpec, check_label
-    from v4t_setup.gs1.parse import parse
+    from stavewright.gs1.label import LabelKind, LabelSpec, check_label
+    from stavewright.gs1.parse import parse
 
     findings = check_label(
         LabelSpec(kind=LabelKind.PALLET, string=parse("(02)01001000173250"))

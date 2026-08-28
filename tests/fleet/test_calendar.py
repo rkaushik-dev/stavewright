@@ -5,8 +5,8 @@ from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
-from v4t_setup.errors import ConfigError, PlanError
-from v4t_setup.fleet.schedule import parse_windows, read_windows
+from stavewright.errors import ConfigError, PlanError
+from stavewright.fleet.schedule import parse_windows, read_windows
 
 CALENDAR = """
 [[window]]

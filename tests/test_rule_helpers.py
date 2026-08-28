@@ -7,10 +7,10 @@ the report shows ``(24)`` beside a message about row 24.
 
 from __future__ import annotations
 
-from v4t_setup.finding import Severity
-from v4t_setup.gs1.datasetlint import DatasetRule
-from v4t_setup.preflight.checks import Check
-from v4t_setup.ruleset import Rule
+from stavewright.finding import Severity
+from stavewright.gs1.datasetlint import DatasetRule
+from stavewright.preflight.checks import Check
+from stavewright.ruleset import Rule
 
 
 class Plain(Rule[str, None]):
@@ -80,8 +80,8 @@ def test_the_two_helpers_are_not_overrides_of_the_base_one():
 
 
 def test_every_helper_produces_a_finding_that_renders():
-    from v4t_setup.report.document import Report, findings_section
-    from v4t_setup.report.render import to_text
+    from stavewright.report.document import Report, findings_section
+    from stavewright.report.render import to_text
 
     findings = [
         Plain()._finding(Severity.ERROR, "bad", "01"),

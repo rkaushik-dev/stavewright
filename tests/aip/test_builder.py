@@ -4,7 +4,7 @@ from pathlib import Path, PurePosixPath
 
 import pytest
 
-from v4t_setup.aip.builder import (
+from stavewright.aip.builder import (
     COM_COMPONENTS,
     FPGA_MACHINES,
     NATIVE_COMPONENTS,
@@ -12,11 +12,11 @@ from v4t_setup.aip.builder import (
     bundle_source,
     language_for,
 )
-from v4t_setup.aip.normalize import normalise
-from v4t_setup.aip.reader import read_aip
-from v4t_setup.errors import ManifestError
-from v4t_setup.model.payload import PayloadKind
-from v4t_setup.model.profile import Architecture
+from stavewright.aip.normalize import normalise
+from stavewright.aip.reader import read_aip
+from stavewright.errors import ManifestError
+from stavewright.model.payload import PayloadKind
+from stavewright.model.profile import Architecture
 
 
 @pytest.fixture(scope="module")
@@ -227,14 +227,14 @@ def test_the_manifest_is_stamped(project, repo_root):
 
 
 def test_the_built_manifest_round_trips(project, repo_root):
-    from v4t_setup.model.manifest import loads
+    from stavewright.model.manifest import loads
 
     report = build_manifest(project, repo_root, digest_payload=False)
     assert loads(report.manifest.dumps()).to_dict() == report.manifest.to_dict()
 
 
 def test_the_built_manifest_plans(project, repo_root, profile, directory_table):
-    from v4t_setup.plan.planner import build_plan
+    from stavewright.plan.planner import build_plan
 
     report = build_manifest(project, repo_root, digest_payload=False)
     planned = build_plan(report.manifest, profile, project.directories, stamp=False)
@@ -245,7 +245,7 @@ def test_the_built_manifest_plans(project, repo_root, profile, directory_table):
 def test_a_mini_plan_from_the_built_manifest_drops_the_bitstream(
     project, repo_root, profile_mini
 ):
-    from v4t_setup.plan.planner import build_plan
+    from stavewright.plan.planner import build_plan
 
     report = build_manifest(project, repo_root, digest_payload=False)
     planned = build_plan(report.manifest, profile_mini, project.directories, stamp=False)
@@ -254,7 +254,7 @@ def test_a_mini_plan_from_the_built_manifest_drops_the_bitstream(
 
 
 def test_a_polish_terminal_gets_only_the_polish_pack(project, repo_root, profile):
-    from v4t_setup.plan.planner import build_plan
+    from stavewright.plan.planner import build_plan
 
     report = build_manifest(project, repo_root, digest_payload=False)
     polish = profile.with_languages(["pl-PL"])

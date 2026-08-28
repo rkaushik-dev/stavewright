@@ -4,10 +4,10 @@ from datetime import timedelta
 
 import pytest
 
-from v4t_setup.clock import frozen, utc
-from v4t_setup.finding import Severity
-from v4t_setup.model.manifest import Manifest
-from v4t_setup.preflight.bench import (
+from stavewright.clock import frozen, utc
+from stavewright.finding import Severity
+from stavewright.model.manifest import Manifest
+from stavewright.preflight.bench import (
     DEFAULT_BENCH_CHECKS,
     MAX_CLOCK_SKEW,
     MIN_FREE_BYTES,
@@ -20,7 +20,7 @@ from v4t_setup.preflight.bench import (
     TrustedKeysCheck,
     check_bench,
 )
-from v4t_setup.ruleset import duplicate_names, rule_names
+from stavewright.ruleset import duplicate_names, rule_names
 
 NOW = utc(2025, 6, 3, 1, 30)
 

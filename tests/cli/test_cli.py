@@ -5,9 +5,9 @@ import json
 import pytest
 from typer.testing import CliRunner
 
-from v4t_setup.__about__ import __version__
-from v4t_setup.cli.common import EXIT_FINDINGS, EXIT_OK, EXIT_TOOLKIT
-from v4t_setup.cli.main import app
+from stavewright.__about__ import __version__
+from stavewright.cli.common import EXIT_FINDINGS, EXIT_OK, EXIT_TOOLKIT
+from stavewright.cli.main import app
 
 from .conftest import AIP, GS1_DATA, TEMPLATE, json_output
 
@@ -19,7 +19,7 @@ def run(runner: CliRunner, *args: str):
 def test_version(runner):
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == EXIT_OK
-    assert f"v4t-setup {__version__}" in result.output
+    assert f"stavewright {__version__}" in result.output
 
 
 def test_help_lists_the_groups(runner):
@@ -307,7 +307,7 @@ def test_bundle_stage(runner, bench, manifest_file, payload_root):
 def test_bundle_stage_requires_a_signature_when_configured(
     runner, bench, manifest_file, payload_root
 ):
-    (bench / "v4t-setup.toml").write_text("require_signature = true\n", encoding="utf-8")
+    (bench / "stavewright.toml").write_text("require_signature = true\n", encoding="utf-8")
     result = run(
         runner, "bundle", "stage", str(manifest_file), "--source", str(payload_root)
     )
@@ -547,8 +547,8 @@ def test_run_history_of_a_directory_that_is_not_there(runner, bench):
 def test_preflight_reports_a_run_that_was_never_finished(
     runner, bench, manifest_file, profile_file
 ):
-    from v4t_setup import clock
-    from v4t_setup.apply.journal import Journal, RecordKind
+    from stavewright import clock
+    from stavewright.apply.journal import Journal, RecordKind
 
     journals = bench / "_journal"
     journals.mkdir(exist_ok=True)
@@ -974,7 +974,7 @@ def test_journals_of_an_empty_directory(runner, bench):
 
 
 def test_bundle_pack_writes_an_archive(runner, bench, staged_bundle):
-    out = bench / "bundle.v4tbundle"
+    out = bench / "bundle.swbundle"
     result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     assert result.exit_code == EXIT_OK, result.output
     assert out.is_file()
@@ -982,24 +982,24 @@ def test_bundle_pack_writes_an_archive(runner, bench, staged_bundle):
 
 
 def test_bundle_pack_prints_the_manifest_digest(runner, bench, staged_bundle):
-    out = bench / "bundle.v4tbundle"
+    out = bench / "bundle.swbundle"
     result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     assert "manifest sha256:" in result.output
 
 
 def test_bundle_pack_warns_that_it_is_unsigned(runner, bench, staged_bundle):
-    out = bench / "bundle.v4tbundle"
+    out = bench / "bundle.swbundle"
     result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     assert "not signed" in result.output
 
 
 def test_bundle_pack_of_something_that_is_not_a_bundle(runner, bench):
-    result = run(runner, "bundle", "pack", str(bench), "--out", str(bench / "x.v4tbundle"))
+    result = run(runner, "bundle", "pack", str(bench), "--out", str(bench / "x.swbundle"))
     assert result.exit_code == EXIT_TOOLKIT
 
 
 def test_bundle_pack_refuses_to_overwrite(runner, bench, staged_bundle):
-    out = bench / "bundle.v4tbundle"
+    out = bench / "bundle.swbundle"
     run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     result = run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     assert result.exit_code == EXIT_TOOLKIT
@@ -1007,7 +1007,7 @@ def test_bundle_pack_refuses_to_overwrite(runner, bench, staged_bundle):
 
 
 def test_bundle_unpack_reads_it_back(runner, bench, staged_bundle):
-    out = bench / "bundle.v4tbundle"
+    out = bench / "bundle.swbundle"
     run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     back = bench / "unpacked"
     result = run(runner, "bundle", "unpack", str(out), "--into", str(back))
@@ -1017,7 +1017,7 @@ def test_bundle_unpack_reads_it_back(runner, bench, staged_bundle):
 
 
 def test_bundle_unpack_can_skip_verification(runner, bench, staged_bundle):
-    out = bench / "bundle.v4tbundle"
+    out = bench / "bundle.swbundle"
     run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     result = run(
         runner, "bundle", "unpack", str(out), "--into", str(bench / "unpacked"), "--no-verify"
@@ -1033,13 +1033,13 @@ def test_bundle_unpack_of_something_that_is_not_an_archive(runner, bench):
 
 
 def test_bundle_unpack_of_a_file_that_is_not_there(runner, bench):
-    result = run(runner, "bundle", "unpack", "gone.v4tbundle", "--into", str(bench / "x"))
+    result = run(runner, "bundle", "unpack", "gone.swbundle", "--into", str(bench / "x"))
     assert result.exit_code == EXIT_TOOLKIT
     assert "archive does not exist" in result.output
 
 
 def test_a_round_trip_through_the_cli_can_be_applied(runner, bench, staged_bundle, profile_file):
-    out = bench / "bundle.v4tbundle"
+    out = bench / "bundle.swbundle"
     run(runner, "bundle", "pack", str(staged_bundle), "--out", str(out))
     back = bench / "unpacked"
     run(runner, "bundle", "unpack", str(out), "--into", str(back))
@@ -1064,7 +1064,7 @@ def test_bench_takes_an_operator_on_the_command_line(runner, bench):
 
 
 def test_bench_takes_the_operator_from_the_settings_file(runner, bench):
-    path = bench / "v4t-setup.toml"
+    path = bench / "stavewright.toml"
     path.write_text(path.read_text(encoding="utf-8") + 'operator = "R Hughes"\n', encoding="utf-8")
     result = run(runner, "run", "bench")
     assert "nobody is named" not in result.output
@@ -1104,7 +1104,7 @@ def test_a_reference_time_with_no_offset(runner, bench):
 
 
 def test_a_clean_bench_says_so(runner, bench):
-    from v4t_setup.clock import now
+    from stavewright.clock import now
 
     (bench / "_journal").mkdir()
     result = run(
@@ -1116,7 +1116,7 @@ def test_a_clean_bench_says_so(runner, bench):
 
 
 def test_a_bench_with_no_journal_directory_yet_says_it_will_make_one(runner, bench):
-    from v4t_setup.clock import now
+    from stavewright.clock import now
 
     result = run(
         runner, "run", "bench", "--operator", "R Hughes",
@@ -1148,7 +1148,7 @@ def test_doctor_says_where_things_go(runner, bench):
 
 def test_doctor_names_the_settings_file_it_found(runner, bench):
     result = run(runner, "doctor", "--format", "json")
-    assert json_output(result)["facts"]["settings"].endswith("v4t-setup.toml")
+    assert json_output(result)["facts"]["settings"].endswith("stavewright.toml")
     assert "no settings file was found" not in result.output
 
 
@@ -1270,7 +1270,7 @@ def test_msi_export_says_what_it_wrote(runner, bench):
 
 
 def test_an_exported_table_reads_back(runner, bench):
-    from v4t_setup.msi.export import ENCODING, parse_idt
+    from stavewright.msi.export import ENCODING, parse_idt
 
     into = bench / "tables"
     run(runner, "bundle", "msi-export", str(MSI), "--into", str(into), "--table", "Feature")
@@ -1280,14 +1280,14 @@ def test_an_exported_table_reads_back(runner, bench):
 
 
 def test_apply_can_resume_a_run_that_stopped(runner, bench, staged_bundle, profile_file):
-    from v4t_setup.apply.journal import Journal, RecordKind
-    from v4t_setup.model.manifest import read_manifest
-    from v4t_setup.plan.planner import build_plan
+    from stavewright.apply.journal import Journal, RecordKind
+    from stavewright.model.manifest import read_manifest
+    from stavewright.plan.planner import build_plan
 
     manifest = read_manifest(staged_bundle / "manifest.json")
-    from v4t_setup.aip.normalize import normalise
-    from v4t_setup.aip.reader import read_aip
-    from v4t_setup.config.profiles import read_profile
+    from stavewright.aip.normalize import normalise
+    from stavewright.aip.reader import read_aip
+    from stavewright.config.profiles import read_profile
 
     plan = build_plan(
         manifest, read_profile(profile_file), normalise(read_aip(AIP)).directories

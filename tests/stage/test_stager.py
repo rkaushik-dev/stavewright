@@ -4,11 +4,11 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from v4t_setup.errors import StageError
-from v4t_setup.model.manifest import Manifest
-from v4t_setup.model.payload import PayloadItem, PayloadKind
-from v4t_setup.signing import generate_key, sign_manifest
-from v4t_setup.stage.stager import (
+from stavewright.errors import StageError
+from stavewright.model.manifest import Manifest
+from stavewright.model.payload import PayloadItem, PayloadKind
+from stavewright.signing import generate_key, sign_manifest
+from stavewright.stage.stager import (
     MANIFEST_NAME,
     SIGNATURE_NAME,
     IndexEntry,
@@ -16,7 +16,7 @@ from v4t_setup.stage.stager import (
     open_bundle,
     read_index,
 )
-from v4t_setup.util.digest import digest_bytes
+from stavewright.util.digest import digest_bytes
 
 
 @pytest.fixture
@@ -119,7 +119,7 @@ def test_a_bad_payload_is_not_left_in_the_store(source_root, stage_root):
     )
     with pytest.raises(StageError):
         Stager(stage_root).stage(manifest, source_root)
-    from v4t_setup.stage.store import ObjectStore
+    from stavewright.stage.store import ObjectStore
 
     store = ObjectStore(Stager(stage_root).bundle_root(manifest))
     assert not store.has(digest_bytes(b"MZ\x90\x00"))
@@ -157,7 +157,7 @@ def test_reading_a_directory_item_as_bytes_is_refused(source_root, stage_root):
 
 
 def test_a_directory_digest_is_checked(source_root, stage_root):
-    from v4t_setup.util.digest import digest_tree
+    from stavewright.util.digest import digest_tree
 
     expected = digest_tree(source_root / "payload" / "ftdimfr")
     item = PayloadItem(
@@ -316,9 +316,9 @@ def test_an_invalid_manifest_is_refused(source_root, stage_root):
 
 
 def test_a_staged_bundle_works_as_a_payload_source(source_root, stage_root, profile, tmp_path):
-    from v4t_setup.apply.executor import Executor
-    from v4t_setup.plan.steps import Plan, Step, StepKind
-    from v4t_setup.target.memory import MemoryTarget
+    from stavewright.apply.executor import Executor
+    from stavewright.plan.steps import Plan, Step, StepKind
+    from stavewright.target.memory import MemoryTarget
 
     manifest = manifest_with(file_item("file.v4t", "V4T.exe", "payload/V4T.exe"))
     bundle = Stager(stage_root).stage(manifest, source_root).bundle

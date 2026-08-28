@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import PlanError
-from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-from v4t_setup.fleet.waves import Rollout, check_rollout, plan_rollout
-from v4t_setup.model.profile import TerminalProfile
+from stavewright.errors import PlanError
+from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+from stavewright.fleet.waves import Rollout, check_rollout, plan_rollout
+from stavewright.model.profile import TerminalProfile
 
 
 def entry(
@@ -227,7 +227,7 @@ def test_the_check_catches_a_hand_edited_plan_that_drops_a_machine():
 
 
 def test_the_check_catches_a_wave_that_is_too_wide():
-    from v4t_setup.fleet.waves import Wave
+    from stavewright.fleet.waves import Wave
 
     wide = Wave(
         number=1,
@@ -240,7 +240,7 @@ def test_the_check_catches_a_wave_that_is_too_wide():
 
 
 def test_the_check_catches_two_machines_off_one_line():
-    from v4t_setup.fleet.waves import Wave
+    from stavewright.fleet.waves import Wave
 
     both = Wave(
         number=1,
@@ -265,7 +265,7 @@ def test_the_check_catches_a_machine_in_two_waves():
 
 
 def test_the_check_catches_a_mixed_wave():
-    from v4t_setup.fleet.waves import Wave
+    from stavewright.fleet.waves import Wave
 
     mixed = Wave(
         number=1,

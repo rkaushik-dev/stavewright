@@ -4,13 +4,13 @@ from pathlib import PureWindowsPath
 
 import pytest
 
-from v4t_setup.__about__ import MANUFACTURER, PRODUCT_NAME, UPGRADE_CODE
-from v4t_setup.aip.normalize import normalise
-from v4t_setup.aip.reader import parse_aip, read_aip
-from v4t_setup.errors import AipParseError, ManifestError
-from v4t_setup.model.component import ComponentAttributes
-from v4t_setup.model.registry import RegistryRoot, RegistryValueType
-from v4t_setup.util.msiver import MsiVersion, UpgradeAttributes
+from stavewright.__about__ import MANUFACTURER, PRODUCT_NAME, UPGRADE_CODE
+from stavewright.aip.normalize import normalise
+from stavewright.aip.reader import parse_aip, read_aip
+from stavewright.errors import AipParseError, ManifestError
+from stavewright.model.component import ComponentAttributes
+from stavewright.model.registry import RegistryRoot, RegistryValueType
+from stavewright.util.msiver import MsiVersion, UpgradeAttributes
 
 SMALL = """<DOCUMENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">

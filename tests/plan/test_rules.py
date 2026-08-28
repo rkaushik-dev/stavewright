@@ -4,8 +4,8 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from v4t_setup.model.payload import PayloadItem, PayloadKind
-from v4t_setup.plan.rules import (
+from stavewright.model.payload import PayloadItem, PayloadKind
+from stavewright.plan.rules import (
     DEFAULT_RULES,
     AssemblyBeforeComRule,
     AssemblyBeforePolicyRule,
@@ -355,7 +355,7 @@ def test_rule_context_lookups():
 
 
 def test_the_base_rule_class_is_abstract():
-    from v4t_setup.plan.rules import OrderingRule
+    from stavewright.plan.rules import OrderingRule
 
     with pytest.raises(NotImplementedError):
         OrderingRule().edges(context())

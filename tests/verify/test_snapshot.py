@@ -4,17 +4,17 @@ import json
 
 import pytest
 
-from v4t_setup import clock
-from v4t_setup.apply.actions import DirectoryPayload
-from v4t_setup.apply.executor import Executor
-from v4t_setup.errors import VerifyError
-from v4t_setup.model.registry import RegistryRoot, RegistryValueType
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.target.base import ShortcutSpec
-from v4t_setup.target.memory import MemoryTarget, string_value
-from v4t_setup.verify.drift import DriftKind
-from v4t_setup.verify.reconcile import reconcile
-from v4t_setup.verify.snapshot import (
+from stavewright import clock
+from stavewright.apply.actions import DirectoryPayload
+from stavewright.apply.executor import Executor
+from stavewright.errors import VerifyError
+from stavewright.model.registry import RegistryRoot, RegistryValueType
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.target.base import ShortcutSpec
+from stavewright.target.memory import MemoryTarget, string_value
+from stavewright.verify.drift import DriftKind
+from stavewright.verify.reconcile import reconcile
+from stavewright.verify.snapshot import (
     ReadOnlyTargetError,
     Snapshot,
     capture,
@@ -107,7 +107,7 @@ def test_a_snapshot_with_no_facts_answers_with_zeroes():
 
 
 def test_a_snapshot_satisfies_the_target_protocol(commissioned):
-    from v4t_setup.target.base import TargetSystem
+    from stavewright.target.base import TargetSystem
 
     plan, target = commissioned
     assert isinstance(capture(plan, target), TargetSystem)
@@ -177,7 +177,7 @@ def test_a_reloaded_snapshot_reconciles_the_same(commissioned):
 
 def test_writing_and_reading_a_snapshot(tmp_path, commissioned):
     plan, target = commissioned
-    path = tmp_path / "LINE-PC-04.v4tsnap.json"
+    path = tmp_path / "LINE-PC-04.swsnap.json"
     capture(plan, target).write(path)
     reopened = read_snapshot(path)
     assert reopened.terminal == "LINE-PC-04"
@@ -227,7 +227,7 @@ def test_registry_values_survive_their_type(commissioned):
 
 
 def test_a_dword_survives_the_round_trip(profile):
-    from v4t_setup.target.memory import dword_value
+    from stavewright.target.memory import dword_value
 
     target = MemoryTarget()
     target.write_value(
@@ -307,7 +307,7 @@ def test_mutating_the_registry_of_a_snapshot_is_refused():
 
 
 def test_mutating_an_assembly_on_a_snapshot_is_refused():
-    from v4t_setup.target.base import AssemblyIdentity
+    from stavewright.target.base import AssemblyIdentity
 
     identity = AssemblyIdentity(name="X", version="1", public_key_token="0")
     snapshot = Snapshot()

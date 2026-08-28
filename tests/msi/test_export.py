@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.msi.export import (
+from stavewright.msi.export import (
     ENCODING,
     SUFFIX,
     ExportError,
@@ -17,7 +17,7 @@ from v4t_setup.msi.export import (
     unescape,
     write_table,
 )
-from v4t_setup.msi.tables import (
+from stavewright.msi.tables import (
     TYPE_KEY,
     TYPE_NULLABLE,
     TYPE_STRING,

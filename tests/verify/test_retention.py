@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.clock import frozen, utc
-from v4t_setup.errors import VerifyError
-from v4t_setup.verify.history import History, RunSummary
-from v4t_setup.verify.retention import (
+from stavewright.clock import frozen, utc
+from stavewright.errors import VerifyError
+from stavewright.verify.history import History, RunSummary
+from stavewright.verify.retention import (
     DEFAULT_KEEP_DAYS,
     DEFAULT_KEEP_RUNS,
     Keep,

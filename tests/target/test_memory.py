@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.model.registry import RegistryRoot, RegistryValueType
-from v4t_setup.target.base import (
+from stavewright.model.registry import RegistryRoot, RegistryValueType
+from stavewright.target.base import (
     AssemblyIdentity,
     ShortcutSpec,
     TargetError,
     TargetSystem,
 )
-from v4t_setup.target.memory import (
+from stavewright.target.memory import (
     MemoryTarget,
     dword_value,
     string_value,
 )
-from v4t_setup.util.digest import digest_bytes
-from v4t_setup.util.winpath import fold_key, fold_path
+from stavewright.util.digest import digest_bytes
+from stavewright.util.winpath import fold_key, fold_path
 
 APPDIR = r"C:\Sellenis\S-jet600"
 EXE = rf"{APPDIR}\V4T.exe"

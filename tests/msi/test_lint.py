@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.finding import Severity
-from v4t_setup.msi.cfb import read_compound_file
-from v4t_setup.msi.lint import (
+from stavewright.finding import Severity
+from stavewright.msi.cfb import read_compound_file
+from stavewright.msi.lint import (
     RULE,
     check_directory_tree,
     check_media,
@@ -15,8 +15,8 @@ from v4t_setup.msi.lint import (
     check_summary,
     lint_msi,
 )
-from v4t_setup.msi.summary import SummaryInformation
-from v4t_setup.msi.tables import Column, MsiDatabase, StringPool, Table, read_database
+from stavewright.msi.summary import SummaryInformation
+from stavewright.msi.tables import Column, MsiDatabase, StringPool, Table, read_database
 
 MSI = Path(__file__).resolve().parents[2] / "msi-quattro" / "msi-Jet600.msi"
 
@@ -66,7 +66,7 @@ def shipped():
 
 
 def test_the_shipped_installer_is_internally_consistent(shipped):
-    from v4t_setup.msi.summary import read_summary
+    from stavewright.msi.summary import read_summary
 
     db, source = shipped
     assert lint_msi(db, read_summary(source)) == []

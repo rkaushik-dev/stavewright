@@ -67,7 +67,7 @@ jobs:
       - name: test
         run: >
           python -m pytest
-          --cov=v4t_setup
+          --cov=stavewright
           --cov-report=term-missing:skip-covered
           --cov-report=xml
           --junit-xml=junit.xml
@@ -102,7 +102,7 @@ jobs:
       # 96 percent. It is there to catch a change that guts the tests, not to be
       # a target that people write assertion free tests to reach.
       - name: test with a coverage floor
-        run: python -m pytest --cov=v4t_setup --cov-report=term-missing --cov-fail-under=90
+        run: python -m pytest --cov=stavewright --cov-report=term-missing --cov-fail-under=90
 
   package:
     name: build and install the wheel
@@ -126,12 +126,12 @@ jobs:
         run: |
           python -m venv /tmp/clean
           /tmp/clean/bin/python -m pip install dist/*.whl
-          /tmp/clean/bin/v4t-setup --version
-          /tmp/clean/bin/v4t-setup checks
-          /tmp/clean/bin/v4t-setup rules
-          /tmp/clean/bin/v4t-setup formats
-          /tmp/clean/bin/v4t-setup gs1 labels
-          /tmp/clean/bin/v4t-setup gs1 parse "(01)01001000173250(21)0001"
+          /tmp/clean/bin/stavewright --version
+          /tmp/clean/bin/stavewright checks
+          /tmp/clean/bin/stavewright rules
+          /tmp/clean/bin/stavewright formats
+          /tmp/clean/bin/stavewright gs1 labels
+          /tmp/clean/bin/stavewright gs1 parse "(01)01001000173250(21)0001"
 
       # doctor is the command a support call starts with, so it has to work in
       # the one environment nobody tests by hand: a clean install with nothing
@@ -142,14 +142,14 @@ jobs:
       - name: doctor knows it has no settings file
         run: |
           cd /tmp
-          /tmp/clean/bin/v4t-setup doctor
+          /tmp/clean/bin/stavewright doctor
           set +e
-          /tmp/clean/bin/v4t-setup doctor --strict
+          /tmp/clean/bin/stavewright doctor --strict
           code=$?
           set -e
           test "$code" -eq 1 || { echo "expected --strict to fail, got $code"; exit 1; }
-          printf 'staging_root = "_staging"\n' > v4t-setup.toml
-          /tmp/clean/bin/v4t-setup doctor --strict
+          printf 'staging_root = "_staging"\n' > stavewright.toml
+          /tmp/clean/bin/stavewright doctor --strict
 
       - uses: actions/upload-artifact@v4
         with:
@@ -177,11 +177,11 @@ jobs:
       # around. If somebody edits one, this says so on the pull request rather
       # than on a bench.
       - name: read the project file
-        run: python -m v4t_setup bundle inspect setup.aip
+        run: python -m stavewright bundle inspect setup.aip
 
       - name: lint the shipped template
         run: >
-          python -m v4t_setup template lint
+          python -m stavewright template lint
           "Matricode/Quattro/Templates/T1.spf"
 
       # The shipped template has one warning, which is fine on a bench and is
@@ -190,7 +190,7 @@ jobs:
       - name: the shipped template still has its one warning
         run: |
           set +e
-          python -m v4t_setup template lint \
+          python -m stavewright template lint \
             "Matricode/Quattro/Templates/T1.spf" --strict --format json --output t1.json
           code=$?
           set -e
@@ -207,7 +207,7 @@ jobs:
       - name: the shipped GS1 data still reports its known findings
         run: |
           set +e
-          python -m v4t_setup gs1 check "Matricode/Quattro/Templates/GS1-1.txt" \
+          python -m stavewright gs1 check "Matricode/Quattro/Templates/GS1-1.txt" \
             --format json --output gs1.json
           code=$?
           set -e
@@ -223,7 +223,7 @@ jobs:
 
       # The shipped MSI is internally consistent, so this one has to stay clean.
       - name: read the built installer
-        run: python -m v4t_setup bundle msi msi-quattro/msi-Jet600.msi
+        run: python -m stavewright bundle msi msi-quattro/msi-Jet600.msi
 
       # And it was not built from the project file beside it, so this one has to
       # stay dirty. Both directions matter: a comparator that says two unrelated
@@ -231,7 +231,7 @@ jobs:
       - name: the installer still does not match the project file
         run: |
           set +e
-          python -m v4t_setup bundle match \
+          python -m stavewright bundle match \
             msi-quattro/msi-Jet600.msi setup.aip --format json --output match.json
           code=$?
           set -e
@@ -255,7 +255,7 @@ jobs:
       # and looks busy and correct until somebody reads it.
       - name: the installer does not differ from itself
         run: |
-          python -m v4t_setup bundle msi-diff \
+          python -m stavewright bundle msi-diff \
             msi-quattro/msi-Jet600.msi msi-quattro/msi-Jet600.msi \
             --format json --output self.json
           python - <<'PY'
@@ -270,13 +270,13 @@ jobs:
       # export at all because the damage shows up at install time.
       - name: export the installer tables and read them back
         run: |
-          python -m v4t_setup bundle msi-export \
+          python -m stavewright bundle msi-export \
             msi-quattro/msi-Jet600.msi --into idt
           python - <<'PY'
           import sys
           from pathlib import Path
-          from v4t_setup.msi.export import parse_idt
-          from v4t_setup.msi.tables import read_msi
+          from stavewright.msi.export import parse_idt
+          from stavewright.msi.tables import read_msi
 
           database = read_msi(Path("msi-quattro/msi-Jet600.msi"))
           for path in sorted(Path("idt").glob("*.idt")):

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.model.locale import (
+from stavewright.model.locale import (
     BASE_LANGUAGE_ID,
     UnknownLanguageError,
     all_languages,

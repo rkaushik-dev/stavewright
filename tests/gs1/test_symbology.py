@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import Gs1Error
-from v4t_setup.gs1.symbology import (
+from stavewright.errors import Gs1Error
+from stavewright.gs1.symbology import (
     DATA_MATRIX_SIDES,
     QUIET_ZONE_MODULES,
     Encoding,
@@ -14,7 +14,7 @@ from v4t_setup.gs1.symbology import (
     is_known,
     resolve,
 )
-from v4t_setup.model.profile import TerminalModel
+from stavewright.model.profile import TerminalModel
 
 
 def test_names_are_unique():
@@ -178,7 +178,7 @@ def test_a_qr_symbol_uses_its_own_version_table():
 
 
 def test_a_matrix_symbology_with_no_table_says_so():
-    from v4t_setup.gs1.symbology import Symbology
+    from stavewright.gs1.symbology import Symbology
 
     entry = Symbology("Made up", Shape.MATRIX, Encoding.BINARY, 1, 100)
     with pytest.raises(Gs1Error, match="no version table"):

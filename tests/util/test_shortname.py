@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.util.shortname import (
+from stavewright.util.shortname import (
     DefaultDir,
     ShortNameAllocator,
     format_default_dir,

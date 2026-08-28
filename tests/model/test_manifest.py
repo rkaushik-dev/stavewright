@@ -6,13 +6,13 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from v4t_setup.__about__ import MANIFEST_SCHEMA_VERSION, PRODUCT_NAME, UPGRADE_CODE
-from v4t_setup.errors import ManifestError, ManifestSchemaError
-from v4t_setup.model.manifest import Manifest, loads, read_manifest, utc_now
-from v4t_setup.model.payload import PayloadItem, PayloadKind
-from v4t_setup.model.profile import Architecture, TerminalModel
-from v4t_setup.util.digest import digest_bytes
-from v4t_setup.util.msiver import MsiVersion
+from stavewright.__about__ import MANIFEST_SCHEMA_VERSION, PRODUCT_NAME, UPGRADE_CODE
+from stavewright.errors import ManifestError, ManifestSchemaError
+from stavewright.model.manifest import Manifest, loads, read_manifest, utc_now
+from stavewright.model.payload import PayloadItem, PayloadKind
+from stavewright.model.profile import Architecture, TerminalModel
+from stavewright.util.digest import digest_bytes
+from stavewright.util.msiver import MsiVersion
 
 STAMP = datetime(2025, 5, 8, 12, 0, tzinfo=UTC)
 

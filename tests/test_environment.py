@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.__about__ import __version__
-from v4t_setup.environment import (
+from stavewright.__about__ import __version__
+from stavewright.environment import (
     MIN_TEMP_BYTES,
     MINIMUM_PYTHON,
     REQUIRED_PACKAGES,
@@ -15,7 +15,7 @@ from v4t_setup.environment import (
     check_environment,
     collect,
 )
-from v4t_setup.finding import Severity
+from stavewright.finding import Severity
 
 
 @pytest.fixture(scope="module")
@@ -56,12 +56,12 @@ def test_it_measured_the_temporary_directory(here):
 
 def test_no_settings_file_unless_one_is_given(here):
     assert here.config_file is None
-    assert collect(config_file=Path("v4t-setup.toml")).config_file == Path("v4t-setup.toml")
+    assert collect(config_file=Path("stavewright.toml")).config_file == Path("stavewright.toml")
 
 
 def test_it_describes_itself(here):
     text = here.describe()
-    assert text.startswith(f"v4t-setup {__version__}, Python ")
+    assert text.startswith(f"stavewright {__version__}, Python ")
 
 
 def test_the_facts_carry_a_line_per_package(here):
@@ -140,7 +140,7 @@ def test_no_settings_file_is_a_warning(here):
 
 
 def test_a_settings_file_says_nothing(here):
-    configured = replace(here, config_file=Path("v4t-setup.toml"))
+    configured = replace(here, config_file=Path("stavewright.toml"))
     assert not any(f.subject == "settings" for f in check_environment(configured))
 
 

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import TemplateError
-from v4t_setup.templates.fieldspec import (
+from stavewright.errors import TemplateError
+from stavewright.templates.fieldspec import (
     FieldSpec,
     FontSpec,
     find_field_specs,

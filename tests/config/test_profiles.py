@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.config.profiles import (
+from stavewright.config.profiles import (
     describe_profiles,
     is_profile_document,
     load_directory,
@@ -10,8 +10,8 @@ from v4t_setup.config.profiles import (
     read_profile,
     read_profiles,
 )
-from v4t_setup.errors import ConfigError
-from v4t_setup.model.profile import Architecture, TerminalModel
+from stavewright.errors import ConfigError
+from stavewright.model.profile import Architecture, TerminalModel
 
 SINGLE = """
 terminal_id = "LINE-PC-04"
@@ -233,9 +233,9 @@ def test_clearing_something_that_was_not_inherited_is_harmless():
 
 
 def test_loading_a_directory_skips_the_settings_file(tmp_path):
-    # A bench keeps v4t-setup.toml beside its profiles. Reading it as a profile
+    # A bench keeps stavewright.toml beside its profiles. Reading it as a profile
     # fails with a message about missing terminals that helps nobody.
-    from v4t_setup.config.settings import CONFIG_FILE_NAME
+    from stavewright.config.settings import CONFIG_FILE_NAME
 
     write(tmp_path, MINI_ONLY, "line.toml")
     write(tmp_path, 'staging_root = "_staging"\n', CONFIG_FILE_NAME)

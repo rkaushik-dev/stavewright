@@ -4,9 +4,9 @@ from datetime import date
 
 import pytest
 
-from v4t_setup.errors import LicenseError
-from v4t_setup.finding import Severity
-from v4t_setup.hasp.license import (
+from stavewright.errors import LicenseError
+from stavewright.finding import Severity
+from stavewright.hasp.license import (
     EXPIRY_WARNING_DAYS,
     FEATURE_NAMES,
     MODEL_NAMES,
@@ -16,7 +16,7 @@ from v4t_setup.hasp.license import (
     parse_key,
     required_features,
 )
-from v4t_setup.model.profile import TerminalModel
+from stavewright.model.profile import TerminalModel
 
 FULL = "HASP-0042/SJ6+TIJ/PRINT+VERIFY+MULTIHEAD/4/2026-12-31"
 BASIC = "HASP-0007/MINI/PRINT/1/-"

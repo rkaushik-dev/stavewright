@@ -19,19 +19,19 @@ import pytest
 GROUPS = ["terminal", "quality", "installer", "fleet"]
 
 FORBIDDEN = {
-    "quality": ["v4t_setup.msi.cfb", "v4t_setup.apply.executor", "v4t_setup.fleet.roster"],
-    "fleet": ["v4t_setup.msi.cfb", "v4t_setup.apply.executor", "v4t_setup.templates.spf"],
-    "installer": ["v4t_setup.apply.executor", "v4t_setup.fleet.roster", "v4t_setup.gs1.dataset"],
-    "terminal": ["v4t_setup.msi.cfb", "v4t_setup.fleet.roster"],
+    "quality": ["stavewright.msi.cfb", "stavewright.apply.executor", "stavewright.fleet.roster"],
+    "fleet": ["stavewright.msi.cfb", "stavewright.apply.executor", "stavewright.templates.spf"],
+    "installer": ["stavewright.apply.executor", "stavewright.fleet.roster", "stavewright.gs1.dataset"],
+    "terminal": ["stavewright.msi.cfb", "stavewright.fleet.roster"],
 }
 
 
 def imported_by(module: str) -> set[str]:
-    """Every v4t_setup module loaded as a side effect of importing *module*."""
+    """Every stavewright module loaded as a side effect of importing *module*."""
     script = (
         "import sys, json;"
         f"__import__('{module}');"
-        "print(json.dumps(sorted(n for n in sys.modules if n.startswith('v4t_setup'))))"
+        "print(json.dumps(sorted(n for n in sys.modules if n.startswith('stavewright'))))"
     )
     result = subprocess.run(
         [sys.executable, "-c", script],
@@ -46,14 +46,14 @@ def imported_by(module: str) -> set[str]:
 
 @pytest.mark.parametrize("group", GROUPS)
 def test_each_group_imports(group):
-    assert f"v4t_setup.report.builders.{group}" in imported_by(
-        f"v4t_setup.report.builders.{group}"
+    assert f"stavewright.report.builders.{group}" in imported_by(
+        f"stavewright.report.builders.{group}"
     )
 
 
 @pytest.mark.parametrize("group", GROUPS)
 def test_a_group_does_not_drag_in_the_others_subsystems(group):
-    loaded = imported_by(f"v4t_setup.report.builders.{group}")
+    loaded = imported_by(f"stavewright.report.builders.{group}")
     intruders = [name for name in FORBIDDEN[group] if name in loaded]
     assert intruders == [], f"{group} pulled in {intruders}"
 
@@ -61,24 +61,24 @@ def test_a_group_does_not_drag_in_the_others_subsystems(group):
 def test_the_package_itself_pulls_in_no_builders():
     # There is deliberately no re-export in __init__, so importing the package
     # gets you a docstring and nothing else.
-    loaded = imported_by("v4t_setup.report.builders")
-    assert not any(name.startswith("v4t_setup.report.builders.") for name in loaded)
+    loaded = imported_by("stavewright.report.builders")
+    assert not any(name.startswith("stavewright.report.builders.") for name in loaded)
 
 
 def test_the_shared_helpers_pull_in_nothing():
-    loaded = imported_by("v4t_setup.report.shared")
-    assert loaded == {"v4t_setup", "v4t_setup.report", "v4t_setup.report.shared"}
+    loaded = imported_by("stavewright.report.shared")
+    assert loaded == {"stavewright", "stavewright.report", "stavewright.report.shared"}
 
 
 def test_importing_the_package_itself_loads_nothing():
     # The exports are lazy. This is what makes everything above possible: the
     # top level __init__ is the first file Python loads for any submodule, and
     # written eagerly it pulled in forty eight of them.
-    assert imported_by("v4t_setup") == {"v4t_setup"}
+    assert imported_by("stavewright") == {"stavewright"}
 
 
 def test_an_export_still_resolves():
-    script = "import v4t_setup; print(v4t_setup.build_plan.__name__)"
+    script = "import stavewright; print(stavewright.build_plan.__name__)"
     result = subprocess.run(
         [sys.executable, "-c", script], capture_output=True, text=True, check=True
     )
@@ -87,9 +87,9 @@ def test_an_export_still_resolves():
 
 def test_a_name_that_is_not_exported_raises_attribute_error():
     script = (
-        "import v4t_setup\n"
+        "import stavewright\n"
         "try:\n"
-        "    v4t_setup.nonsense\n"
+        "    stavewright.nonsense\n"
         "except AttributeError as exc:\n"
         "    print(exc)\n"
     )
@@ -100,7 +100,7 @@ def test_a_name_that_is_not_exported_raises_attribute_error():
 
 
 def test_dir_lists_the_exports():
-    script = "import v4t_setup; print(len(dir(v4t_setup)), 'build_plan' in dir(v4t_setup))"
+    script = "import stavewright; print(len(dir(stavewright)), 'build_plan' in dir(stavewright))"
     result = subprocess.run(
         [sys.executable, "-c", script], capture_output=True, text=True, check=True
     )
@@ -111,6 +111,6 @@ def test_dir_lists_the_exports():
 
 def test_the_quality_group_is_much_cheaper_than_it_was():
     # The old single module, on top of an eager package init, loaded better
-    # than sixty v4t_setup modules to print a GS1 report. This is the number
+    # than sixty stavewright modules to print a GS1 report. This is the number
     # that matters, not the list.
-    assert len(imported_by("v4t_setup.report.builders.quality")) < 30
+    assert len(imported_by("stavewright.report.builders.quality")) < 30

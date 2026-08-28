@@ -4,8 +4,8 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from v4t_setup.errors import ManifestError
-from v4t_setup.model.fileentry import (
+from stavewright.errors import ManifestError
+from stavewright.model.fileentry import (
     FileAttributes,
     FileEntry,
     duplicate_target_names,

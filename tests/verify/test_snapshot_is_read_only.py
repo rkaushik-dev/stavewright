@@ -16,9 +16,9 @@ import inspect
 
 import pytest
 
-from v4t_setup.model.registry import DecodedValue, RegistryRoot, RegistryValueType
-from v4t_setup.target.base import AssemblyIdentity, ShortcutSpec, TargetSystem
-from v4t_setup.verify.snapshot import ReadOnlyTargetError, Snapshot
+from stavewright.model.registry import DecodedValue, RegistryRoot, RegistryValueType
+from stavewright.target.base import AssemblyIdentity, ShortcutSpec, TargetSystem
+from stavewright.verify.snapshot import ReadOnlyTargetError, Snapshot
 
 IDENTITY = AssemblyIdentity(
     name="Microsoft.VC80.CRT",

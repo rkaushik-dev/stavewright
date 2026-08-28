@@ -5,15 +5,15 @@ from datetime import date
 
 import pytest
 
-from v4t_setup.errors import ConfigError
-from v4t_setup.fleet.roster import (
+from stavewright.errors import ConfigError
+from stavewright.fleet.roster import (
     Criticality,
     Roster,
     ShiftPattern,
     parse_roster,
     read_roster,
 )
-from v4t_setup.model.profile import TerminalProfile
+from stavewright.model.profile import TerminalProfile
 
 TERMINALS = ["LINE-PC-04", "LINE-PC-05", "LINE-PC-06", "BENCH-01"]
 

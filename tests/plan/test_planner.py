@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import DirectoryResolutionError, ManifestError, PlanCycleError
-from v4t_setup.model.manifest import Manifest
-from v4t_setup.model.payload import PayloadItem, PayloadKind
-from v4t_setup.plan.planner import (
+from stavewright.errors import DirectoryResolutionError, ManifestError, PlanCycleError
+from stavewright.model.manifest import Manifest
+from stavewright.model.payload import PayloadItem, PayloadKind
+from stavewright.plan.planner import (
     KIND_PRIORITY,
     STEP_KIND_FOR,
     build_graph,
     build_plan,
     explain_order,
 )
-from v4t_setup.plan.rules import OrderingRule
-from v4t_setup.plan.steps import StepKind
+from stavewright.plan.rules import OrderingRule
+from stavewright.plan.steps import StepKind
 
 
 def plan_for(manifest, profile, directory_table, **kwargs):
@@ -280,7 +280,7 @@ def test_a_rule_that_creates_a_cycle_is_reported(bundle_manifest, profile, direc
 def test_build_graph_ignores_edges_to_items_that_were_filtered_out(
     bundle_manifest, profile_mini
 ):
-    from v4t_setup.model.payload import select
+    from stavewright.model.payload import select
 
     applicable = select(bundle_manifest.items, profile_mini)
     graph = build_graph(applicable)
@@ -301,7 +301,7 @@ def test_stamping_is_on_by_default(bundle_manifest, profile, directory_table):
 
 
 def test_explain_order_covers_every_step(bundle_manifest, profile, directory_table):
-    from v4t_setup.model.payload import select
+    from stavewright.model.payload import select
 
     plan = plan_for(bundle_manifest, profile, directory_table).plan
     graph = build_graph(select(bundle_manifest.items, profile))
@@ -311,7 +311,7 @@ def test_explain_order_covers_every_step(bundle_manifest, profile, directory_tab
 
 
 def test_explain_order_names_the_reason(bundle_manifest, profile, directory_table):
-    from v4t_setup.model.payload import select
+    from stavewright.model.payload import select
 
     plan = plan_for(bundle_manifest, profile, directory_table).plan
     graph = build_graph(select(bundle_manifest.items, profile))

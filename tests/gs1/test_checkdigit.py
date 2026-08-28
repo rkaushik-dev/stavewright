@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import Gs1Error
-from v4t_setup.gs1.checkdigit import (
+from stavewright.errors import Gs1Error
+from stavewright.gs1.checkdigit import (
     gtin_indicator,
     is_variable_measure,
     mod10_check_digit,

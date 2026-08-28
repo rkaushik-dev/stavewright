@@ -15,9 +15,9 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Finding, Severity
-from v4t_setup.report.document import Report, findings_section, lines_section
-from v4t_setup.report.render import to_text
+from stavewright.finding import Finding, Severity
+from stavewright.report.document import Report, findings_section, lines_section
+from stavewright.report.render import to_text
 
 LONG_PATH = "C:" + "\\averylongdirectoryname" * 6 + "\\V4T.exe"
 

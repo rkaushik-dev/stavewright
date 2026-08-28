@@ -4,8 +4,8 @@ from datetime import timedelta
 
 import pytest
 
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.plan.cost import (
+from stavewright.model.profile import TerminalProfile
+from stavewright.plan.cost import (
     BYTES_PER_SECOND,
     DEFAULT_SECONDS,
     SECONDS,
@@ -15,7 +15,7 @@ from v4t_setup.plan.cost import (
     estimate_plan,
     step_seconds,
 )
-from v4t_setup.plan.steps import Plan, Step, StepKind
+from stavewright.plan.steps import Plan, Step, StepKind
 
 PROFILE = TerminalProfile(terminal_id="LINE-PC-04", fpga_revision="PCDC-1.4")
 

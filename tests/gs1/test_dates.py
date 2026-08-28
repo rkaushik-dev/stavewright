@@ -4,8 +4,8 @@ from datetime import date
 
 import pytest
 
-from v4t_setup.errors import Gs1Error
-from v4t_setup.gs1.dates import (
+from stavewright.errors import Gs1Error
+from stavewright.gs1.dates import (
     Gs1Date,
     apply_century_window,
     format_date,

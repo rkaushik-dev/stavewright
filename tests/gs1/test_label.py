@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Severity
-from v4t_setup.gs1.label import (
+from stavewright.finding import Severity
+from stavewright.gs1.label import (
     RULE,
     RULES,
     SSCC_LENGTH,
@@ -14,7 +14,7 @@ from v4t_setup.gs1.label import (
     check_sscc,
     describe_rules,
 )
-from v4t_setup.gs1.parse import parse
+from stavewright.gs1.parse import parse
 
 # A real SSCC: 17 digits and the mod 10 check digit that follows from them.
 GOOD_SSCC = "006141411234567890"
@@ -221,14 +221,14 @@ def test_the_canonical_pallet_label_passes_the_element_string_rules_too():
     # (00) and (02) are both primary identifiers and the validator refused the
     # pair until this module was written. A pallet label that the label rules
     # accept and the element string rules refuse would be useless.
-    from v4t_setup.gs1.validate import validate
+    from stavewright.gs1.validate import validate
 
     assert validate(parse(PALLET)) == []
     assert check_label(spec(LabelKind.PALLET, PALLET)) == []
 
 
 def test_two_primary_identifiers_that_are_not_that_pair_are_still_refused():
-    from v4t_setup.gs1.validate import validate
+    from stavewright.gs1.validate import validate
 
     findings = validate(parse("(01)01001000173250(02)01001000173250"))
     assert any("more than one primary identifier" in f.message for f in findings)
@@ -242,21 +242,21 @@ def row(item: str, *, case: str = "", index: int = 1) -> str:
 
 
 def dataset_of(*rows: str):
-    from v4t_setup.gs1.dataset import EXPECTED_COLUMNS, parse_dataset
+    from stavewright.gs1.dataset import EXPECTED_COLUMNS, parse_dataset
 
     header = ",".join(EXPECTED_COLUMNS)
     return parse_dataset("\n".join([header, *rows]) + "\n")
 
 
 def test_a_data_file_whose_rows_are_good_item_marks():
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.label import check_dataset
 
     data = dataset_of(row("(01)01001000173250(21)0001"))
     assert check_dataset(data) == []
 
 
 def test_a_data_file_whose_rows_have_no_serial():
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.label import check_dataset
 
     data = dataset_of(row("(01)01001000173250"))
     findings = check_dataset(data)
@@ -266,7 +266,7 @@ def test_a_data_file_whose_rows_have_no_serial():
 
 
 def test_the_row_check_stops_after_the_limit():
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.label import check_dataset
 
     rows = [row("(01)01001000173250", index=n) for n in range(20)]
     findings = check_dataset(dataset_of(*rows), limit=3)
@@ -275,7 +275,7 @@ def test_the_row_check_stops_after_the_limit():
 
 
 def test_no_limit_checks_every_row():
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.label import check_dataset
 
     rows = [row("(01)01001000173250", index=n) for n in range(8)]
     findings = check_dataset(dataset_of(*rows), limit=0)
@@ -286,27 +286,27 @@ def test_no_limit_checks_every_row():
 def test_a_row_that_will_not_parse_is_left_to_the_dataset_rules():
     # Saying it twice in one report helps nobody, and the dataset rules
     # already report it with the column name.
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.label import check_dataset
 
     data = dataset_of(row("not an element string"))
     assert check_dataset(data) == []
 
 
 def test_a_row_with_no_element_string_is_skipped():
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.label import check_dataset
 
     assert check_dataset(dataset_of(row(""))) == []
 
 
 def test_the_case_column_is_read_for_a_case_label():
-    from v4t_setup.gs1.label import LabelKind, check_dataset
+    from stavewright.gs1.label import LabelKind, check_dataset
 
     data = dataset_of(row("", case="(01)01001000173250(10)AD47(30)12"))
     assert check_dataset(data, LabelKind.CASE) == []
 
 
 def test_a_customer_requirement_reaches_every_row():
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.label import check_dataset
 
     data = dataset_of(row("(01)01001000173250(21)0001"))
     findings = check_dataset(data, extra_required=("17",))
@@ -319,8 +319,8 @@ def test_the_shipped_file_reads_as_sound_item_marks():
     # question with a separate answer.
     from pathlib import Path
 
-    from v4t_setup.gs1.dataset import read_dataset
-    from v4t_setup.gs1.label import check_dataset
+    from stavewright.gs1.dataset import read_dataset
+    from stavewright.gs1.label import check_dataset
 
     root = Path(__file__).resolve().parents[2]
     data = read_dataset(root / "Matricode" / "Quattro" / "Templates" / "GS1-1.txt")

@@ -12,10 +12,10 @@ from pathlib import Path, PurePosixPath
 
 import pytest
 
-from v4t_setup.model.directory import DirectoryRow, DirectoryTable
-from v4t_setup.model.manifest import Manifest
-from v4t_setup.model.payload import PayloadItem, PayloadKind
-from v4t_setup.model.profile import Architecture, TerminalModel, TerminalProfile
+from stavewright.model.directory import DirectoryRow, DirectoryTable
+from stavewright.model.manifest import Manifest
+from stavewright.model.payload import PayloadItem, PayloadKind
+from stavewright.model.profile import Architecture, TerminalModel, TerminalProfile
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 AIP_PATH = REPO_ROOT / "setup.aip"

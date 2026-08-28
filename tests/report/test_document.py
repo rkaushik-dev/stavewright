@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Finding, Severity
-from v4t_setup.report.document import (
+from stavewright.finding import Finding, Severity
+from stavewright.report.document import (
     Outcome,
     Report,
     Section,

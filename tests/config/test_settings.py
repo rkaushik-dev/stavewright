@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.config.settings import (
+from stavewright.config.settings import (
     CONFIG_FILE_NAME,
     Settings,
     find_config_file,
@@ -13,7 +13,7 @@ from v4t_setup.config.settings import (
     merge,
     read_config_file,
 )
-from v4t_setup.errors import ConfigError
+from stavewright.errors import ConfigError
 
 SITE_FILE = """
 staging_root = "D:/commissioning/_staging"
@@ -29,7 +29,7 @@ SECTIONED_FILE = """
 [tool.something-else]
 setting = 1
 
-[v4t-setup]
+[stavewright]
 staging_root = "E:/stage"
 log_level = "DEBUG"
 """
@@ -79,39 +79,39 @@ def test_a_file_that_is_not_toml_is_reported(tmp_path):
 
 
 def test_the_environment_is_read():
-    layer = from_environment({"V4T_LOG_LEVEL": "DEBUG", "PATH": "/usr/bin"})
+    layer = from_environment({"STAVEWRIGHT_LOG_LEVEL": "DEBUG", "PATH": "/usr/bin"})
     assert layer == {"log_level": "DEBUG"}
 
 
 @pytest.mark.parametrize("text", ["true", "TRUE", "yes", "on", "1"])
 def test_true_words_become_booleans(text):
-    assert from_environment({"V4T_REQUIRE_SIGNATURE": text})["require_signature"] is True
+    assert from_environment({"STAVEWRIGHT_REQUIRE_SIGNATURE": text})["require_signature"] is True
 
 
 @pytest.mark.parametrize("text", ["false", "no", "off", "0"])
 def test_false_words_become_booleans(text):
-    assert from_environment({"V4T_REQUIRE_SIGNATURE": text})["require_signature"] is False
+    assert from_environment({"STAVEWRIGHT_REQUIRE_SIGNATURE": text})["require_signature"] is False
 
 
 def test_digits_become_integers():
-    assert from_environment({"V4T_INSTALL_LEVEL": "200"})["install_level"] == 200
+    assert from_environment({"STAVEWRIGHT_INSTALL_LEVEL": "200"})["install_level"] == 200
 
 
 def test_a_negative_number_becomes_an_integer():
-    assert from_environment({"V4T_REFERENCE_YEAR": "-1"})["reference_year"] == -1
+    assert from_environment({"STAVEWRIGHT_REFERENCE_YEAR": "-1"})["reference_year"] == -1
 
 
 def test_anything_else_stays_a_string():
-    assert from_environment({"V4T_STAGING_ROOT": "D:/stage"})["staging_root"] == "D:/stage"
+    assert from_environment({"STAVEWRIGHT_STAGING_ROOT": "D:/stage"})["staging_root"] == "D:/stage"
 
 
 def test_a_bare_prefix_is_ignored():
-    assert from_environment({"V4T_": "x"}) == {}
+    assert from_environment({"STAVEWRIGHT_": "x"}) == {}
 
 
 def test_the_environment_beats_a_file(tmp_path):
     settings = load_settings(
-        files=[write(tmp_path, SITE_FILE)], environ={"V4T_INSTALL_LEVEL": "300"}
+        files=[write(tmp_path, SITE_FILE)], environ={"STAVEWRIGHT_INSTALL_LEVEL": "300"}
     )
     assert settings.install_level == 300
 
@@ -119,7 +119,7 @@ def test_the_environment_beats_a_file(tmp_path):
 def test_overrides_beat_the_environment(tmp_path):
     settings = load_settings(
         files=[write(tmp_path, SITE_FILE)],
-        environ={"V4T_INSTALL_LEVEL": "300"},
+        environ={"STAVEWRIGHT_INSTALL_LEVEL": "300"},
         overrides={"install_level": 400},
     )
     assert settings.install_level == 400
@@ -127,7 +127,7 @@ def test_overrides_beat_the_environment(tmp_path):
 
 def test_a_none_override_does_not_win():
     settings = load_settings(
-        environ={"V4T_INSTALL_LEVEL": "300"}, overrides={"install_level": None}
+        environ={"STAVEWRIGHT_INSTALL_LEVEL": "300"}, overrides={"install_level": None}
     )
     assert settings.install_level == 300
 
@@ -181,12 +181,12 @@ def test_a_reference_year_out_of_range_is_refused():
 
 
 def test_languages_from_the_environment_split_on_commas():
-    settings = load_settings(environ={"V4T_DEFAULT_LANGUAGES": "pl-PL, ru-RU"})
+    settings = load_settings(environ={"STAVEWRIGHT_DEFAULT_LANGUAGES": "pl-PL, ru-RU"})
     assert settings.default_languages == ("pl-PL", "ru-RU")
 
 
 def test_an_empty_language_string_is_no_languages():
-    assert load_settings(environ={"V4T_DEFAULT_LANGUAGES": ""}).default_languages == ()
+    assert load_settings(environ={"STAVEWRIGHT_DEFAULT_LANGUAGES": ""}).default_languages == ()
 
 
 def test_waiver_reasons_are_coerced_to_strings():

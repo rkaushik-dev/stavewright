@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Severity
-from v4t_setup.gs1.ai import FNC1
-from v4t_setup.gs1.hri import (
+from stavewright.finding import Severity
+from stavewright.gs1.ai import FNC1
+from stavewright.gs1.hri import (
     MAX_HRI_CHARACTERS,
     check_element_string,
     check_hri,
@@ -12,7 +12,7 @@ from v4t_setup.gs1.hri import (
     render,
     render_lines,
 )
-from v4t_setup.gs1.parse import parse
+from stavewright.gs1.parse import parse
 
 SHIPPED = "(01)00125682945601(21)0001"
 DATED = "(01)01001000173250(15)150807"

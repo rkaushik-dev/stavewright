@@ -4,17 +4,17 @@ from pathlib import Path, PurePosixPath
 
 import pytest
 
-from v4t_setup.errors import VerifyError
-from v4t_setup.finding import Severity
-from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-from v4t_setup.fleet.sweep import find_snapshots, sweep
-from v4t_setup.model.directory import DirectoryRow, DirectoryTable
-from v4t_setup.model.manifest import Manifest
-from v4t_setup.model.payload import PayloadItem, PayloadKind
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.plan.planner import build_plan
-from v4t_setup.target.memory import MemoryTarget
-from v4t_setup.verify.snapshot import capture
+from stavewright.errors import VerifyError
+from stavewright.finding import Severity
+from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+from stavewright.fleet.sweep import find_snapshots, sweep
+from stavewright.model.directory import DirectoryRow, DirectoryTable
+from stavewright.model.manifest import Manifest
+from stavewright.model.payload import PayloadItem, PayloadKind
+from stavewright.model.profile import TerminalProfile
+from stavewright.plan.planner import build_plan
+from stavewright.target.memory import MemoryTarget
+from stavewright.verify.snapshot import capture
 
 TERMINALS = ("LINE-PC-04", "LINE-PC-05")
 

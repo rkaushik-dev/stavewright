@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import ManifestError
-from v4t_setup.model.component import (
+from stavewright.errors import ManifestError
+from stavewright.model.component import (
     Component,
     ComponentAttributes,
     Feature,

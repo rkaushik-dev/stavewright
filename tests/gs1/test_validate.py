@@ -4,8 +4,8 @@ from datetime import date
 
 import pytest
 
-from v4t_setup.gs1.parse import parse
-from v4t_setup.gs1.validate import (
+from stavewright.gs1.parse import parse
+from stavewright.gs1.validate import (
     CheckDigitRule,
     DateOrderRule,
     DateSanityRule,

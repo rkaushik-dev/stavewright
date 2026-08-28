@@ -4,8 +4,8 @@ from datetime import timedelta
 
 import pytest
 
-from v4t_setup.clock import utc
-from v4t_setup.report import format as fmt
+from stavewright.clock import utc
+from stavewright.report import format as fmt
 
 WHEN = utc(2025, 6, 3, 1, 30)
 
@@ -77,12 +77,12 @@ def test_blank_is_the_empty_string():
 
 
 def test_two_tables_in_one_report_agree_about_a_duration():
-    from v4t_setup.clock import utc as at
-    from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-    from v4t_setup.fleet.schedule import Window, schedule_rollout
-    from v4t_setup.fleet.waves import plan_rollout
-    from v4t_setup.model.profile import TerminalProfile
-    from v4t_setup.report.builders.fleet import schedule_report
+    from stavewright.clock import utc as at
+    from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+    from stavewright.fleet.schedule import Window, schedule_rollout
+    from stavewright.fleet.waves import plan_rollout
+    from stavewright.model.profile import TerminalProfile
+    from stavewright.report.builders.fleet import schedule_report
 
     entry = RosterEntry(
         terminal_id="A-01",

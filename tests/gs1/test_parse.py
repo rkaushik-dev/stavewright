@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import Gs1Error
-from v4t_setup.gs1.ai import FNC1
-from v4t_setup.gs1.parse import parse, parse_bracketed, parse_concatenated
+from stavewright.errors import Gs1Error
+from stavewright.gs1.ai import FNC1
+from stavewright.gs1.parse import parse, parse_bracketed, parse_concatenated
 
 # Both element strings that appear in the shipped GS1-1.txt.
 SHIPPED_A = "(01)00125682945601(21)0001"

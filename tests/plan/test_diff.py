@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.plan.diff import (
+from stavewright.plan.diff import (
     COMPARED_FIELDS,
     Change,
     PlanDiff,
@@ -10,8 +10,8 @@ from v4t_setup.plan.diff import (
     crossed_irreversible,
     diff_plans,
 )
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.util.digest import digest_bytes
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.util.digest import digest_bytes
 
 APPDIR = r"C:\Sellenis\S-jet600"
 
@@ -278,8 +278,8 @@ def test_a_bitstream_added_in_the_new_plan_is_not_a_crossing(profile):
 
 
 def test_a_realistic_bundle_bump(bundle_manifest, profile, directory_table):
-    from v4t_setup.model.manifest import Manifest
-    from v4t_setup.plan.planner import build_plan
+    from stavewright.model.manifest import Manifest
+    from stavewright.plan.planner import build_plan
 
     before = build_plan(bundle_manifest, profile, directory_table, stamp=False).plan
     bumped = Manifest(items=list(bundle_manifest.items))
@@ -296,7 +296,7 @@ def test_a_language_added_to_the_manifest_is_no_work_for_this_terminal(
 ):
     # The manifest changed, the plan for a terminal that does not install that
     # language did not. This is why the diff is over plans and not manifests.
-    from v4t_setup.plan.planner import build_plan
+    from stavewright.plan.planner import build_plan
 
     before = build_plan(bundle_manifest, profile, directory_table, stamp=False).plan
     after = build_plan(bundle_manifest, profile, directory_table, stamp=False).plan

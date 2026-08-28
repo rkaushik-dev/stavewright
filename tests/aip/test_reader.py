@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.aip.reader import AipRow, parse_aip, read_aip
-from v4t_setup.errors import AipParseError, AipTableMissingError
+from stavewright.aip.reader import AipRow, parse_aip, read_aip
+from stavewright.errors import AipParseError, AipTableMissingError
 
 MINIMAL = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <DOCUMENT Type="Advanced Installer" CreateVersion="12.2.1" version="12.6.1"

@@ -15,8 +15,8 @@ import click
 import pytest
 from typer.main import get_command
 
-from v4t_setup.cli import options
-from v4t_setup.cli.main import app
+from stavewright.cli import options
+from stavewright.cli.main import app
 
 SHARED = {
     "--format": options.FORMAT,
@@ -86,7 +86,7 @@ def test_format_is_on_most_commands():
 
 
 def test_the_format_help_names_every_renderer():
-    from v4t_setup.report.render import RENDERERS
+    from stavewright.report.render import RENDERERS
 
     help_text = options.FORMAT.help or ""
     for name in RENDERERS:

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.gs1.dataset import EXPECTED_COLUMNS, parse_dataset, read_dataset
-from v4t_setup.gs1.datasetlint import (
+from stavewright.gs1.dataset import EXPECTED_COLUMNS, parse_dataset, read_dataset
+from stavewright.gs1.datasetlint import (
     AlignmentMarkRule,
     ColumnAgreementRule,
     DuplicateSerialRule,
@@ -16,7 +16,7 @@ from v4t_setup.gs1.datasetlint import (
     lint_dataset,
     summarise,
 )
-from v4t_setup.gs1.validate import MarkingContext, Severity
+from stavewright.gs1.validate import MarkingContext, Severity
 
 HEADER = ",".join(EXPECTED_COLUMNS)
 CONTEXT = MarkingContext(reference_year=2016)

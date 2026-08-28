@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from v4t_setup.apply.journal import (
+from stavewright.apply.journal import (
     GENESIS,
     Journal,
     Record,
@@ -17,7 +17,7 @@ from v4t_setup.apply.journal import (
     replay,
     verify_chain,
 )
-from v4t_setup.errors import JournalError
+from stavewright.errors import JournalError
 
 
 @pytest.fixture

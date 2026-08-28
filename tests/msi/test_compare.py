@@ -14,10 +14,10 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.aip.normalize import normalise
-from v4t_setup.aip.reader import read_aip
-from v4t_setup.finding import Severity
-from v4t_setup.msi.compare import (
+from stavewright.aip.normalize import normalise
+from stavewright.aip.reader import read_aip
+from stavewright.finding import Severity
+from stavewright.msi.compare import (
     RULE,
     SAMPLE_SIZE,
     compare_identity,
@@ -26,7 +26,7 @@ from v4t_setup.msi.compare import (
     compare_tables,
     is_same_product,
 )
-from v4t_setup.msi.tables import read_msi
+from stavewright.msi.tables import read_msi
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AIP = REPO_ROOT / "setup.aip"
@@ -193,6 +193,6 @@ def test_a_sample_stops_at_the_cap():
 
 
 def test_a_table_the_msi_does_not_have_reads_as_empty(project, database):
-    from v4t_setup.msi.compare import _column
+    from stavewright.msi.compare import _column
 
     assert _column(database, "NotATable", "Anything") == set()

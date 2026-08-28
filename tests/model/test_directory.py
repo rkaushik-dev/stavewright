@@ -4,8 +4,8 @@ from pathlib import PureWindowsPath
 
 import pytest
 
-from v4t_setup.errors import DirectoryCycleError, DirectoryResolutionError
-from v4t_setup.model.directory import DirectoryRow, DirectoryTable
+from stavewright.errors import DirectoryCycleError, DirectoryResolutionError
+from stavewright.model.directory import DirectoryRow, DirectoryTable
 
 
 def win(text: str) -> PureWindowsPath:

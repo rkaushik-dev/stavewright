@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.apply.actions import (
+from stavewright.apply.actions import (
     ACTIONS,
     CopyFileAction,
     CreateDirectoryAction,
@@ -19,11 +19,11 @@ from v4t_setup.apply.actions import (
     WriteRegistryAction,
     action_for,
 )
-from v4t_setup.errors import ApplyError
-from v4t_setup.model.registry import RegistryRoot, RegistryValueType
-from v4t_setup.plan.steps import Step, StepKind
-from v4t_setup.target.memory import MemoryTarget, string_value
-from v4t_setup.util.digest import digest_bytes
+from stavewright.errors import ApplyError
+from stavewright.model.registry import RegistryRoot, RegistryValueType
+from stavewright.plan.steps import Step, StepKind
+from stavewright.target.memory import MemoryTarget, string_value
+from stavewright.util.digest import digest_bytes
 
 APPDIR = r"C:\Sellenis\S-jet600"
 MFC_DETAIL = {
@@ -240,7 +240,7 @@ def test_an_assembly_step_without_an_identity_is_refused(target, payload):
 
 
 def test_install_policy_needs_its_assembly(target, payload):
-    from v4t_setup.target.base import TargetError
+    from stavewright.target.base import TargetError
 
     s = step(StepKind.INSTALL_SXS_POLICY, source="payload/winsxs", detail=MFC_DETAIL)
     with pytest.raises(TargetError, match="no assembly for policy"):
@@ -426,7 +426,7 @@ def test_a_redistributable_with_a_marker_can_be_detected(target, payload):
 
 
 def test_a_reboot_required_exit_code_is_accepted(target, payload):
-    from v4t_setup.util.winpath import fold_path
+    from stavewright.util.winpath import fold_path
 
     action = RunRedistributableAction()
     s = step(
@@ -439,7 +439,7 @@ def test_a_reboot_required_exit_code_is_accepted(target, payload):
 
 
 def test_an_unexpected_exit_code_is_an_error(target, payload):
-    from v4t_setup.util.winpath import fold_path
+    from stavewright.util.winpath import fold_path
 
     action = RunRedistributableAction()
     s = step(
@@ -510,7 +510,7 @@ def test_reverting_something_that_was_never_applied_is_safe(target, payload):
 
 
 def test_the_base_action_is_abstract(target, payload):
-    from v4t_setup.apply.actions import Action
+    from stavewright.apply.actions import Action
 
     for method in ("is_satisfied", "apply", "revert"):
         with pytest.raises(NotImplementedError):

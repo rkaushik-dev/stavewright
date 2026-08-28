@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from v4t_setup.clock import utc
-from v4t_setup.errors import PlanError
-from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-from v4t_setup.fleet.schedule import (
+from stavewright.clock import utc
+from stavewright.errors import PlanError
+from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+from stavewright.fleet.schedule import (
     DEFAULT_CHANGEOVER,
     DEFAULT_PER_MACHINE,
     Window,
@@ -15,8 +15,8 @@ from v4t_setup.fleet.schedule import (
     schedule_rollout,
     wave_duration,
 )
-from v4t_setup.fleet.waves import Rollout, Wave, plan_rollout
-from v4t_setup.model.profile import TerminalProfile
+from stavewright.fleet.waves import Rollout, Wave, plan_rollout
+from stavewright.model.profile import TerminalProfile
 
 
 def entry(terminal_id: str, line: str, position: int = 1, criticality=Criticality.NORMAL):

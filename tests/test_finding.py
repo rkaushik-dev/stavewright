@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import (
+from stavewright.finding import (
     SEVERITY_ORDER,
     Finding,
     Severity,
@@ -183,14 +183,14 @@ def test_only_filters_by_severity():
 
 
 def test_the_gs1_validator_still_exports_the_shared_names():
-    from v4t_setup.gs1 import validate as gs1_validate
+    from stavewright.gs1 import validate as gs1_validate
 
     assert gs1_validate.Finding is Finding
     assert gs1_validate.Severity is Severity
 
 
 def test_the_template_linter_uses_the_same_finding():
-    from v4t_setup.templates import linter
+    from stavewright.templates import linter
 
     result = linter.StructureRule().check(
         linter.SpfTemplate(blocks=[]), linter.TemplateContext()
@@ -199,8 +199,8 @@ def test_the_template_linter_uses_the_same_finding():
 
 
 def test_the_dataset_linter_uses_the_same_finding():
-    from v4t_setup.gs1.dataset import EXPECTED_COLUMNS, parse_dataset
-    from v4t_setup.gs1.datasetlint import lint_dataset
+    from stavewright.gs1.dataset import EXPECTED_COLUMNS, parse_dataset
+    from stavewright.gs1.datasetlint import lint_dataset
 
     header = ",".join(EXPECTED_COLUMNS)
     row = "1,0001,B,AB:08,00125682945601,A,(01)00125682945601(21)0001,(01)01001000173250(15)150807"

@@ -11,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.model.registry import DecodedValue, RegistryRoot, RegistryValueType
-from v4t_setup.target.base import AssemblyIdentity, ShortcutSpec, TargetError, TargetSystem
-from v4t_setup.target.windows import (
+from stavewright.model.registry import DecodedValue, RegistryRoot, RegistryValueType
+from stavewright.target.base import AssemblyIdentity, ShortcutSpec, TargetError, TargetSystem
+from stavewright.target.windows import (
     IS_WINDOWS,
     WindowsTarget,
     hive_handle,
@@ -101,7 +101,7 @@ def test_removing_a_directory_through_remove_file_does_nothing(sandbox):
 
 
 def test_file_digest(sandbox):
-    from v4t_setup.util.digest import digest_bytes
+    from stavewright.util.digest import digest_bytes
 
     assert sandbox.file_digest(r"C:\Sellenis\V4T.exe") is None
     sandbox.write_file(r"C:\Sellenis\V4T.exe", b"MZ")
@@ -260,7 +260,7 @@ def test_reading_a_value_that_is_not_there_is_none():
 @pytest.mark.windows
 def test_a_round_trip_through_the_real_registry():
     target = WindowsTarget()
-    key = r"Software\Sellenis\V4TSetupTest"
+    key = r"Software\Sellenis\StavewrightTest"
     try:
         assert target.write_value(
             RegistryRoot.CURRENT_USER, key, "Version", DecodedValue(RegistryValueType.STRING, "1.0.0")
@@ -279,7 +279,7 @@ def test_a_round_trip_through_the_real_registry():
 @pytest.mark.windows
 def test_a_dword_round_trips_through_the_real_registry():
     target = WindowsTarget()
-    key = r"Software\Sellenis\V4TSetupTest"
+    key = r"Software\Sellenis\StavewrightTest"
     try:
         target.write_value(
             RegistryRoot.CURRENT_USER, key, "Heads", DecodedValue(RegistryValueType.DWORD, 4)

@@ -5,7 +5,7 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from v4t_setup.util.digest import (
+from stavewright.util.digest import (
     Digest,
     digest_bytes,
     digest_file,

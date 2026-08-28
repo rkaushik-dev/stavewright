@@ -4,8 +4,8 @@ from datetime import datetime
 
 import pytest
 
-from v4t_setup.errors import TemplateError
-from v4t_setup.templates.spf import (
+from stavewright.errors import TemplateError
+from stavewright.templates.spf import (
     BLOCK_MARKER,
     MAGIC,
     SpfBlock,

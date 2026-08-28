@@ -19,8 +19,8 @@ import click
 import pytest
 import typer
 
-from v4t_setup.cli.common import EXIT_FINDINGS, EXIT_OK
-from v4t_setup.cli.main import app
+from stavewright.cli.common import EXIT_FINDINGS, EXIT_OK
+from stavewright.cli.main import app
 
 from .conftest import GS1_DATA, TEMPLATE
 
@@ -129,7 +129,7 @@ def test_the_helper_is_what_ends_a_reporting_command():
     """
     from pathlib import Path
 
-    root = Path(__file__).resolve().parents[2] / "src" / "v4t_setup" / "cli"
+    root = Path(__file__).resolve().parents[2] / "src" / "stavewright" / "cli"
     offenders = [
         path.name
         for path in sorted(root.glob("cmd_*.py"))

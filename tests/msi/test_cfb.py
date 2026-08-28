@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.msi.cfb import (
+from stavewright.msi.cfb import (
     DIFAT_IN_HEADER,
     ENDOFCHAIN,
     HEADER_SIZE,

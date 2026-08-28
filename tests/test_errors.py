@@ -4,8 +4,8 @@ import inspect
 
 import pytest
 
-from v4t_setup import errors
-from v4t_setup.errors import (
+from stavewright import errors
+from stavewright.errors import (
     AipParseError,
     AipTableMissingError,
     DirectoryCycleError,
@@ -16,20 +16,20 @@ from v4t_setup.errors import (
     PlanError,
     RollbackError,
     SignatureError,
-    V4TError,
+    StavewrightError,
 )
 
 
-def _all_error_classes() -> list[type[V4TError]]:
+def _all_error_classes() -> list[type[StavewrightError]]:
     found = []
     for _, obj in inspect.getmembers(errors, inspect.isclass):
-        if issubclass(obj, V4TError):
+        if issubclass(obj, StavewrightError):
             found.append(obj)
     return found
 
 
 def test_str_without_context_is_code_then_message():
-    err = V4TError("something went sideways")
+    err = StavewrightError("something went sideways")
     assert str(err) == "[V4T0000] something went sideways"
 
 
@@ -67,13 +67,13 @@ def test_as_dict_round_trips_the_useful_fields():
 
 def test_context_is_copied_not_aliased():
     supplied = {"path": "APPDIR"}
-    err = V4TError("boom", context=supplied)
+    err = StavewrightError("boom", context=supplied)
     supplied["path"] = "mutated"
     assert err.context == {"path": "APPDIR"}
 
 
 def test_context_defaults_to_empty_dict():
-    assert V4TError("boom").context == {}
+    assert StavewrightError("boom").context == {}
 
 
 @pytest.mark.parametrize(
@@ -89,19 +89,19 @@ def test_context_defaults_to_empty_dict():
 )
 def test_specialised_errors_keep_their_family(child, parent):
     assert issubclass(child, parent)
-    assert issubclass(child, V4TError)
+    assert issubclass(child, StavewrightError)
 
 
 def test_every_error_is_catchable_as_the_base():
     for cls in _all_error_classes():
-        with pytest.raises(V4TError):
+        with pytest.raises(StavewrightError):
             raise cls("raised for the catch test")
 
 
 def test_codes_are_unique_per_class():
     seen: dict[str, str] = {}
     for cls in _all_error_classes():
-        if cls is V4TError:
+        if cls is StavewrightError:
             continue
         assert cls.code not in seen, f"{cls.__name__} reuses {seen[cls.code]}'s code"
         seen[cls.code] = cls.__name__

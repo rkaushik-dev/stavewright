@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import Gs1Error
-from v4t_setup.gs1.ai import (
+from stavewright.errors import Gs1Error
+from stavewright.gs1.ai import (
     CharacterSet,
     DataKind,
     all_identifiers,

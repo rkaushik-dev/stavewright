@@ -15,9 +15,9 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup import __about__
-from v4t_setup.aip.normalize import normalise
-from v4t_setup.aip.reader import read_aip
+from stavewright import __about__
+from stavewright.aip.normalize import normalise
+from stavewright.aip.reader import read_aip
 
 
 @pytest.fixture(scope="module")

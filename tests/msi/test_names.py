@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.msi.cfb import read_compound_file
-from v4t_setup.msi.names import (
+from stavewright.msi.cfb import read_compound_file
+from stavewright.msi.names import (
     ALPHABET,
     TABLE_MARKER,
     decode_stream_name,

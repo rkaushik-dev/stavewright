@@ -7,15 +7,15 @@ from xml.etree import ElementTree
 
 import pytest
 
-from v4t_setup.finding import Finding, Severity
-from v4t_setup.report.document import (
+from stavewright.finding import Finding, Severity
+from stavewright.report.document import (
     Outcome,
     Report,
     findings_section,
     lines_section,
     table_section,
 )
-from v4t_setup.report.render import (
+from stavewright.report.render import (
     RENDERERS,
     render,
     to_csv,
@@ -397,7 +397,7 @@ def test_a_fact_that_is_none_renders_as_blank():
 
 
 def test_a_fact_that_is_a_datetime_is_written_for_a_person():
-    from v4t_setup.clock import utc
+    from stavewright.clock import utc
 
     report = Report(title="x", facts={"saved": utc(2025, 6, 3, 1, 30)})
     assert "saved: 2025-06-03 01:30:00+00:00" in to_text(report)

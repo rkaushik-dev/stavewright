@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.__about__ import UPGRADE_CODE
-from v4t_setup.finding import Severity
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.preflight.checks import (
+from stavewright.__about__ import UPGRADE_CODE
+from stavewright.finding import Severity
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.preflight.checks import (
     DEFAULT_CHECKS,
     MIN_OS_BUILD,
     ArchitectureCheck,
@@ -22,8 +22,8 @@ from v4t_setup.preflight.checks import (
     TemplateFontCheck,
     UnfinishedRunCheck,
 )
-from v4t_setup.target.memory import MemoryTarget
-from v4t_setup.util.msiver import (
+from stavewright.target.memory import MemoryTarget
+from stavewright.util.msiver import (
     InstalledProduct,
     MsiVersion,
     UpgradeAttributes,

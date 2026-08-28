@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Severity
-from v4t_setup.verify.drift import DEFAULT_SEVERITY, DriftKind, DriftRecord, DriftReport
+from stavewright.finding import Severity
+from stavewright.verify.drift import DEFAULT_SEVERITY, DriftKind, DriftRecord, DriftReport
 
 
 def record(kind: DriftKind, subject: str = "C:\\Sellenis\\S-jet600\\V4T.exe", **kwargs):

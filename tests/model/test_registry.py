@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import ManifestError
-from v4t_setup.model.registry import (
+from stavewright.errors import ManifestError
+from stavewright.model.registry import (
     DecodedValue,
     KeyOperation,
     RegistryEntry,

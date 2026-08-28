@@ -5,16 +5,16 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.clock import frozen, utc
-from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-from v4t_setup.fleet.status import (
+from stavewright.clock import frozen, utc
+from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+from stavewright.fleet.status import (
     DEFAULT_STALE_AFTER,
     PlantStatus,
     Standing,
     plant_status,
 )
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.verify.history import History, RunSummary
+from stavewright.model.profile import TerminalProfile
+from stavewright.verify.history import History, RunSummary
 
 NOW = utc(2025, 6, 2, 12)
 

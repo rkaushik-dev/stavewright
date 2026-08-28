@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import StageError
-from v4t_setup.stage.store import PREFIX_LENGTH, ObjectStore
-from v4t_setup.util.digest import Digest, digest_bytes
+from stavewright.errors import StageError
+from stavewright.stage.store import PREFIX_LENGTH, ObjectStore
+from stavewright.util.digest import Digest, digest_bytes
 
 
 @pytest.fixture

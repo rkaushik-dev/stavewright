@@ -12,8 +12,8 @@ from datetime import date, timedelta
 
 import pytest
 
-from v4t_setup.finding import Severity
-from v4t_setup.fleet.audit import (
+from stavewright.finding import Severity
+from stavewright.fleet.audit import (
     STALE_AFTER,
     audit_roster,
     check_critical_lines,
@@ -26,8 +26,8 @@ from v4t_setup.fleet.audit import (
     describe_entry,
     worst_line,
 )
-from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-from v4t_setup.model.profile import TerminalModel, TerminalProfile
+from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+from stavewright.model.profile import TerminalModel, TerminalProfile
 
 TODAY = date(2025, 6, 1)
 
@@ -89,7 +89,7 @@ def test_the_parser_cannot_catch_the_two_line_case():
     """
     import tomllib
 
-    from v4t_setup.fleet.roster import parse_roster
+    from stavewright.fleet.roster import parse_roster
 
     document = """
     plant = "Wrexham"

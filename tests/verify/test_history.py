@@ -4,10 +4,10 @@ import json
 
 import pytest
 
-from v4t_setup import clock
-from v4t_setup.apply.journal import Journal, RecordKind
-from v4t_setup.errors import VerifyError
-from v4t_setup.verify.history import (
+from stavewright import clock
+from stavewright.apply.journal import Journal, RecordKind
+from stavewright.errors import VerifyError
+from stavewright.verify.history import (
     History,
     RunSummary,
     find_unfinished,

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.__about__ import UPGRADE_CODE
-from v4t_setup.util.msiver import (
+from stavewright.__about__ import UPGRADE_CODE
+from stavewright.util.msiver import (
     InstalledProduct,
     MsiVersion,
     UpgradeAttributes,

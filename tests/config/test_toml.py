@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.config.toml import load_toml, parse_toml
-from v4t_setup.errors import ConfigError
+from stavewright.config.toml import load_toml, parse_toml
+from stavewright.errors import ConfigError
 
 
 def test_reading_a_file(tmp_path):

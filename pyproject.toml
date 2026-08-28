@@ -3,7 +3,7 @@ requires = ["setuptools>=75.6.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "v4t-setup"
+name = "stavewright"
 description = "Commissioning toolkit for Sellenis S-Jet 600 coding and marking terminals"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -32,17 +32,17 @@ dev = [
 ]
 
 [project.scripts]
-v4t-setup = "v4t_setup.cli.main:run"
+stavewright = "stavewright.cli.main:run"
 
 [tool.setuptools.dynamic]
-version = { attr = "v4t_setup.__about__.__version__" }
+version = { attr = "stavewright.__about__.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["v4t_setup*"]
+include = ["stavewright*"]
 
 [tool.setuptools.package-data]
-v4t_setup = ["py.typed", "data/*.toml", "data/*.json"]
+stavewright = ["py.typed", "data/*.toml", "data/*.json"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -56,7 +56,7 @@ filterwarnings = ["error"]
 
 [tool.coverage.run]
 branch = true
-source = ["v4t_setup"]
+source = ["stavewright"]
 
 [tool.coverage.report]
 show_missing = true
@@ -97,17 +97,17 @@ ignore = [
 "tests/*" = ["E501"]
 # Typer declares options as function argument defaults. That is the whole
 # design of the library, so B008 has nothing useful to say about the CLI.
-"src/v4t_setup/cli/*" = ["B008"]
+"src/stavewright/cli/*" = ["B008"]
 # The package exports are resolved lazily, so the imports at the top of
 # __init__ exist for the type checker and are unused at runtime by design.
-"src/v4t_setup/__init__.py" = ["F401"]
+"src/stavewright/__init__.py" = ["F401"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["v4t_setup"]
+known-first-party = ["stavewright"]
 
 [tool.mypy]
 python_version = "3.11"
-files = ["src/v4t_setup"]
+files = ["src/stavewright"]
 strict = true
 warn_unreachable = true
 show_error_codes = true

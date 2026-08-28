@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.msi.difference import (
+from stavewright.msi.difference import (
     EXPECTED_PROPERTIES,
     NOISY_TABLES,
     Change,
@@ -13,7 +13,7 @@ from v4t_setup.msi.difference import (
     compare_tables,
     summarise,
 )
-from v4t_setup.msi.tables import (
+from stavewright.msi.tables import (
     TYPE_KEY,
     TYPE_STRING,
     Column,

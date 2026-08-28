@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import PlanCycleError, PlanError
-from v4t_setup.plan.graph import Graph
+from stavewright.errors import PlanCycleError, PlanError
+from stavewright.plan.graph import Graph
 
 
 def build(*edges: tuple[str, str]) -> Graph:

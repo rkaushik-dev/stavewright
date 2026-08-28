@@ -4,13 +4,13 @@ import json
 
 import pytest
 
-from v4t_setup.apply.executor import ApplyResult, Outcome, StepResult
-from v4t_setup.clock import frozen, utc
-from v4t_setup.errors import VerifyError
-from v4t_setup.finding import Severity
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.verify.attest import (
+from stavewright.apply.executor import ApplyResult, Outcome, StepResult
+from stavewright.clock import frozen, utc
+from stavewright.errors import VerifyError
+from stavewright.finding import Severity
+from stavewright.model.profile import TerminalProfile
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.verify.attest import (
     SCHEMA,
     Attestation,
     attest,
@@ -18,7 +18,7 @@ from v4t_setup.verify.attest import (
     loads,
     read_attestation,
 )
-from v4t_setup.verify.drift import DriftKind, DriftRecord, DriftReport
+from stavewright.verify.drift import DriftKind, DriftRecord, DriftReport
 
 PROFILE = TerminalProfile(terminal_id="LINE-PC-04", fpga_revision="PCDC-1.4")
 WHEN = utc(2025, 6, 3, 1, 30)
@@ -253,6 +253,6 @@ def test_an_unreconciled_one_says_so_in_its_description():
 
 
 def test_the_toolkit_version_is_recorded():
-    from v4t_setup.__about__ import __version__
+    from stavewright.__about__ import __version__
 
     assert made().toolkit_version == __version__

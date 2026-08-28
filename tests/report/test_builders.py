@@ -2,30 +2,30 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.apply.actions import DirectoryPayload
-from v4t_setup.apply.executor import Executor
-from v4t_setup.finding import Finding, Severity
-from v4t_setup.gs1.dataset import EXPECTED_COLUMNS, parse_dataset
-from v4t_setup.gs1.datasetlint import lint_dataset
-from v4t_setup.plan.planner import build_plan
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.preflight.checks import PreflightContext
-from v4t_setup.preflight.runner import run_preflight
-from v4t_setup.report.builders.quality import gs1_report, template_report
-from v4t_setup.report.builders.terminal import (
+from stavewright.apply.actions import DirectoryPayload
+from stavewright.apply.executor import Executor
+from stavewright.finding import Finding, Severity
+from stavewright.gs1.dataset import EXPECTED_COLUMNS, parse_dataset
+from stavewright.gs1.datasetlint import lint_dataset
+from stavewright.plan.planner import build_plan
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.preflight.checks import PreflightContext
+from stavewright.preflight.runner import run_preflight
+from stavewright.report.builders.quality import gs1_report, template_report
+from stavewright.report.builders.terminal import (
     apply_report,
     drift_report,
     plan_report,
     preflight_report,
     stage_report,
 )
-from v4t_setup.report.document import Outcome, SectionKind
-from v4t_setup.report.render import render
-from v4t_setup.report.shared import MAX_TABLE_ROWS
-from v4t_setup.target.memory import MemoryTarget
-from v4t_setup.templates.linter import lint_template
-from v4t_setup.templates.spf import read_spf
-from v4t_setup.verify.drift import DriftKind, DriftRecord, DriftReport
+from stavewright.report.document import Outcome, SectionKind
+from stavewright.report.render import render
+from stavewright.report.shared import MAX_TABLE_ROWS
+from stavewright.target.memory import MemoryTarget
+from stavewright.templates.linter import lint_template
+from stavewright.templates.spf import read_spf
+from stavewright.verify.drift import DriftKind, DriftRecord, DriftReport
 
 APPDIR = r"C:\Sellenis\S-jet600"
 
@@ -90,7 +90,7 @@ def test_a_plan_report_always_passes(bundle_manifest, profile, directory_table):
 
 
 def test_a_plan_report_truncates_a_long_table(profile):
-    from v4t_setup.plan.planner import PlanReport
+    from stavewright.plan.planner import PlanReport
 
     plan = Plan(
         profile=profile,
@@ -223,9 +223,9 @@ def test_a_drift_report_of_only_extras_passes():
 def test_a_stage_report(tmp_path, payload):
     from pathlib import PurePosixPath
 
-    from v4t_setup.model.manifest import Manifest
-    from v4t_setup.model.payload import PayloadItem, PayloadKind
-    from v4t_setup.stage.stager import Stager
+    from stavewright.model.manifest import Manifest
+    from stavewright.model.payload import PayloadItem, PayloadKind
+    from stavewright.stage.stager import Stager
 
     manifest = Manifest(
         items=[
@@ -253,15 +253,15 @@ def test_a_gs1_report_of_a_clean_file():
         "(01)01001000173250(21)0001,(01)01001000173250(15)150807,0100100017325"
     )
     dataset = parse_dataset(f"{header}\n{row}\n")
-    from v4t_setup.gs1.validate import MarkingContext
+    from stavewright.gs1.validate import MarkingContext
 
     report = gs1_report(dataset, lint_dataset(dataset, MarkingContext(reference_year=2016)))
     assert report.outcome is Outcome.PASS
 
 
 def test_a_gs1_report_of_the_shipped_file(request):
-    from v4t_setup.gs1.dataset import read_dataset
-    from v4t_setup.gs1.validate import MarkingContext
+    from stavewright.gs1.dataset import read_dataset
+    from stavewright.gs1.validate import MarkingContext
 
     path = request.path.parent.parent.parent / "Matricode" / "Quattro" / "Templates" / "GS1-1.txt"
     dataset = read_dataset(path)
@@ -283,7 +283,7 @@ def test_a_template_report(request):
 
 
 def test_a_template_report_with_nothing_wrong():
-    from v4t_setup.templates.spf import SpfBlock, SpfTemplate
+    from stavewright.templates.spf import SpfBlock, SpfTemplate
 
     template = SpfTemplate(
         blocks=[
@@ -341,7 +341,7 @@ def test_the_critical_path_is_capped_at_ten_rows(bundle_manifest, profile, direc
 
 
 def test_a_plan_with_no_steps_has_no_critical_path_section(profile):
-    from v4t_setup.plan.planner import PlanReport
+    from stavewright.plan.planner import PlanReport
 
     empty = PlanReport(
         plan=Plan(profile=profile, steps=[]), skipped={}, missing_requirements={}
@@ -381,8 +381,8 @@ def test_the_critical_path_survives_every_renderer(
 def test_the_span_is_never_longer_than_the_total(
     bundle_manifest, profile, directory_table
 ):
-    from v4t_setup.plan.cost import estimate_plan
-    from v4t_setup.plan.critical import critical_path
+    from stavewright.plan.cost import estimate_plan
+    from stavewright.plan.critical import critical_path
 
     result = build_plan(bundle_manifest, profile, directory_table, stamp=False)
     path = critical_path(result.plan)

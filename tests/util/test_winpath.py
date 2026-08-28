@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.model.registry import RegistryRoot
-from v4t_setup.target.base import ShortcutSpec
-from v4t_setup.util.winpath import (
+from stavewright.model.registry import RegistryRoot
+from stavewright.target.base import ShortcutSpec
+from stavewright.util.winpath import (
     DEFAULT_VALUE_NAME,
     fold_key,
     fold_path,
@@ -94,8 +94,8 @@ def test_the_unnamed_value_is_written_out():
 def test_the_memory_target_and_the_snapshot_agree_on_a_path():
     # They had byte identical copies of this and a third would have appeared
     # the next time somebody wrote a target.
-    from v4t_setup.target.memory import MemoryTarget
-    from v4t_setup.verify.snapshot import Snapshot
+    from stavewright.target.memory import MemoryTarget
+    from stavewright.verify.snapshot import Snapshot
 
     target = MemoryTarget()
     target.write_file(r"C:\Sellenis\S-jet600\V4T.exe", b"MZ")

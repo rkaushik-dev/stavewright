@@ -4,8 +4,8 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from v4t_setup.errors import ManifestError
-from v4t_setup.model.payload import (
+from stavewright.errors import ManifestError
+from stavewright.model.payload import (
     PayloadItem,
     PayloadKind,
     by_kind,
@@ -13,7 +13,7 @@ from v4t_setup.model.payload import (
     rejected,
     select,
 )
-from v4t_setup.model.profile import Architecture, TerminalModel
+from stavewright.model.profile import Architecture, TerminalModel
 
 
 def item(item_id: str, kind: PayloadKind = PayloadKind.FILE, **kwargs) -> PayloadItem:

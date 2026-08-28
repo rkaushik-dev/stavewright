@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SOURCE_ROOT = PROJECT_ROOT / "src" / "v4t_setup"
+SOURCE_ROOT = PROJECT_ROOT / "src" / "stavewright"
 TEST_ROOT = PROJECT_ROOT / "tests"
 
 BOM = b"\xef\xbb\xbf"

@@ -13,10 +13,10 @@ from pathlib import Path, PurePosixPath
 import pytest
 from typer.testing import CliRunner
 
-from v4t_setup.cli.main import app
-from v4t_setup.config.settings import CONFIG_FILE_NAME
-from v4t_setup.model.manifest import Manifest
-from v4t_setup.model.payload import PayloadItem, PayloadKind
+from stavewright.cli.main import app
+from stavewright.config.settings import CONFIG_FILE_NAME
+from stavewright.model.manifest import Manifest
+from stavewright.model.payload import PayloadItem, PayloadKind
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AIP = REPO_ROOT / "setup.aip"

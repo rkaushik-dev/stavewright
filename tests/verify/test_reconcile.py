@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.apply.actions import DirectoryPayload
-from v4t_setup.apply.executor import Executor
-from v4t_setup.model.registry import RegistryRoot, RegistryValueType
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.target.base import AssemblyIdentity, ShortcutSpec
-from v4t_setup.target.memory import MemoryTarget, string_value
-from v4t_setup.verify.drift import DriftKind
-from v4t_setup.verify.reconcile import PROBES, find_extra_files, reconcile
+from stavewright.apply.actions import DirectoryPayload
+from stavewright.apply.executor import Executor
+from stavewright.model.registry import RegistryRoot, RegistryValueType
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.target.base import AssemblyIdentity, ShortcutSpec
+from stavewright.target.memory import MemoryTarget, string_value
+from stavewright.verify.drift import DriftKind
+from stavewright.verify.reconcile import PROBES, find_extra_files, reconcile
 
 APPDIR = r"C:\Sellenis\S-jet600"
 MFC = AssemblyIdentity(
@@ -287,7 +287,7 @@ def test_without_a_payload_a_file_can_only_be_reported_as_missing(profile, targe
 
 
 def test_a_plan_digest_lets_a_file_be_checked_without_a_payload(profile, target):
-    from v4t_setup.util.digest import digest_bytes
+    from stavewright.util.digest import digest_bytes
 
     plan = Plan(
         profile=profile,

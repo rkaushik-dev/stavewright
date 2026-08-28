@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from typer.testing import CliRunner
 
-from v4t_setup.cli.common import EXIT_FINDINGS, EXIT_OK, EXIT_TOOLKIT
-from v4t_setup.cli.main import app
+from stavewright.cli.common import EXIT_FINDINGS, EXIT_OK, EXIT_TOOLKIT
+from stavewright.cli.main import app
 
 from .conftest import AIP, json_output
 
@@ -254,7 +254,7 @@ def test_profiles_can_live_somewhere_else(runner, bench, plant, tmp_path):
 
 
 def test_a_plan_that_does_not_hold_exits_with_findings(runner, bench, plant, monkeypatch):
-    from v4t_setup.cli import cmd_fleet
+    from stavewright.cli import cmd_fleet
 
     monkeypatch.setattr(cmd_fleet, "check_rollout", lambda *a, **k: ["something is wrong"])
     result = run(runner, "fleet", "plan", str(plant))
@@ -489,7 +489,7 @@ def plant_snapshots(runner, bench, plant, manifest_file, profile_file):
     """A snapshot of EXPORT-01, taken off a scratch machine by run capture."""
     root = bench / "snapshots"
     root.mkdir()
-    from v4t_setup.cli.main import app as cli
+    from stavewright.cli.main import app as cli
 
     staged = runner.invoke(
         cli,

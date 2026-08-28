@@ -3,14 +3,14 @@ from __future__ import annotations
 import json
 from datetime import timedelta
 
-from v4t_setup.clock import utc
-from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-from v4t_setup.fleet.schedule import Window, schedule_rollout
-from v4t_setup.fleet.waves import Rollout, plan_rollout
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.report.builders.fleet import schedule_report
-from v4t_setup.report.document import Outcome
-from v4t_setup.report.render import to_csv, to_json, to_text
+from stavewright.clock import utc
+from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+from stavewright.fleet.schedule import Window, schedule_rollout
+from stavewright.fleet.waves import Rollout, plan_rollout
+from stavewright.model.profile import TerminalProfile
+from stavewright.report.builders.fleet import schedule_report
+from stavewright.report.document import Outcome
+from stavewright.report.render import to_csv, to_json, to_text
 
 
 def entry(terminal_id: str, line: str, criticality=Criticality.NORMAL):

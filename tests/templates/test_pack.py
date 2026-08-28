@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.errors import TemplateError
-from v4t_setup.finding import Severity
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.templates.pack import (
+from stavewright.errors import TemplateError
+from stavewright.finding import Severity
+from stavewright.model.profile import TerminalProfile
+from stavewright.templates.pack import (
     TemplateSet,
     lint_template_set,
     read_template_set,

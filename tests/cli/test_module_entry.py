@@ -2,7 +2,7 @@
 
 Every other CLI test drives the Typer app object through the test runner, which
 never asks whether the process starts. That gap hid a live defect for weeks:
-``python -m v4t_setup.cli.main`` imported the module, built the command tree and
+``python -m stavewright.cli.main`` imported the module, built the command tree and
 exited 0 without running a single command, and five CI steps were spelled that
 way. They passed. They were checking nothing.
 
@@ -20,9 +20,9 @@ import sys
 
 import pytest
 
-from v4t_setup.__about__ import __version__
+from stavewright.__about__ import __version__
 
-MODULES = ["v4t_setup", "v4t_setup.cli.main"]
+MODULES = ["stavewright", "stavewright.cli.main"]
 
 
 def module_run(module: str, *args: str, cwd=None) -> subprocess.CompletedProcess[str]:
@@ -64,7 +64,7 @@ def test_the_module_entry_point_actually_runs(module):
     """The regression itself. Exit 0 with an empty stdout is the bug."""
     result = module_run(module, "--version")
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == f"v4t-setup {__version__}"
+    assert result.stdout.strip() == f"stavewright {__version__}"
 
 
 @pytest.mark.parametrize("module", MODULES)
@@ -90,25 +90,25 @@ def test_a_subcommand_group_reaches_its_commands(module):
 
 def test_a_command_that_reports_findings_exits_one(tmp_path):
     """doctor in an empty directory has one warning and no settings file."""
-    result = module_run("v4t_setup", "doctor", "--strict", cwd=tmp_path)
+    result = module_run("stavewright", "doctor", "--strict", cwd=tmp_path)
     assert result.returncode == 1, result.stdout
     assert "no settings file was found" in result.stdout
 
 
 def test_the_same_command_without_strict_exits_zero(tmp_path):
-    result = module_run("v4t_setup", "doctor", cwd=tmp_path)
+    result = module_run("stavewright", "doctor", cwd=tmp_path)
     assert result.returncode == 0, result.stdout
 
 
 def test_an_unknown_command_says_so_and_fails():
-    result = module_run("v4t_setup", "polish")
+    result = module_run("stavewright", "polish")
     assert result.returncode != 0
     assert "polish" in result.stdout + result.stderr
 
 
 def test_the_rules_listing_comes_out_of_the_code():
     """rules imports five rule sets, so it is a cheap import smoke test too."""
-    result = module_run("v4t_setup", "rules")
+    result = module_run("stavewright", "rules")
     assert result.returncode == 0, result.stderr
     lines = result.stdout.splitlines()
     assert any(line.startswith("preflight: ") for line in lines)
@@ -117,9 +117,9 @@ def test_the_rules_listing_comes_out_of_the_code():
 
 
 def test_the_format_listing_matches_what_the_renderers_offer():
-    from v4t_setup.report.render import RENDERERS
+    from stavewright.report.render import RENDERERS
 
-    result = module_run("v4t_setup", "formats")
+    result = module_run("stavewright", "formats")
     assert result.returncode == 0, result.stderr
     assert result.stdout.split() == sorted(RENDERERS)
 
@@ -131,5 +131,5 @@ def test_nothing_is_written_to_stderr_on_a_clean_run():
     every piped invocation noisy, and nobody notices until a build log is
     unreadable.
     """
-    result = module_run("v4t_setup", "formats")
+    result = module_run("stavewright", "formats")
     assert result.stderr == ""

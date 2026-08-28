@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.msi.cfb import CompoundFile, read_compound_file
-from v4t_setup.msi.names import encode_stream_name
-from v4t_setup.msi.tables import (
+from stavewright.msi.cfb import CompoundFile, read_compound_file
+from stavewright.msi.names import encode_stream_name
+from stavewright.msi.tables import (
     LONG_REF_BYTES,
     SHORT_REF_BYTES,
     TYPE_KEY,

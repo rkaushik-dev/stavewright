@@ -1,4 +1,4 @@
-# V4T-Setup
+# Stavewright
 
 Commissioning toolkit for Sellenis S-Jet 600 coding and marking terminals.
 
@@ -18,7 +18,7 @@ or test.
     setup.aip                  the Advanced Installer project, since 2016
     Matricode/                 the payload that ships with it
     msi-quattro/, ocx/         the built installer and the controls
-    src/v4t_setup/             this toolkit
+    src/stavewright/             this toolkit
     tests/                     its tests
 
 The 2016 tree is the input, not decoration. The toolkit reads the real project
@@ -76,13 +76,13 @@ beside the profiles and references them by terminal id:
 machines may be down at once: one, three, eight. `position` is upstream to
 downstream, so position 1 feeds position 2.
 
-    v4t-setup fleet plan roster.toml
-    v4t-setup fleet next roster.toml --batch 2
+    stavewright fleet plan roster.toml
+    stavewright fleet next roster.toml --batch 2
 
 Reading a roster only proves it is a roster. What it gets wrong needs a second
 document to see, so that is its own command:
 
-    v4t-setup fleet audit roster.toml
+    stavewright fleet audit roster.toml
 
 A terminal on two lines, a line whose positions run 1, 2, 5, a profile in the
 directory that no line claims, a line mixing FPGA revisions, a commissioning
@@ -100,7 +100,7 @@ the roster does not:
     start = 2025-06-02T22:00:00Z
     end = 2025-06-03T02:00:00Z
 
-    v4t-setup fleet schedule roster.toml calendar.toml --engineers 2
+    stavewright fleet schedule roster.toml calendar.toml --engineers 2
 
 That exits 1 when a wave fits in no window, which is the answer it is there to
 give. A wave never spans two windows: half the steps in a commissioning run
@@ -114,20 +114,20 @@ anything that matters is touched.
 ## Getting started
 
     python -m pip install -e ".[dev]"
-    v4t-setup --help
+    stavewright --help
 
 Read the shipped project file:
 
-    v4t-setup bundle inspect setup.aip
+    stavewright bundle inspect setup.aip
 
 Check the shipped GS1 data. It has known findings, see below:
 
-    v4t-setup gs1 check Matricode/Quattro/Templates/GS1-1.txt
+    stavewright gs1 check Matricode/Quattro/Templates/GS1-1.txt
 
 Plan a terminal without touching anything:
 
-    v4t-setup bundle build setup.aip --out manifest.json --no-digest
-    v4t-setup run plan manifest.json --profile LINE-PC-04.toml --aip setup.aip
+    stavewright bundle build setup.aip --out manifest.json --no-digest
+    stavewright run plan manifest.json --profile LINE-PC-04.toml --aip setup.aip
 
 ## Terminal profiles
 
@@ -152,7 +152,7 @@ controller. A terminal only gets the language DLLs it was ordered with.
 
 ## Settings
 
-`v4t-setup.toml`, found by walking up from the working directory:
+`stavewright.toml`, found by walking up from the working directory:
 
     staging_root = "D:/commissioning/_staging"
     journal_root = "D:/commissioning/_journal"
@@ -182,12 +182,12 @@ takes `--strict`, which makes a warning a 1. It only moves in that direction,
 and it does not change the report, so the file a strict run writes and the file
 a lenient one writes are the same bytes.
 
-    v4t-setup template lint Matricode/Quattro/Templates/T1.spf           # 0
-    v4t-setup template lint Matricode/Quattro/Templates/T1.spf --strict  # 1
+    stavewright template lint Matricode/Quattro/Templates/T1.spf           # 0
+    stavewright template lint Matricode/Quattro/Templates/T1.spf --strict  # 1
 
 ## The MSI in this repository was not built from the project file in it
 
-    v4t-setup bundle match msi-quattro/msi-Jet600.msi setup.aip
+    stavewright bundle match msi-quattro/msi-Jet600.msi setup.aip
 
 says so. Different upgrade code, different product name, and the manufacturer
 is still `Default Company Name`. The comparison is by identity and table
@@ -228,7 +228,7 @@ The number is in the report so that trade is visible rather than assumed.
 
 ## Design notes worth knowing before changing anything
 
-**Nothing talks to a machine except `v4t_setup.target`.** There are two
+**Nothing talks to a machine except `stavewright.target`.** There are two
 implementations, one that drives Windows and one that keeps everything in a
 dictionary. The second is not a mock: it enforces the same invariants,
 including case insensitive paths and registry keys, and refusing to register a

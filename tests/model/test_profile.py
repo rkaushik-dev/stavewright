@@ -5,8 +5,8 @@ from pathlib import PureWindowsPath
 import pytest
 from pydantic import ValidationError
 
-from v4t_setup.model.locale import resolve
-from v4t_setup.model.profile import Architecture, TerminalModel, TerminalProfile
+from stavewright.model.locale import resolve
+from stavewright.model.profile import Architecture, TerminalModel, TerminalProfile
 
 
 def make_profile(**kwargs) -> TerminalProfile:

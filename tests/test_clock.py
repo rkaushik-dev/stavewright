@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from v4t_setup import clock
+from stavewright import clock
 
 PINNED = datetime(2026, 3, 14, 9, 26, 53, tzinfo=UTC)
 
@@ -85,7 +85,7 @@ def test_the_utc_helper():
 
 
 def test_a_manifest_stamp_follows_the_clock():
-    from v4t_setup.model.manifest import Manifest, utc_now
+    from stavewright.model.manifest import Manifest, utc_now
 
     with clock.frozen(PINNED):
         assert utc_now() == PINNED
@@ -93,7 +93,7 @@ def test_a_manifest_stamp_follows_the_clock():
 
 
 def test_a_plan_stamp_follows_the_clock(profile):
-    from v4t_setup.plan.steps import Plan, utc_now
+    from stavewright.plan.steps import Plan, utc_now
 
     with clock.frozen(PINNED):
         plan = Plan(profile=profile, created_at=utc_now())
@@ -101,22 +101,22 @@ def test_a_plan_stamp_follows_the_clock(profile):
 
 
 def test_a_report_stamp_follows_the_clock():
-    from v4t_setup.report.document import Report
+    from stavewright.report.document import Report
 
     with clock.frozen(PINNED):
         assert Report(title="x").stamp().generated_at == PINNED
 
 
 def test_a_signature_stamp_follows_the_clock():
-    from v4t_setup.model.manifest import Manifest
-    from v4t_setup.signing import generate_key, sign_manifest
+    from stavewright.model.manifest import Manifest
+    from stavewright.signing import generate_key, sign_manifest
 
     with clock.frozen(PINNED):
         assert sign_manifest(Manifest(), generate_key()).signed_at == PINNED
 
 
 def test_every_journal_record_follows_the_clock(tmp_path):
-    from v4t_setup.apply.journal import Journal, RecordKind, read_journal
+    from stavewright.apply.journal import Journal, RecordKind, read_journal
 
     path = tmp_path / "run.jsonl"
     with clock.frozen(PINNED), Journal(path) as journal:
@@ -130,7 +130,7 @@ def test_every_journal_record_follows_the_clock(tmp_path):
 
 
 def test_two_frozen_runs_produce_the_same_journal_bytes(tmp_path):
-    from v4t_setup.apply.journal import Journal, RecordKind
+    from stavewright.apply.journal import Journal, RecordKind
 
     written = []
     for name in ("one.jsonl", "two.jsonl"):
@@ -144,7 +144,7 @@ def test_two_frozen_runs_produce_the_same_journal_bytes(tmp_path):
 
 
 def test_the_dead_cli_helpers_are_gone():
-    from v4t_setup.cli import common
+    from stavewright.cli import common
 
     assert not hasattr(common, "outcome_line")
     assert not hasattr(common, "is_a_terminal")

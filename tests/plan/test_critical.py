@@ -4,16 +4,16 @@ from datetime import timedelta
 
 import pytest
 
-from v4t_setup.errors import PlanCycleError
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.plan.cost import SECONDS
-from v4t_setup.plan.critical import (
+from stavewright.errors import PlanCycleError
+from stavewright.model.profile import TerminalProfile
+from stavewright.plan.cost import SECONDS
+from stavewright.plan.critical import (
     bottlenecks,
     check_no_cycle,
     critical_path,
     graph_of,
 )
-from v4t_setup.plan.steps import Plan, Step, StepKind
+from stavewright.plan.steps import Plan, Step, StepKind
 
 PROFILE = TerminalProfile(terminal_id="LINE-PC-04", fpga_revision="PCDC-1.4")
 

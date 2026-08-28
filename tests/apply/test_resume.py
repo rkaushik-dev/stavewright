@@ -4,15 +4,15 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.apply.journal import Journal, RecordKind
-from v4t_setup.apply.resume import (
+from stavewright.apply.journal import Journal, RecordKind
+from stavewright.apply.resume import (
     check_resume,
     read_resume_state,
     remaining,
 )
-from v4t_setup.errors import ApplyError
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.plan.steps import Plan, Step, StepKind
+from stavewright.errors import ApplyError
+from stavewright.model.profile import TerminalProfile
+from stavewright.plan.steps import Plan, Step, StepKind
 
 PROFILE = TerminalProfile(terminal_id="LINE-PC-04", fpga_revision="PCDC-1.4")
 

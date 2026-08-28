@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from v4t_setup.msi.cfb import read_compound_file
-from v4t_setup.msi.summary import (
+from stavewright.msi.cfb import read_compound_file
+from stavewright.msi.summary import (
     PID_CREATED,
     PID_TEMPLATE,
     SOURCE_ADMIN_IMAGE,
@@ -18,7 +18,7 @@ from v4t_setup.msi.summary import (
     parse_summary,
     read_summary,
 )
-from v4t_setup.msi.tables import MsiError
+from stavewright.msi.tables import MsiError
 
 MSI = Path(__file__).resolve().parents[2] / "msi-quattro" / "msi-Jet600.msi"
 
@@ -45,7 +45,7 @@ def test_the_package_code(summary):
 def test_the_package_code_is_not_the_upgrade_code(summary):
     # Different identifiers for different questions. The package code says
     # these are the same bytes; the upgrade code says the same product.
-    from v4t_setup.msi.tables import read_msi
+    from stavewright.msi.tables import read_msi
 
     assert summary.package_code != read_msi(MSI).property("UpgradeCode")
 
@@ -209,7 +209,7 @@ def test_a_compound_file_with_no_summary_stream(tmp_path):
     replacement = "zzz".encode("utf-16-le")
     raw[base : base + len(replacement)] = replacement
     struct.pack_into("<H", raw, base + 64, len(replacement) + 2)
-    from v4t_setup.msi.cfb import CompoundFile
+    from stavewright.msi.cfb import CompoundFile
 
     with pytest.raises(MsiError, match="no summary information stream"):
         read_summary(CompoundFile(bytes(raw)))

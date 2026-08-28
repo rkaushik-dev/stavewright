@@ -4,9 +4,9 @@ from datetime import UTC, datetime
 
 import pytest
 
-from v4t_setup.errors import PlanError
-from v4t_setup.plan.steps import Plan, Step, StepKind, utc_now
-from v4t_setup.util.digest import digest_bytes
+from stavewright.errors import PlanError
+from stavewright.plan.steps import Plan, Step, StepKind, utc_now
+from stavewright.util.digest import digest_bytes
 
 
 def step(step_id: str, kind: StepKind = StepKind.COPY_FILE, **kwargs) -> Step:

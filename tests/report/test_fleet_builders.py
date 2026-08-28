@@ -3,18 +3,18 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from v4t_setup.finding import Severity
-from v4t_setup.fleet.audit import audit_roster
-from v4t_setup.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
-from v4t_setup.fleet.waves import check_rollout, plan_rollout
-from v4t_setup.model.profile import TerminalProfile
-from v4t_setup.report.builders.fleet import (
+from stavewright.finding import Severity
+from stavewright.fleet.audit import audit_roster
+from stavewright.fleet.roster import Criticality, Roster, RosterEntry, ShiftPattern
+from stavewright.fleet.waves import check_rollout, plan_rollout
+from stavewright.model.profile import TerminalProfile
+from stavewright.report.builders.fleet import (
     rollout_report,
     roster_audit_report,
     roster_report,
 )
-from v4t_setup.report.document import Outcome
-from v4t_setup.report.render import to_json, to_text
+from stavewright.report.document import Outcome
+from stavewright.report.render import to_json, to_text
 
 
 def entry(

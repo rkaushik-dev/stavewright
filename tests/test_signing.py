@@ -6,10 +6,10 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from v4t_setup.errors import SignatureError
-from v4t_setup.model.manifest import Manifest
-from v4t_setup.model.payload import PayloadItem, PayloadKind
-from v4t_setup.signing import (
+from stavewright.errors import SignatureError
+from stavewright.model.manifest import Manifest
+from stavewright.model.payload import PayloadItem, PayloadKind
+from stavewright.signing import (
     KEY_ID_LENGTH,
     KeyRing,
     Signature,
@@ -295,7 +295,7 @@ def test_the_whole_bench_flow(tmp_path, key):
     manifest.write(manifest_path)
     sign_manifest(manifest, key).write(signature_path_for(manifest_path))
 
-    from v4t_setup.model.manifest import read_manifest
+    from stavewright.model.manifest import read_manifest
 
     ring = KeyRing()
     ring.add_pem(public_key_to_pem(key.public_key()))
@@ -310,7 +310,7 @@ def test_a_tampered_bundle_fails_the_bench_flow(tmp_path, key):
 
     _manifest("swapped.exe").write(manifest_path)
 
-    from v4t_setup.model.manifest import read_manifest
+    from stavewright.model.manifest import read_manifest
 
     ring = KeyRing()
     ring.add(key.public_key())

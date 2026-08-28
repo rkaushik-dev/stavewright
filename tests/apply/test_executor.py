@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.apply.actions import DirectoryPayload
-from v4t_setup.apply.executor import ApplyResult, Executor, Outcome, dry_run
-from v4t_setup.apply.journal import read_journal, replay
-from v4t_setup.errors import ApplyError, RollbackError
-from v4t_setup.model.registry import RegistryRoot, RegistryValueType
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.target.memory import MemoryTarget
-from v4t_setup.util.winpath import fold_path
+from stavewright.apply.actions import DirectoryPayload
+from stavewright.apply.executor import ApplyResult, Executor, Outcome, dry_run
+from stavewright.apply.journal import read_journal, replay
+from stavewright.errors import ApplyError, RollbackError
+from stavewright.model.registry import RegistryRoot, RegistryValueType
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.target.memory import MemoryTarget
+from stavewright.util.winpath import fold_path
 
 APPDIR = r"C:\Sellenis\S-jet600"
 

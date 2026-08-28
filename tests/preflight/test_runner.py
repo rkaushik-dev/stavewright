@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.errors import PreflightError
-from v4t_setup.finding import Finding, Severity
-from v4t_setup.plan.steps import Plan, Step, StepKind
-from v4t_setup.preflight.checks import DEFAULT_CHECKS, Check, PreflightContext
-from v4t_setup.preflight.runner import PreflightReport, describe_checks, run_preflight
-from v4t_setup.target.memory import MemoryTarget
+from stavewright.errors import PreflightError
+from stavewright.finding import Finding, Severity
+from stavewright.plan.steps import Plan, Step, StepKind
+from stavewright.preflight.checks import DEFAULT_CHECKS, Check, PreflightContext
+from stavewright.preflight.runner import PreflightReport, describe_checks, run_preflight
+from stavewright.target.memory import MemoryTarget
 
 
 class Noisy(Check):

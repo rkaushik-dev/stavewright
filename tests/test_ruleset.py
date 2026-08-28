@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Finding, Severity
-from v4t_setup.ruleset import (
+from stavewright.finding import Finding, Severity
+from stavewright.ruleset import (
     Rule,
     describe_rules,
     duplicate_names,
@@ -136,41 +136,41 @@ def test_a_subclass_may_name_its_arguments_after_what_they_are():
 
 
 def test_the_gs1_rules_are_ruleset_rules():
-    from v4t_setup.gs1.validate import DEFAULT_RULES
+    from stavewright.gs1.validate import DEFAULT_RULES
 
     assert all(isinstance(rule, Rule) for rule in DEFAULT_RULES)
     assert duplicate_names(DEFAULT_RULES) == []
 
 
 def test_the_dataset_rules_are_ruleset_rules():
-    from v4t_setup.gs1.datasetlint import DEFAULT_DATASET_RULES
+    from stavewright.gs1.datasetlint import DEFAULT_DATASET_RULES
 
     assert all(isinstance(rule, Rule) for rule in DEFAULT_DATASET_RULES)
     assert duplicate_names(DEFAULT_DATASET_RULES) == []
 
 
 def test_the_template_rules_are_ruleset_rules():
-    from v4t_setup.templates.linter import DEFAULT_TEMPLATE_RULES
+    from stavewright.templates.linter import DEFAULT_TEMPLATE_RULES
 
     assert all(isinstance(rule, Rule) for rule in DEFAULT_TEMPLATE_RULES)
     assert duplicate_names(DEFAULT_TEMPLATE_RULES) == []
 
 
 def test_the_preflight_checks_are_ruleset_rules():
-    from v4t_setup.preflight.checks import DEFAULT_CHECKS
+    from stavewright.preflight.checks import DEFAULT_CHECKS
 
     assert all(isinstance(rule, Rule) for rule in DEFAULT_CHECKS)
     assert duplicate_names(DEFAULT_CHECKS) == []
 
 
 def test_every_preflight_check_has_a_title():
-    from v4t_setup.preflight.checks import DEFAULT_CHECKS
+    from stavewright.preflight.checks import DEFAULT_CHECKS
 
     assert all(check.title for check in DEFAULT_CHECKS)
 
 
 def test_describe_checks_goes_through_the_shared_helper():
-    from v4t_setup.preflight.checks import DEFAULT_CHECKS
-    from v4t_setup.preflight.runner import describe_checks
+    from stavewright.preflight.checks import DEFAULT_CHECKS
+    from stavewright.preflight.runner import describe_checks
 
     assert describe_checks() == describe_rules(DEFAULT_CHECKS)

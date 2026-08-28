@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.finding import Severity
-from v4t_setup.gs1.ai import FNC1
-from v4t_setup.gs1.hri import MAX_HRI_CHARACTERS
-from v4t_setup.templates.linter import (
+from stavewright.finding import Severity
+from stavewright.gs1.ai import FNC1
+from stavewright.gs1.hri import MAX_HRI_CHARACTERS
+from stavewright.templates.linter import (
     MIN_ENCODED_RUN,
     HumanReadableRule,
     TemplateContext,
     lint_template,
 )
-from v4t_setup.templates.spf import MAGIC, SpfBlock, SpfTemplate
+from stavewright.templates.spf import MAGIC, SpfBlock, SpfTemplate
 
 
 def u16(text: str) -> bytes:
@@ -126,7 +126,7 @@ def test_the_rule_runs_as_part_of_the_default_set():
 
 
 def test_the_shipped_template_has_no_human_readable_defects(request):
-    from v4t_setup.templates.spf import read_spf
+    from stavewright.templates.spf import read_spf
 
     shipped = read_spf(
         request.path.parent.parent.parent / "Matricode" / "Quattro" / "Templates" / "T1.spf"

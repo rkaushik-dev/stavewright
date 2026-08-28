@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from v4t_setup.util.digest import digest_bytes
-from v4t_setup.util.fsops import (
+from stavewright.util.digest import digest_bytes
+from stavewright.util.fsops import (
     PathEscapeError,
     atomic_write_bytes,
     atomic_write_text,
