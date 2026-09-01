@@ -3,20 +3,46 @@
 Every CLI test runs in its own directory with its own settings file, because
 the top level callback searches upwards for one and a test that picked up the
 repository's own file would pass or fail depending on where it was run from.
+
+Help output is forced back to plain text here. Typer decides once, at import,
+whether to colour it, and one of the things that turns colour on is the
+GITHUB_ACTIONS variable. Coloured help is not the same string: Rich styles the
+two dashes of a flag separately, so ``--strict`` arrives as
+``\\x1b[1m-\\x1b[0m\\x1b[1m-strict\\x1b[0m`` and no assertion looking for the flag
+finds it. That cost a green suite locally and five red jobs on the first push.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import re
 from pathlib import Path, PurePosixPath
 
 import pytest
+import typer.rich_utils
 from typer.testing import CliRunner
 
 from stavewright.cli.main import app
 from stavewright.config.settings import CONFIG_FILE_NAME
 from stavewright.model.manifest import Manifest
 from stavewright.model.payload import PayloadItem, PayloadKind
+
+# Both of these are read when a console is built rather than when typer is
+# imported, so setting them here, after the imports, is early enough. The
+# environment variables are Rich's own, which is why clearing typer's decision
+# is not enough on a machine where somebody exports one of them.
+typer.rich_utils.FORCE_TERMINAL = None
+for _forcing in ("FORCE_COLOR", "PY_COLORS"):
+    os.environ.pop(_forcing, None)
+
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def plain(text: str) -> str:
+    """Output with any styling taken back out, for asserting on words."""
+    return ANSI.sub("", text)
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AIP = REPO_ROOT / "setup.aip"

@@ -129,7 +129,16 @@ def test_the_view_defaults_to_64_bit():
 
 
 def test_hkmu_cannot_be_opened():
-    with pytest.raises(TargetError, match="must be resolved"):
+    """HKMU is a pseudo root and has to be resolved against ALLUSERS first.
+
+    Which error you get depends on where you are standing. On a bench the
+    pseudo root is the problem. Off one, hive_handle asks winreg for a module
+    that is not there before it ever looks at the argument, and that is the
+    honest answer in that situation, so both are accepted here. Asserting only
+    the bench message passed on every developer machine and failed on Linux.
+    """
+    wanted = "must be resolved" if IS_WINDOWS else "needs a Windows terminal"
+    with pytest.raises(TargetError, match=wanted):
         hive_handle(RegistryRoot.USER_OR_MACHINE)
 
 

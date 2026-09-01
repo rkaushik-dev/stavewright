@@ -116,9 +116,16 @@ class WindowsTarget:
         import platform
 
         usage = shutil.disk_usage(os.environ.get("SYSTEMDRIVE", "C:") + "\\")
-        try:
-            elevated = bool(ctypes.windll.shell32.IsUserAnAdmin())
-        except (AttributeError, OSError):
+        # The sys.platform guard is for the type checker rather than for the
+        # runtime, which require_windows above has already settled. ctypes only
+        # grows a windll attribute on Windows, so checking this file on Linux
+        # is an error until the branch is one mypy knows not to look at.
+        if sys.platform == "win32":
+            try:
+                elevated = bool(ctypes.windll.shell32.IsUserAnAdmin())
+            except (AttributeError, OSError):
+                elevated = False
+        else:  # pragma: no cover
             elevated = False
         return SystemFacts(
             os_build=int(platform.version().split(".")[-1] or 0),

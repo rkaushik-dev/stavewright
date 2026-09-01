@@ -9,7 +9,7 @@ from stavewright.__about__ import __version__
 from stavewright.cli.common import EXIT_FINDINGS, EXIT_OK, EXIT_TOOLKIT
 from stavewright.cli.main import app
 
-from .conftest import AIP, GS1_DATA, TEMPLATE, json_output
+from .conftest import AIP, GS1_DATA, TEMPLATE, json_output, plain
 
 
 def run(runner: CliRunner, *args: str):
@@ -1198,7 +1198,59 @@ def test_doctor_strict_writes_the_report_before_it_fails(runner, tmp_path, monke
 
 def test_doctor_strict_is_in_the_help(runner):
     result = run(runner, "doctor", "--help")
-    assert "--strict" in result.output
+    assert "--strict" in plain(result.output)
+
+
+def test_the_help_is_not_styled(runner):
+    """The guard on a whole class of test that only fails on a build server.
+
+    Typer decides at import whether to colour its help, and GITHUB_ACTIONS is
+    one of the things that turns it on. Coloured help is a different string:
+    Rich styles the two dashes of a flag apart from each other, so a plain
+    assertion for --strict finds nothing. Every job in the matrix went red on
+    that and the suite was green here.
+    """
+    assert "\x1b[" not in run(runner, "doctor", "--help").output
+    assert "\x1b[" not in run(runner, "--help").output
+
+
+@pytest.mark.parametrize("group", ["bundle", "run", "fleet", "gs1", "template"])
+def test_no_group_styles_its_help_either(runner, group):
+    """One command being plain says nothing about the other five."""
+    assert "\x1b[" not in run(runner, group, "--help").output
+
+
+def test_typer_is_not_being_told_to_force_a_terminal():
+    """Pins the fix rather than its effect.
+
+    The conftest clears this. If somebody removes that line the help tests
+    above still pass on a laptop and fail on a build server, which is exactly
+    the trap being closed here.
+    """
+    import typer.rich_utils
+
+    assert typer.rich_utils.FORCE_TERMINAL is None
+
+
+def test_every_flag_name_survives_being_read_back(runner):
+    """The assertion that was failing, made for every option doctor has."""
+    text = plain(run(runner, "doctor", "--help").output)
+    for flag in ("--strict", "--format", "--output", "--help"):
+        assert flag in text
+
+
+def test_plain_takes_the_styling_out():
+    assert plain("\x1b[1m-\x1b[0m\x1b[1m-strict\x1b[0m") == "--strict"
+
+
+def test_plain_leaves_unstyled_text_alone():
+    assert plain("--strict  Fail on the warnings too.") == "--strict  Fail on the warnings too."
+
+
+def test_plain_keeps_the_box_drawing():
+    """Only the escape sequences go. The characters Rich draws with stay, so a
+    test that wants to assert on the layout still can."""
+    assert plain("\x1b[2m│\x1b[0m a row \x1b[2m│\x1b[0m") == "│ a row │"
 
 
 def test_msi_diff_of_an_installer_with_itself(runner, bench):

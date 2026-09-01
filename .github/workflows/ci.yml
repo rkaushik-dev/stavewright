@@ -41,6 +41,12 @@ jobs:
       - name: mypy
         run: python -m mypy
 
+      # This job runs on Linux, so the Windows only branches are the ones
+      # nobody type checks. That is where the toolkit does its real work, and a
+      # ctypes.windll got through on the first push because of it.
+      - name: mypy as a bench sees it
+        run: python -m mypy --platform win32
+
   test:
     name: test ${{ matrix.os }} py${{ matrix.python }}
     runs-on: ${{ matrix.os }}
